@@ -261,6 +261,7 @@ a:hover {
   font-size: var(--step-2);
   font-weight: 650;
   line-height: 1.45;
+  inline-size: fit-content;
 }
 
 .chapter h1 + h2 {
@@ -271,7 +272,7 @@ a:hover {
 .chapter h2::before {
   content: '';
   display: block;
-  inline-size: 2.25rem;
+  inline-size: 100%;
   block-size: 2px;
   margin-block-end: var(--space-sm);
   border-radius: 2px;
@@ -294,7 +295,7 @@ a:hover {
   .chapter.js-marker-reveal h2::before {
     transform: scaleX(0.12);
     opacity: 0.35;
-    transition: transform 600ms var(--ease), opacity 600ms var(--ease);
+    transition: transform 1800ms var(--ease), opacity 1800ms var(--ease);
   }
 
   .chapter.js-marker-reveal h2.is-in-view::before {
