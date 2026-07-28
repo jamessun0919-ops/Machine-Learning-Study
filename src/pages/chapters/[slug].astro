@@ -1,0 +1,39 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Nav from '../../components/Nav.astro';
+import ChapterSummaryCard from '../../components/ChapterSummaryCard.astro';
+import RegressionScatter3D from '../../components/charts/RegressionScatter3D';
+
+export async function getStaticPaths() {
+  const chapters = await getCollection('chapters');
+  return chapters.map((chapter) => ({
+    params: { slug: chapter.id },
+    props: { chapter },
+  }));
+}
+
+interface Props {
+  chapter: CollectionEntry<'chapters'>;
+}
+
+const { chapter } = Astro.props;
+const { Content } = await render(chapter);
+---
+<BaseLayout title={chapter.data.title}>
+  <Nav />
+  <main class="chapter">
+    <h1>{chapter.data.title}</h1>
+    <Content />
+    <ChapterSummaryCard
+      formulas={chapter.data.summary.formulas}
+      keyStats={chapter.data.summary.keyStats}
+    />
+    {chapter.data.interactiveComponent === 'regression-scatter-3d' && (
+      <section class="chapter__interactive">
+        <h2>互動式操作與演示</h2>
+        <RegressionScatter3D client:only="react" />
+      </section>
+    )}
+  </main>
+</BaseLayout>
