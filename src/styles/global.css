@@ -1,0 +1,119 @@
+:root {
+  --color-bg: #0f1117;
+  --color-bg-elevated: #161922;
+  --color-border: #262a35;
+  --color-text: #e4e6eb;
+  --color-text-muted: #8b93a7;
+  --color-accent: #5ee6d0;
+  --color-accent-secondary: #7c5ee6;
+  --font-sans: -apple-system, "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+}
+
+a {
+  color: var(--color-accent);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: var(--color-bg-elevated);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.site-nav__brand {
+  font-weight: bold;
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.site-nav ul {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chapter,
+.home {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.summary-card {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.summary-card__stats {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.summary-card__stats li {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-card__stat-label {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.regression-chart__controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.regression-chart__controls button {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.regression-chart__controls button.is-active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.regression-chart__stats {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.chapter-list {
+  list-style: none;
+  padding: 0;
+}
+
+.chapter-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
