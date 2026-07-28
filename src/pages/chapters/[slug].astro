@@ -38,4 +38,37 @@ const { Content } = await render(chapter);
       </section>
     )}
   </main>
+  {/* Inline and placed after the content on purpose: it runs during parsing,
+      while a bundled (deferred) script would let the finished markers paint
+      first and then visibly collapse before revealing. */}
+  <script is:inline>
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      if (!('IntersectionObserver' in window)) return;
+
+      var chapter = document.querySelector('.chapter');
+      if (!chapter) return;
+
+      var headings = chapter.querySelectorAll('h2');
+      if (!headings.length) return;
+
+      chapter.classList.add('js-marker-reveal');
+
+      var remaining = headings.length;
+      var observer = new IntersectionObserver(
+        function (entries) {
+          for (var i = 0; i < entries.length; i++) {
+            if (!entries[i].isIntersecting) continue;
+            entries[i].target.classList.add('is-in-view');
+            observer.unobserve(entries[i].target);
+            remaining -= 1;
+          }
+          if (remaining === 0) observer.disconnect();
+        },
+        { rootMargin: '0px 0px -12% 0px', threshold: 0.15 }
+      );
+
+      for (var j = 0; j < headings.length; j++) observer.observe(headings[j]);
+    })();
+  </script>
 </BaseLayout>

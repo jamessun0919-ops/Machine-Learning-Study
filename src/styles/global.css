@@ -283,22 +283,21 @@ a:hover {
   );
 }
 
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .chapter h2::before {
-      animation: marker-in linear both;
-      animation-timeline: view();
-      animation-range: entry 10% entry 60%;
-    }
-  }
-}
+/* Scroll reveal for the section marker, driven by IntersectionObserver.
 
-@keyframes marker-in {
-  from {
+   The collapsed "from" state is scoped to `.js-marker-reveal`, a class the
+   chapter script adds only when it has actually taken over. So if the script
+   never runs (JS disabled, older browser without IntersectionObserver) or the
+   reader prefers reduced motion, the bar simply renders in its finished state.
+   The reveal can never leave a marker stuck half-drawn. */
+@media (prefers-reduced-motion: no-preference) {
+  .chapter.js-marker-reveal h2::before {
     transform: scaleX(0.12);
     opacity: 0.35;
+    transition: transform 600ms var(--ease), opacity 600ms var(--ease);
   }
-  to {
+
+  .chapter.js-marker-reveal h2.is-in-view::before {
     transform: scaleX(1);
     opacity: 1;
   }
