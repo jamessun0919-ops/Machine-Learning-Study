@@ -1,0 +1,27 @@
+---
+import katex from 'katex';
+
+interface Props {
+  formulas: string[];
+  keyStats: { label: string; value: string }[];
+}
+
+const { formulas, keyStats } = Astro.props;
+const renderedFormulas = formulas.map((f) =>
+  katex.renderToString(f, { throwOnError: false })
+);
+---
+<section class="summary-card">
+  <h2>學習摘要</h2>
+  <div class="summary-card__formulas">
+    {renderedFormulas.map((html) => <div class="katex-formula" set:html={html} />)}
+  </div>
+  <ul class="summary-card__stats">
+    {keyStats.map((stat) => (
+      <li>
+        <span class="summary-card__stat-label">{stat.label}</span>
+        <span class="summary-card__stat-value">{stat.value}</span>
+      </li>
+    ))}
+  </ul>
+</section>
