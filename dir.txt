@@ -1,24 +1,57 @@
-機器學習介紹
+【階段一：課程導覽】
+
+機器學習介紹（含全課程知識地圖）
 
 CRISP-DM 資料分析方法
 
+【階段二：方法論基礎】
+
+特徵工程與標準化
+
+訓練/測試切分與交叉驗證
+
+過擬合/欠擬合與偏差-變異數權衡
+
+【階段三：監督式學習－迴歸】
+
 Linear Regression(線性回歸)
-　SimpleLinear Regression（簡單線性回歸）
+　Simple Linear Regression（簡單線性回歸）
 　Multiple Linear Regression（多元線性回歸）
 　Polynomial Regression（多項式回歸）
+　Ridge Regression（Ridge 迴歸，正則化）
+　Lasso Regression（Lasso 迴歸，正則化）
 
 Logistic Regression（邏輯斯迴歸）
+
+【階段四：監督式學習－分類】
+
+KNN（K 最近鄰）
+
+Naive Bayes（樸素貝氏）
 
 Support Vector Machine（SVM）
 
 Decision Tree（決策樹）
 
-Naive Bayes（樸素貝氏）
-
-K-Means
+【階段五：集成方法】
 
 Ensemble Model
+　Bagging（Random Forest，隨機森林）
+　Boosting（AdaBoost / Gradient Boosting）
 
-Clustering
+【階段六：非監督式學習】
+
+PCA（主成分分析）
+
+Clustering（分群）
+　K-Means
+　Hierarchical Clustering（階層式分群）
+　DBSCAN
+
+【階段七：神經網路】
 
 神經網路
+
+【階段八：模型解釋】
+
+模型可解釋性

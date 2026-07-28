@@ -5,16 +5,31 @@
 
 ## 1. 專案背景與範圍拆分
 
-整體目標：建立一個互動式機器學習學習網站，涵蓋 `dir.txt` 列出的章節（機器學習介紹、CRISP-DM、
-Linear/Polynomial/Logistic Regression、SVM、Decision Tree、Naive Bayes、K-Means、Ensemble Model、
-Clustering、神經網路），從入門到進階，內容含簡介、分類方式、數學原理、範例、摘要資訊圖表、互動演示。
+整體目標：建立一個互動式機器學習學習網站，從入門到進階，內容含簡介、分類方式、數學原理、範例、
+適用情境與限制、評估指標、常見誤區、摘要資訊圖表、互動演示。完整章節清單與順序見 `dir.txt`
+（單一真實來源，經課程內容討論後定案為以下八個階段）：
+
+1. **課程導覽**：機器學習介紹（含全課程知識地圖）、CRISP-DM 資料分析方法
+2. **方法論基礎**：特徵工程與標準化、訓練/測試切分與交叉驗證、過擬合/欠擬合與偏差-變異數權衡
+3. **監督式學習－迴歸**：Linear Regression（Simple / Multiple / Polynomial / Ridge / Lasso 子項目）、
+   Logistic Regression
+4. **監督式學習－分類**：KNN、Naive Bayes、SVM、Decision Tree
+5. **集成方法**：Ensemble Model（Bagging・Random Forest ／ Boosting 子項目）
+6. **非監督式學習**：PCA、Clustering（K-Means・Hierarchical Clustering・DBSCAN 子項目）
+7. **神經網路**
+8. **模型解釋**：模型可解釋性
 
 因涵蓋章節多、每章互動需求不輕，決定拆成多個子專案：
 
 1. **本子專案**：網站骨架 + 一個 pilot 章節（Multiple Linear Regression），驗證架構、範本、互動元件、
    資料集載入流程。
-2. **後續子專案**：沿用本子專案驗證過的範本，逐一填入其餘章節內容。dir.txt 的章節順序尚未定案，
-   由獨立設定檔管理，不寫死在頁面範本或導覽元件中。
+2. **後續子專案**：沿用本子專案驗證過的範本，逐一填入其餘章節內容，依 `dir.txt` 的階段順序推進。
+
+**章節家族的分組原則**：只有當多個項目共用同一套數學核心、屬於「同一演算法的不同變體」時才合併成
+一個章節底下的子項目（如 Linear Regression 家族、Ensemble 的 Bagging/Boosting、Clustering 的
+K-Means/Hierarchical/DBSCAN）；若只是同屬一個學習典範但數學機制不同（如 KNN／SVM／Naive Bayes
+雖然都是分類法，但分別是距離基礎／邊界最佳化／機率模型），則維持獨立成章，避免把不相關的演算法
+硬湊在一起。
 
 ## 2. 全站互動需求（技術選型時已納入考量）
 
@@ -23,7 +38,7 @@ Clustering、神經網路），從入門到進階，內容含簡介、分類方�
 - 常見公開資料集切換（鳶尾花、50 Startups、Boston Housing 等，白名單制，不開放使用者上傳）
 - 每章節的摘要資訊圖表（infographic 性質，非即時運算）
 - 數學公式呈現（LaTeX 語法）
-- K-Means、Clustering、神經網路可能需要「逐步迭代動畫」（訓練過程視覺化）
+- Clustering（K-Means 等）、神經網路可能需要「逐步迭代動畫」（訓練過程視覺化）
 
 **設計原則（開發者明確要求）**：每個章節的互動元件是「預先設計好的展示」，不是開放式自由調參工具。
 資料集白名單、樣本數固定或分段選擇、參數組合為預設選項而非自由輸入。教學目的清楚展示概念優先於自由探索。
@@ -34,7 +49,7 @@ Clustering、神經網路），從入門到進階，內容含簡介、分類方�
 |---|---|---|
 | 網站框架 | Astro | 內容（文字/數學）用 Markdown/MDX 靜態渲染；互動圖表用 island 元件按需載入 JS；內容與互動分離清楚，非互動頁面載入快 |
 | 互動元件 | React（作為 Astro island） | 開發者已熟悉的生態，元件化管理圖表狀態 |
-| 圖表庫 | Plotly.js | 2D/3D 散布圖、回歸面/分類邊界、旋轉縮放皆內建，3D 需求集中在少數章節（Multiple Linear Regression、K-Means/Clustering，進階可選 SVM 核技巧、神經網路 loss surface） |
+| 圖表庫 | Plotly.js | 2D/3D 散布圖、回歸面/分類邊界、旋轉縮放皆內建，3D 需求集中在少數章節（Multiple Linear Regression、Clustering，進階可選 SVM 核技巧、神經網路 loss surface） |
 | 數學公式 | KaTeX | 渲染快、LaTeX 語法、Astro 整合方案成熟 |
 | 演算法運算 | 前端 JS/TS 自行實作（本 pilot 為 OLS 常態方程式） | 維持純靜態部署；不採用 Python 後端或 Pyodide（避免伺服器維運或首次載入過重） |
 | 部署 | GitHub Pages | 免費、純靜態，已確認足以支援所有 2D/3D 前端運算+渲染需求 |
@@ -73,7 +88,8 @@ Clustering、神經網路），從入門到進階，內容含簡介、分類方�
 ## 5. 全課程知識地圖（機器學習介紹總覽頁）
 
 大學課程視角補充項：在「機器學習介紹」章節頁面（全站總覽/入口頁），額外提供一張全課程的知識地圖，
-標示各章節演算法之間的關聯（例如：邏輯回歸是線性回歸的延伸、Ensemble 是多個 Decision Tree 的組合、
+標示各章節演算法之間的關聯（例如：Logistic Regression 是 Linear Regression 走向分類的橋樑、
+Ensemble 的 Random Forest 是由多個 Decision Tree 組成、PCA 常作為 Clustering 前的降維前處理、
 監督式 vs 非監督式的分類關係），讓學生在讀單一章節前後都能定位自己在整體課程中的位置。
 
 **範圍註記**：此功能屬於「機器學習介紹」章節的內容，不屬於本子專案的 pilot 章節（Multiple Linear
@@ -126,3 +142,5 @@ src/
 - 不做自由資料上傳或自由調參的通用互動工具
 - 不做中英雙語同步維護
 - 不採用 Python 後端或 Pyodide 運算方案
+- 課程內容討論階段曾提出但暫不加入的章節：機器學習倫理與偏見、強化學習概論（開發者明確表示暫緩，
+  非遺漏）
