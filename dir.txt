@@ -1,0 +1,24 @@
+機器學習介紹
+
+CRISP-DM 資料分析方法
+
+Linear Regression(線性回歸)
+　SimpleLinear Regression（簡單線性回歸）
+　Multiple Linear Regression（多元線性回歸）
+　Polynomial Regression（多項式回歸）
+
+Logistic Regression（邏輯斯迴歸）
+
+Support Vector Machine（SVM）
+
+Decision Tree（決策樹）
+
+Naive Bayes（樸素貝氏）
+
+K-Means
+
+Ensemble Model
+
+Clustering
+
+神經網路
