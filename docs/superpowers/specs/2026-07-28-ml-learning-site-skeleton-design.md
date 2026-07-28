@@ -95,7 +95,9 @@ src/
 ## 7. 部署與版控
 
 - 部署：GitHub Pages（純靜態），確認足以支援所有 3D 互動需求
-- 版控：專案目前尚未初始化 git repository，需與開發者確認是否要 `git init` 及目標遠端倉庫
+- 版控：已初始化 git repository，遠端倉庫為 https://github.com/jamessun0919-ops/Machine-Learning-Study
+  （`main` 分支）。`.agents/`、`.claude/`（taste-skill 本機安裝）排除在版控外，保留 `skills-lock.json`
+  供其他機器重新安裝
 
 ## 8. 明確排除範圍（YAGNI）
 
