@@ -11,7 +11,7 @@ const chapterById = new Map(chapters.map((c) => [c.id, c]));
   <Nav />
   <main class="home">
     <h1>機器學習互動學習網站</h1>
-    <p>從入門到進階，透過互動演示理解機器學習核心演算法。</p>
+    <p class="home__lead">從入門到進階，透過互動演示理解機器學習核心演算法。</p>
     <ul class="chapter-list">
       {chapterOrder.map((meta) => {
         const chapter = chapterById.get(meta.slug);

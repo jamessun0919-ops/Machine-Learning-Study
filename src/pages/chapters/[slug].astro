@@ -32,7 +32,9 @@ const { Content } = await render(chapter);
     {chapter.data.interactiveComponent === 'regression-scatter-3d' && (
       <section class="chapter__interactive">
         <h2>互動式操作與演示</h2>
-        <RegressionScatter3D client:only="react" />
+        <RegressionScatter3D client:only="react">
+          <div slot="fallback" class="regression-chart__skeleton">互動圖表載入中……</div>
+        </RegressionScatter3D>
       </section>
     )}
   </main>

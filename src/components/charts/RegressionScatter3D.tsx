@@ -4,6 +4,16 @@ import { startups, featurePresets, type FeaturePreset } from '../../lib/datasets
 import { fitLinearRegression, predict, rSquared, rmse } from '../../lib/regression';
 import { buildScatterPlaneData } from '../../lib/regressionPlaneData';
 
+// Keeps the 3D scene panes inside the page's dark palette instead of Plotly's
+// default light-grey walls.
+const axisStyle = {
+  color: '#8b93a7',
+  gridcolor: '#262a35',
+  zerolinecolor: '#333949',
+  backgroundcolor: '#0f1117',
+  showbackground: true,
+};
+
 function computeForPreset(preset: FeaturePreset) {
   const points = startups.map((row) => ({
     x1: row[preset.xKey],
@@ -43,6 +53,7 @@ export default function RegressionScatter3D() {
           </button>
         ))}
       </div>
+      <div className="regression-chart__frame">
       <Plot
         data={[
           {
@@ -73,10 +84,16 @@ export default function RegressionScatter3D() {
           paper_bgcolor: '#0f1117',
           plot_bgcolor: '#0f1117',
           font: { color: '#e4e6eb' },
+          hoverlabel: {
+            bgcolor: '#161922',
+            bordercolor: '#262a35',
+            font: { color: '#e4e6eb' },
+          },
+          legend: { bgcolor: 'rgba(0,0,0,0)' },
           scene: {
-            xaxis: { title: preset.xKey },
-            yaxis: { title: preset.yKey },
-            zaxis: { title: preset.targetKey },
+            xaxis: { title: preset.xKey, ...axisStyle },
+            yaxis: { title: preset.yKey, ...axisStyle },
+            zaxis: { title: preset.targetKey, ...axisStyle },
           },
           margin: { l: 0, r: 0, t: 20, b: 0 },
         }}
@@ -84,6 +101,7 @@ export default function RegressionScatter3D() {
         style={{ width: '100%', height: '480px' }}
         config={{ displaylogo: false }}
       />
+      </div>
       <dl className="regression-chart__stats">
         <div>
           <dt>R²</dt>

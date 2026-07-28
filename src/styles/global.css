@@ -1,4 +1,16 @@
+/* ---------------------------------------------------------------------------
+   Design tokens
+
+   Palette is LOCKED (brand). Only rhythm, type and motion are tuned here.
+   Shape rule (one documented system, applied everywhere):
+     surfaces (cards, wells, chart frame) = --radius-md
+     controls (buttons, tags)             = --radius-pill
+     hairlines / rules                    = square
+--------------------------------------------------------------------------- */
 :root {
+  color-scheme: dark;
+
+  /* Brand palette - do not change these values */
   --color-bg: #0f1117;
   --color-bg-elevated: #161922;
   --color-border: #262a35;
@@ -6,11 +18,62 @@
   --color-text-muted: #8b93a7;
   --color-accent: #5ee6d0;
   --color-accent-secondary: #7c5ee6;
-  --font-sans: -apple-system, "Segoe UI", "PingFang TC", "Noto Sans TC", sans-serif;
+
+  /* Derived surfaces - same hue family, no new brand colours */
+  --color-bg-sunken: #0b0d12;
+  --color-border-strong: #333949;
+  --accent-rgb: 94 230 208;
+  --accent-2-rgb: 124 94 230;
+
+  /* Type. System CJK stack: a Traditional-Chinese webfont would cost several MB
+     on a static host, and platform CJK faces are high quality. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text",
+    "Segoe UI", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "Cascadia Mono", Consolas,
+    "Liberation Mono", monospace;
+
+  --step--1: clamp(0.8125rem, 0.79rem + 0.12vw, 0.875rem);
+  --step-0: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+  --step-1: clamp(1.125rem, 1.08rem + 0.22vw, 1.25rem);
+  --step-2: clamp(1.375rem, 1.28rem + 0.45vw, 1.625rem);
+  --step-3: clamp(1.875rem, 1.6rem + 1.35vw, 2.75rem);
+
+  /* Space */
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+  --space-3xl: clamp(3rem, 2.25rem + 3vw, 5rem);
+
+  /* Shape */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 220ms;
+
+  /* Layout */
+  --content-width: 48rem;
+  --nav-height: 3.75rem;
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-padding-block-start: calc(var(--nav-height) + 1rem);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -18,102 +81,550 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
-  line-height: 1.7;
+  font-size: var(--step-0);
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
   color: var(--color-accent);
+  text-decoration-color: rgb(var(--accent-rgb) / 0.35);
+  text-underline-offset: 0.2em;
+  transition: color var(--dur) var(--ease),
+    text-decoration-color var(--dur) var(--ease);
 }
 
+a:hover {
+  text-decoration-color: currentColor;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+::selection {
+  background: rgb(var(--accent-rgb) / 0.25);
+  color: var(--color-text);
+}
+
+/* ---------------------------------------------------------------------------
+   Reading progress. Motivated: orientation inside a long nine-section chapter.
+   Pure CSS scroll-driven; collapses to invisible where unsupported.
+--------------------------------------------------------------------------- */
+.reading-progress {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 30;
+  inline-size: 100%;
+  block-size: 2px;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent),
+    var(--color-accent-secondary)
+  );
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reading-progress {
+      animation: progress-grow linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+}
+
+@keyframes progress-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Navigation - single line, 60px tall, horizontally scrollable link rail
+--------------------------------------------------------------------------- */
 .site-nav {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  background: rgb(15 17 23 / 0.82);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+@supports not (backdrop-filter: blur(12px)) {
+  .site-nav {
+    background: var(--color-bg-elevated);
+  }
+}
+
+.site-nav__inner {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding: 1rem 1.5rem;
-  background: var(--color-bg-elevated);
-  border-bottom: 1px solid var(--color-border);
+  gap: var(--space-lg);
+  min-block-size: var(--nav-height);
+  max-inline-size: var(--content-width);
+  margin-inline: auto;
+  padding-inline: var(--space-lg);
 }
 
 .site-nav__brand {
-  font-weight: bold;
+  flex: none;
+  font-size: var(--step--1);
+  font-weight: 650;
+  letter-spacing: 0.02em;
   text-decoration: none;
   color: var(--color-text);
+  transition: color var(--dur) var(--ease);
+}
+
+.site-nav__brand:hover {
+  color: var(--color-accent);
 }
 
 .site-nav ul {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  gap: var(--space-xs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.site-nav ul::-webkit-scrollbar {
+  display: none;
+}
+
+.site-nav ul a {
+  display: block;
+  white-space: nowrap;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+.site-nav ul a:hover {
+  color: var(--color-text);
+  background: rgb(255 255 255 / 0.05);
+}
+
+.site-nav ul a[aria-current='page'] {
+  color: var(--color-accent);
+  background: rgb(var(--accent-rgb) / 0.12);
+}
+
+/* ---------------------------------------------------------------------------
+   Page shells
+--------------------------------------------------------------------------- */
+.chapter,
+.home {
+  max-inline-size: var(--content-width);
+  margin-inline: auto;
+  padding: var(--space-2xl) var(--space-lg) var(--space-3xl);
+}
+
+.chapter h1,
+.home h1 {
+  margin: 0 0 var(--space-md);
+  font-size: var(--step-3);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  text-wrap: balance;
+}
+
+/* ---------------------------------------------------------------------------
+   Chapter prose
+--------------------------------------------------------------------------- */
+.chapter {
+  overflow-wrap: break-word;
+}
+
+.chapter h2 {
+  margin: var(--space-3xl) 0 var(--space-md);
+  font-size: var(--step-2);
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.chapter h1 + h2 {
+  margin-block-start: var(--space-xl);
+}
+
+/* Shared section marker: the one recurring motif that signals a new section */
+.chapter h2::before {
+  content: '';
+  display: block;
+  inline-size: 2.25rem;
+  block-size: 2px;
+  margin-block-end: var(--space-sm);
+  border-radius: 2px;
+  transform-origin: 0 50%;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent),
+    var(--color-accent-secondary)
+  );
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .chapter h2::before {
+      animation: marker-in linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 60%;
+    }
+  }
+}
+
+@keyframes marker-in {
+  from {
+    transform: scaleX(0.12);
+    opacity: 0.35;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+.chapter h3 {
+  margin: var(--space-xl) 0 var(--space-xs);
+  font-size: var(--step-1);
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.chapter p {
+  margin-block: 0 var(--space-md);
+}
+
+.chapter strong {
+  font-weight: 650;
+  color: #fff;
+}
+
+.chapter > ul,
+.chapter > ol {
+  margin-block: 0 var(--space-md);
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.chapter > ul > li,
+.chapter > ol > li {
+  position: relative;
+  padding-inline-start: 1.5rem;
+  margin-block: var(--space-xs);
+}
+
+.chapter > ul > li::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.85em;
+  inline-size: 0.6rem;
+  block-size: 2px;
+  border-radius: 2px;
+  background: var(--color-accent);
+  opacity: 0.7;
+}
+
+.chapter > ol {
+  counter-reset: prose-list;
+}
+
+.chapter > ol > li::before {
+  counter-increment: prose-list;
+  content: counter(prose-list);
+  position: absolute;
+  inset-inline-start: 0;
+  font-family: var(--font-mono);
+  font-size: var(--step--1);
+  color: var(--color-accent);
+}
+
+/* Display maths gets its own sunken well so 數學原理 stays scannable */
+.chapter .katex-display {
+  margin-block: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* ---------------------------------------------------------------------------
+   Summary card + interactive section break the prose measure on wide screens,
+   which separates "read this" from "use this" without moving anything.
+--------------------------------------------------------------------------- */
+.summary-card,
+.chapter__interactive {
+  margin-block-start: var(--space-3xl);
+}
+
+@media (min-width: 60rem) {
+  .summary-card,
+  .chapter__interactive {
+    margin-inline: -3rem;
+  }
+}
+
+.summary-card {
+  padding: var(--space-xl) var(--space-lg);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 18px 40px -28px rgb(0 0 0 / 0.9);
+}
+
+.summary-card h2,
+.chapter__interactive h2 {
+  margin-block-start: 0;
+}
+
+.summary-card__formulas {
+  display: grid;
+  gap: var(--space-sm);
+  margin-block-end: var(--space-lg);
+}
+
+.katex-formula {
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.summary-card__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--space-md) var(--space-lg);
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.chapter,
-.home {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
-}
-
-.summary-card {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-}
-
-.summary-card__stats {
-  list-style: none;
-  display: flex;
-  gap: 1.5rem;
-  padding: 0;
-  margin-top: 1rem;
-}
-
 .summary-card__stats li {
   display: flex;
   flex-direction: column;
+  gap: var(--space-2xs);
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--color-border-strong);
 }
 
 .summary-card__stat-label {
+  font-size: var(--step--1);
+  line-height: 1.5;
   color: var(--color-text-muted);
-  font-size: 0.85rem;
 }
 
+.summary-card__stat-value {
+  font-weight: 650;
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+/* ---------------------------------------------------------------------------
+   Interactive regression chart
+--------------------------------------------------------------------------- */
 .regression-chart__controls {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
   flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-block-end: var(--space-md);
 }
 
 .regression-chart__controls button {
+  padding: 0.45rem 0.95rem;
+  font: inherit;
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
-  color: var(--color-text);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
+  transition: color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.regression-chart__controls button:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.regression-chart__controls button:active {
+  transform: translateY(1px);
 }
 
 .regression-chart__controls button.is-active {
-  border-color: var(--color-accent);
   color: var(--color-accent);
+  border-color: rgb(var(--accent-rgb) / 0.55);
+  background: rgb(var(--accent-rgb) / 0.12);
+}
+
+.regression-chart__frame,
+.regression-chart__skeleton {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.regression-chart__skeleton {
+  display: grid;
+  place-items: center;
+  min-block-size: 480px;
+  color: var(--color-text-muted);
+  font-size: var(--step--1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .regression-chart__skeleton {
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 .regression-chart__stats {
-  display: flex;
-  gap: 2rem;
-  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-md) var(--space-lg);
+  margin-block: var(--space-md) 0;
+}
+
+.regression-chart__stats > div {
+  padding-inline-start: var(--space-md);
+  border-inline-start: 2px solid var(--color-border-strong);
+}
+
+.regression-chart__stats dt {
+  font-size: var(--step--1);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.regression-chart__stats dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--step-1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  color: var(--color-text);
+}
+
+/* ---------------------------------------------------------------------------
+   Home
+--------------------------------------------------------------------------- */
+.home__lead {
+  max-inline-size: 34rem;
+  margin: 0 0 var(--space-2xl);
+  font-size: var(--step-1);
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  text-wrap: pretty;
 }
 
 .chapter-list {
+  display: grid;
+  gap: var(--space-sm);
   list-style: none;
+  margin: 0;
   padding: 0;
 }
 
-.chapter-list li {
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--color-border);
+.chapter-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-weight: 650;
+  text-decoration: none;
+  transition: border-color var(--dur) var(--ease),
+    transform var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+
+.chapter-list a::after {
+  content: '\2192';
+  flex: none;
+  color: var(--color-accent);
+  transition: transform var(--dur) var(--ease);
+}
+
+.chapter-list a:hover {
+  border-color: rgb(var(--accent-rgb) / 0.45);
+  transform: translateY(-2px);
+}
+
+.chapter-list a:hover::after {
+  transform: translateX(4px);
+}
+
+.chapter-list a:active {
+  transform: translateY(0);
+}
+
+/* ---------------------------------------------------------------------------
+   Entry cascade - runs once on load, never while reading
+--------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .chapter > h1,
+  .home > h1,
+  .home__lead,
+  .chapter-list {
+    animation: rise-in 520ms var(--ease) both;
+  }
+
+  .home__lead {
+    animation-delay: 70ms;
+  }
+
+  .chapter-list {
+    animation-delay: 140ms;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
