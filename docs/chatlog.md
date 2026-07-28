@@ -187,3 +187,98 @@ Agent：確認會在完成後回報。
 開發者：「需要結束當前階段工作，未完成工作請紀錄並列為下次工作項目」
 
 Agent：檢查發現 Task 10 的背景 subagent 已無 active task 但尚未產生新 commit 或更新 report（`client:only` 修法尚未實際套用到檔案），worktree 內留有未 commit 的進行中變更。確認無殘留本機測試 server，將已完成的 commit（Task 1-9）push 至遠端 `worktree-ml-site-skeleton-pilot` 分支備份，撰寫工作日誌 `docs/worklog.md`、對話紀錄 `docs/chatlog.md`、交接文件 `docs/handover.md`，記錄 Task 10 未完成狀態與下一步行動。
+
+## 2026-07-28（第 2 個工作階段）
+
+### 段落一：開場與現況核對
+
+開發者：「晚安，請閱讀交接文檔及工作規則後我討論，開始本階段工作」
+
+Agent：讀取 `docs/handover.md`、`docs/worklog.md`（僅第 1 階段區間），並實際檢查 worktree `git status`，確認 `src/pages/index.astro` 已修改、`src/pages/chapters/[slug].astro` 為新檔案但第 42 行仍是 `client:load`（修法尚未套用），與交接文件記載一致。提出下一步計畫並詢問是否直接套用修法。
+
+### 段落二：發現交接文件的「標準解法」未經實證
+
+開發者：「請先使用未完成的方式繼續執行」（要求沿用上一階段的 subagent-driven-development 流程繼續）
+
+Agent：呼叫 subagent-driven-development skill 繼續執行 Task 10，讀取上一階段 implementer 遺留但未被讀取的 `task-10-report.md`，發現該 subagent 其實已回報 **BLOCKED**：真正 root cause 是 `react-plotly.js` 編譯後對 `plotly.js/dist/plotly`（無副檔名）的 import，被 Node 嚴格 ESM 解析器拒絕；implementer 曾測試過 `client:only="react"` **但是跟 `React.lazy`/`Suspense` 包裝一起測試**，結果因為 `[slug].astro` 用的是動態查找表（`Record` lookup map）寫法，導致 Astro 編譯器無法靜態辨識 `client:only` 元件，出現另一個錯誤（`NoMatchingImport`）。也就是說上一階段交接文件寫的「標準解法」（單純把 `client:load` 換成 `client:only`）實際上從未被單獨驗證過。
+
+Agent 提出三個修法選項並說明侵入程度：
+- A：把動態查找表改成明確條件式 + 字面引用 `RegressionScatter3D`（只動 Task 10 檔案，建議先試）
+- B：換掉 `plotly.js` 為 `plotly.js-dist-min`（會動到 Task 9 檔案與相依套件）
+- C：`RegressionScatter3D.tsx` 自行 `useEffect` + 動態 `import()`（重寫 Task 9 元件載入方式）
+
+開發者：「先測試Ａ方法」
+
+### 段落三：Option A 驗證與瀏覽器確認
+
+Agent 派工 implementer（sonnet）套用 Option A（拿掉查找表，改字面 JSX + `client:only="react"`），確認 `npm run build` 成功、`npm run dev` 章節頁回 HTTP 200（原本 500）。
+
+開發者：「請啟動ＳＥＲＶＥＲ讓我檢查」
+
+Agent 啟動 dev server（daemon 模式），列出九項檢查重點請開發者在瀏覽器確認。
+
+開發者：「以上驗證項目均正確，請進續進行 網路連線已經恢復，請繼續工作」
+
+Agent 停止 dev server、commit（訊息載明 `client:load`→`client:only` 偏離原因）、產生 review package、派 task reviewer（sonnet）審查。
+
+### 段落四：Task 10 審查發現與 dir.txt 關聯釐清
+
+Task reviewer：整體 Approved，但發現一項 Important——`src/pages/index.astro` 直接用 `getCollection('chapters')` 原始順序，沒有像 `Nav.astro` 一樣從 `src/config/chapters.ts` 的 `chapterOrder` 取得順序（目前單章節看不出差異，未來加第二章節會排序不一致）。
+
+開發者看到 IDE 開啟了 `dir.txt`，提問：「前一階段已經將各章節順序定案，並修改於dir.txt檔中，跟你提出的這個問題是否相關？」
+
+Agent 說明：`dir.txt` 是人類決策層的課程地圖，不會被程式碼直接讀取；`src/config/chapters.ts` 才是理論上該對齊 `dir.txt` 的執行層設定檔；審查發現的問題是 `index.astro` 沒有像 `Nav.astro` 一樣讀取 `chapters.ts`，跟 `dir.txt` 本身無關，是同一條排序鏈上更底層的環節。
+
+開發者：「了解，請現在修改」
+
+Agent 用 SendMessage 恢復原本的 implementer subagent，修正 `index.astro` 比照 `Nav.astro` 寫法讀取 `chapterOrder`，commit 後派 scoped re-review（haiku），確認修正到位（re-reviewer 因 scope 限制沒讀 `Nav.astro`，但 Agent 本身在對話稍早已讀過該檔案，直接確認兩者寫法完全一致）。Task 10 標記完成。
+
+### 段落五：Task 11 視覺打磨
+
+開發者：「繼續執行task11」
+
+Agent 讀取 Task 11 brief（呼叫 `design-taste-frontend` skill 做視覺打磨），發現該 skill 套件只安裝在主倉庫根目錄 `.agents/skills/`（gitignore），worktree 內沒有，先複製一份進 worktree。派 implementer（opus）執行，完成後 reviewer（opus）審查 Approved（12 項 Minor 已記錄延後）。
+
+Agent 啟動 dev server 請開發者檢查，並列出審查員點出兩項需肉眼確認的風險（3D 圖表骨架載入閃爍/modebar 裁切、捲動漸入強調線動效）。
+
+### 段落六：視覺驗證疑問與骨架效果澄清
+
+開發者提供截圖回報：提示框沒裁切、但強調線只看到靜態出現沒看到長出來效果、骨架閃爍完全沒看到，並詢問是否為深色底色或瀏覽器設定造成、原因為何。
+
+Agent 說明：非深色模式問題（深色風格是設計本身）；強調線用的 `animation-timeline: view()` 目前只有 Chrome/Edge 115+ 支援，其餘瀏覽器會優雅降級成靜態顯示；骨架閃爍在本機 localhost 因為零延遲，時間可能只有幾十毫秒，人眼難以察覺，建議用 DevTools 網路節流（Slow 3G）測試。詢問開發者測試瀏覽器種類、並請嘗試節流方法。
+
+開發者回覆兩點決定：
+1. 骨架閃爍如果真的只在極短時間顯示、缺乏設計必要性——反問這個設計是否用來減少載入等候不適，如果載入已經很快是否不需要
+2. 捲動漸入效果如果不能在多數瀏覽器正常生效，應直接改用其他效果，不需要找程式碼問題，並要求「如果有不清楚地方請與我詢問」
+
+Agent 回覆：骨架閃爍除了減少等候不適外，還有「預留版面空間避免 CLS 跳動」的功能，即使載入很快也持續運作，建議保留不動；並就捲動漸入效果的替代方案用 AskUserQuestion 詢問：(a) 拿掉動畫只留靜態線，或 (b) 改用 JavaScript IntersectionObserver 重做同樣效果。
+
+開發者：「用ＪＳ做同樣效果讓我看看，骨架閃爍依建議保留」
+
+### 段落七：IntersectionObserver 改寫與再驗證
+
+Agent 派原本的 implementer subagent（沿用既有上下文）改寫：拿掉 `animation-timeline: view()` 與 `marker-in` keyframes，改用 vanilla `IntersectionObserver`（`.js-marker-reveal`/`.is-in-view` class 切換 + CSS `transition`），保留 no-JS/reduced-motion 優雅降級；script 放在 `[slug].astro`（涵蓋所有未來章節頁）。implementer 額外主動回報：`.reading-progress`（頂部閱讀進度條）用的 `animation-timeline: scroll(root block)` 是同一種相容性限制，本次修法範圍外未處理。
+
+Reviewer（sonnet）審查 Approved（2 項 Minor 延後），並把 `.reading-progress` 議題明確標記給 controller 留意。Agent commit 後，向開發者提出是否要一併處理 `.reading-progress`（尚待回覆），並詢問是否要啟動 server 檢查。
+
+開發者：「請啟動ＳＥＲＶＥＲ讓我檢查」
+
+Agent 啟動 dev server，請開發者確認捲動漸入效果。
+
+### 段落八：視覺細節微調（寬度與速度）
+
+開發者回報：強調線有出現長出來的效果，但線太短、動畫時間太短特意留意才看得出來，要求「調整強調線的長度跟下方的文字長度一致，並降低『長出來』的速度（先將速度降低至1/2測試)」。
+
+Agent 判斷屬於單一檔案、明確數值調整的小改動，未派 subagent、直接在 controller 端修改 `global.css`：
+- `.chapter h2` 加 `inline-size: fit-content`，`::before` 的 `inline-size` 從固定 `2.25rem` 改為 `100%`（線寬跟隨標題文字實際寬度）
+- 動畫時間 `600ms` → `1200ms`（減速一半）
+
+驗證 `npx astro check`/`npm run build` 皆成功，啟動 dev server 請開發者確認。
+
+開發者：「強調線寬度正確對期 動畫時間請再調整成1800ms」
+
+Agent 調整為 `1800ms`，重啟 dev server。
+
+開發者：「目前改動效果均良好，請記錄下次工作仍須調整顯示版面問題：3D圖的預設座標軸固定、3D圖外框長寬需要放大 請結束本階段工作」
+
+Agent commit 最終微調（`9c57fe1`），在 SDD ledger 記錄 3D 圖表待辦事項供下次接手，停止本機 dev server 並確認無殘留（`astro dev status`／`netstat` 檢查 4320-4329 埠皆無殘留），push worktree 分支至遠端，準備撰寫工作日誌、交接文件。

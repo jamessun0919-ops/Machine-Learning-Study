@@ -1,6 +1,6 @@
 # 交接文件 Handover
 
-> 最後更新：2026-07-28（第 1 個工作階段結束）
+> 最後更新：2026-07-28（第 2 個工作階段結束）
 
 ## 專案目標 (Project Goal)
 
@@ -8,57 +8,42 @@
 
 ## 已完成進度 (Completed)
 
-- 設計文件：`docs/superpowers/specs/2026-07-28-ml-learning-site-skeleton-design.md`（main 分支）
-- 章節路線圖：`dir.txt`（main 分支，八階段課程地圖，含子項目分組原則）
-- 實作計畫：`docs/superpowers/plans/2026-07-28-ml-site-skeleton-pilot-chapter.md`（main 分支，12 個任務）
-- Git/worktree：主倉庫 `https://github.com/jamessun0919-ops/Machine-Learning-Study`（`main`），實作在 worktree 分支 `worktree-ml-site-skeleton-pilot`（已 push 到遠端備份），本機路徑：
+- Git/worktree：主倉庫 `https://github.com/jamessun0919-ops/Machine-Learning-Study`（`main`），實作在 worktree 分支 `worktree-ml-site-skeleton-pilot`（已 push 到遠端），本機路徑：
   `C:\Users\User\Desktop\Machine Learning Study\.claude\worktrees\ml-site-skeleton-pilot`
-- **Task 1-9 全部完成，已通過 task reviewer 審查（無 Critical/Important 遺留問題），最新 commit `795d77c`（含 Task 1-9 + package-lock.json 修復）加上 Task 7-9 的三個後續 commit（`9ea300f`、`d93e980`、`2017ae0`）**：
-  1. Astro + React + TypeScript 專案骨架，KaTeX/remark-math/rehype-katex 設定
-  2. 深色科技風主題（`src/styles/global.css`）、`BaseLayout.astro`、`Nav.astro`、`src/config/chapters.ts`
-  3. `src/content.config.ts`（Astro 7.1.4 Content Layer API，`glob` loader，entries 用 `.id`）
-  4. `src/lib/regression.ts`（OLS 常態方程式，TDD，8/8 測試）
-  5. `src/lib/regressionPlaneData.ts`（3D 散布圖/回歸平面資料轉換，TDD，2/2 測試）
-  6. `src/data/50-startups.json` + `src/lib/datasets.ts`（真實資料，來源 `Avik-Jain/100-Days-Of-ML-Code`，R&D/Profit 相關係數 0.9729，已獨立驗證）
-  7. `src/content/chapters/multiple-linear-regression.md`（繁體中文章節內容）
-  8. `src/components/ChapterSummaryCard.astro`（伺服器端 KaTeX 渲染）
-  9. `src/components/charts/RegressionScatter3D.tsx`（Plotly.js 3D 散布圖+回歸平面，3 組預設特徵組合切換）
+- **Task 1-11 全部完成並通過 task reviewer 審查**，最新 commit `9c57fe1`。本階段（第 2 階段）新增/變更的 commit：
+  - `eb12a59` Task 10 收尾：`src/pages/index.astro` 改為讀取 `src/config/chapters.ts` 的 `chapterOrder`（跟 `Nav.astro` 對齊）
+  - `e0d01b8` Task 11：套用 `design-taste-frontend` skill 完成視覺打磨（排版節奏/間距/動效/字體層級），reviewer Approved（12 項 Minor 已記錄延後）
+  - `cdd27d7` 把 `.chapter h2::before` 的捲動漸入效果從 CSS `animation-timeline: view()`（僅 Chrome/Edge 115+ 支援）改成 vanilla JavaScript `IntersectionObserver`（跨瀏覽器），reviewer Approved
+  - `9c57fe1` 依開發者實際瀏覽器回饋微調：強調線寬度改為對齊標題文字寬度、動效時間依序調整為 1800ms
+- Task 10 的完整診斷過程：上一階段交接文件記載的「標準解法」（單純把 `client:load` 換成 `client:only`）從未被完整驗證；本階段重新診斷發現真正需要的修法是「拿掉 `Record` 動態查找表、改成字面 JSX 直接引用 `RegressionScatter3D` + `client:only="react"`」（詳見 worktree 內 `.superpowers/sdd/2026-07-28-ml-site-skeleton-pilot-chapter/task-10-report.md`）
+- SDD ledger（`.superpowers/sdd/2026-07-28-ml-site-skeleton-pilot-chapter/progress.md`，worktree 內）記錄 Task 1-11 完整審查歷程，包含所有延後處理的 Minor 發現
 
 ## 目前的瓶頸或停頓點 (Current Blocker/Status)
 
-**Task 10（章節頁面範本與首頁組裝）未完成，卡在一個已知且已有解法的 build 錯誤：**
+沒有阻塞性問題。Task 1-11 功能正確且已通過開發者實際瀏覽器驗證。**有兩項開發者明確要求記錄、下次處理的視覺待辦事項**（尚未討論具體實作方式）：
 
-- 問題：`npm run build` 在建置 `/chapters/multiple-linear-regression/` 頁面時失敗。根因是 `react-plotly.js` 編譯後對 `plotly.js/dist/plotly` 的 extensionless import，在 Astro SSR（Node 嚴格 ESM 解析）階段被拒絕。`index.astro`（不含互動元件）建置正常，問題僅出在含 `RegressionScatter3D` island 的頁面。
-- **已判斷的標準解法**：把 `src/pages/chapters/[slug].astro` 裡互動元件的掛載方式從
-  ```astro
-  <InteractiveComponent client:load />
-  ```
-  改成
-  ```astro
-  <InteractiveComponent client:only="react" />
-  ```
-  這會讓該元件完全跳過伺服器端渲染（只在瀏覽器端掛載），避開 Node 端對 `plotly.js` 的 import 解析問題。這是 Astro 官方對「瀏覽器限定函式庫（canvas/WebGL/圖表庫）在 SSR 框架下」的標準寫法，不是臆測性修法。
-- **目前 worktree 內的實際檔案狀態**（尚未 commit）：
-  - `src/pages/index.astro`：已修改為完整版本（讀取 chapters collection、渲染章節清單），內容正確
-  - `src/pages/chapters/[slug].astro`：新檔案已存在，但**內容仍是 `client:load`（修法尚未套用）**，因此目前這個檔案存在的話 `npm run build` 會失敗
-  - 已指示負責 Task 10 的 implementer subagent（agent id `a069be2accddccfb1`）套用上述修法並重新驗證，但該 subagent 在完成回報前，工作階段就被要求結束——**修法是否已實際套用、build 是否已成功，目前未知，需要下一階段重新確認**
+1. **3D 迴歸圖表座標軸需要固定**：`src/components/charts/RegressionScatter3D.tsx` 目前三個預設特徵組合切換時，座標軸範圍會各自根據資料自動縮放（`buildScatterPlaneData` 的 grid 邊界跟著該特徵組合的 min/max 走），開發者希望改成固定/一致的座標軸範圍。**尚未討論**：固定範圍要取三組合的聯集、還是給每個特徵各自的固定值、或是其他方式。
+2. **3D 圖表外框需要放大**：目前 `.regression-chart__frame` 高度固定 480px（見 `global.css`），開發者反映長寬都需要放大，**尚未指定目標尺寸**。
+
+另有一項**尚未決定是否處理**的次要發現：`.reading-progress`（頂部閱讀進度條，`global.css:117-141` 一帶）用的 `animation-timeline: scroll(root block)` 跟本階段修掉的強調線效果是同一種 Chromium-only 相容性問題（Firefox/Safari 會直接看不到進度條，但不會報錯或壞版面）。是否要比照強調線的做法也改成 JS 版本，待開發者決定。
 
 ## 下一步行動 (Next Steps)
 
-1. 進入 worktree（`C:\Users\User\Desktop\Machine Learning Study\.claude\worktrees\ml-site-skeleton-pilot`，分支 `worktree-ml-site-skeleton-pilot`），檢查 `git status` 確認上述未 commit 檔案是否還在、內容是否已是 `client:only="react"` 版本
-2. 若修法尚未套用：手動或重新派 subagent 套用上述修法，執行 `npm run build` 確認成功產出 `dist/index.html` 與 `dist/chapters/multiple-linear-regression/index.html`
-3. Build 成功後，仍需**真人在瀏覽器實際打開頁面確認**：3D 圖表能旋轉/縮放、三個預設特徵組合按鈕能正確切換平面與 R²/RMSE 數值、KaTeX 數學公式正確渲染（agent 無法在此環境視覺驗證這件事）
-4. 確認無誤後 commit（訊息需註明 `client:load`→`client:only="react"` 的偏離原因），跑 task reviewer 審查此 diff
-5. Task 10 審查通過後，依原計畫繼續 Task 11（design-taste-frontend 視覺打磨）、Task 12（GitHub Pages 部署）
-6. 全部 12 個任務完成、最終整體審查（final code review）通過後，依 finishing-a-development-branch skill 決定 worktree 分支要 merge 進 main 或建 PR
+1. 跟開發者討論「3D 圖表座標軸固定」的具體規則（聯集範圍？還是別的方式？）與「外框放大」的目標尺寸，確認後再派 implementer 修改
+2. 詢問開發者 `.reading-progress` 的 Chromium-only 效果要不要一併改成 JS 版本
+3. 上述視覺調整完成、開發者驗證通過後，繼續 **Task 12**（GitHub Pages 部署）：`astro.config.mjs` 加 `site`/`base`、建立 `.github/workflows/deploy.yml`、啟用 GitHub Pages（Source: GitHub Actions）、push 後用 `gh run watch` 驗證部署成功
+4. Task 12 完成後，依原計畫進行 12 個任務的最終整體審查（final code review），通過後依 finishing-a-development-branch skill 決定 worktree 分支要 merge 進 main 或建 PR
+5. 進入下一子專案（逐章節填入 `dir.txt` 其餘章節內容）前，先確認這個 pilot 章節的骨架架構是否需要根據本階段的經驗（例如 `client:only` 寫法、IntersectionObserver 捲動效果）調整成更明確的「未來章節共用範本」文件
 
 ## 關鍵設定與規則 (Key Context & Rules)
 
-- **技術棧**：Astro（Content Layer API，`src/content.config.ts` + `glob` loader）、React island（僅用於需要互動的元件，`client:only="react"` 用於含 Plotly 的元件、其餘用 `client:load`）、TypeScript、Plotly.js（`react-plotly.js`）、KaTeX（markdown 用 `remark-math`/`rehype-katex`，結構化摘要卡用 `katex.renderToString` 伺服器端渲染）、Vitest、GitHub Pages（純靜態，無後端）
+- **技術棧**：Astro（Content Layer API）、React island（`client:only="react"` 用於含 Plotly 等瀏覽器限定函式庫的元件，且必須是**字面 JSX 直接引用**，不能透過動態查找表/變數間接引用——這是本階段 Task 10 踩過的坑，Astro 編譯器需要靜態可分析的元件引用才能正確排除 SSR）、TypeScript、Plotly.js、KaTeX、Vitest、GitHub Pages（純靜態，無後端）
 - **互動元件原則**：預先設計好的展示，非自由調參工具；資料集白名單制
-- **視覺風格**：深色科技風（`--color-bg:#0f1117`、`--color-accent:#5ee6d0`、`--color-accent-secondary:#7c5ee6`），Task 11 才套用第三方 skill `design-taste-frontend`（已安裝於 `.agents/skills/`，需在 worktree 內才看得到，main 分支已 gitignore）
+- **視覺風格**：深色科技風（`--color-bg:#0f1117`、`--color-accent:#5ee6d0`、`--color-accent-secondary:#7c5ee6`，`#7c5ee6` 對背景色對比度僅 4.16:1，未達 WCAG AA 文字標準，目前只用在裝飾性漸層線條，**不可用於文字顏色**）
+- **捲動動效原則**：`animation-timeline: view()`/`scroll()` 等 CSS scroll-driven animation 目前僅 Chrome/Edge 115+ 支援，本專案已決定**優先用 vanilla JavaScript `IntersectionObserver`** 達成跨瀏覽器一致的捲動觸發效果，而非依賴新版 CSS API（見 `src/pages/chapters/[slug].astro` 內的 `<script is:inline>` 寫法）
+- **`design-taste-frontend` skill 套件位置**：只安裝在主倉庫根目錄 `.agents/skills/`（gitignore），**worktree 建立時不會自動帶過去**，若下次需要在 worktree 內用到任何 taste-skill 系列 skill，需要先手動 `cp -r` 複製過去
 - **章節頁面固定九區塊**：簡介、分類方式、數學原理、運用範例、適用情境與限制、評估指標、常見誤區、學習摘要資訊圖表、互動式操作與演示
 - **測驗題目**：明確不做成網頁功能，開發者另行以口頭/紙本試卷測試
-- **章節排序來源**：`dir.txt`（main 分支）為唯一真實來源，八階段；`src/config/chapters.ts` 集中管理排序與跨章節關聯中繼資料（供未來知識地圖使用）
-- **SDD ledger**：`.superpowers/sdd/2026-07-28-ml-site-skeleton-pilot-chapter/progress.md`（worktree 內），記錄每個 task 的完成狀態與審查結果，下次接手前應先讀這份 ledger 確認哪些 task 真的完成、不要重複派工
+- **章節排序來源**：`dir.txt`（main 分支）為唯一真實來源（人類決策層，不被程式碼讀取）；`src/config/chapters.ts` 才是程式碼實際讀取的排序設定檔，`Nav.astro` 與 `index.astro` 都必須從這裡讀取順序，不可各自用 `getCollection` 原始順序
+- **SDD ledger**：`.superpowers/sdd/2026-07-28-ml-site-skeleton-pilot-chapter/progress.md`（worktree 內），下次接手前應先讀這份 ledger 確認哪些 task 真的完成、不要重複派工；已記錄本階段所有 Minor 延後項目與待辦事項
 - **對話語言**：與開發者對話一律使用繁體中文

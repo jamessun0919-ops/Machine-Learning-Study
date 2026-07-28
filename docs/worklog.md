@@ -34,3 +34,28 @@
 - 下一階段開工請先讀交接文件 `docs/handover.md`
 
 **本機測試用 server：** 本階段結束前已確認關閉，`netstat` 檢查 4321 等常見開發用埠皆無 LISTEN 中的程序，`astro dev status` 顯示無執行中的 dev server。未發現其他與本專案相關的殘留 server。
+
+## 2026-07-28（第 2 個工作階段）
+
+**當日工作內容：**
+- 用 superpowers:subagent-driven-development 接續完成 Task 10（章節頁面範本與首頁組裝）、Task 11（design-taste-frontend 視覺打磨），並依開發者實際瀏覽器驗證回饋做多輪細部調整
+
+**完成項目：**
+- Task 10：發現上一階段交接文件記載的「標準解法」（`client:load`→`client:only`）從未被單獨驗證過，重新診斷後採用「拿掉動態查找表、改字面 JSX 引用 + `client:only="react"`」的方案（Option A），`npm run build` 成功、開發者瀏覽器驗證通過、task reviewer 審查通過
+- Task 10 審查發現 `index.astro` 排序未對齊 `src/config/chapters.ts`（跟 `Nav.astro` 不一致），已修正並確認一致，Task 10 完整結案
+- Task 11：套用 `design-taste-frontend` skill 完成視覺打磨（deep-dive 打磨排版節奏/間距/動效/字體層級），reviewer 審查 Approved（12 項 Minor 延後處理）
+- 開發者瀏覽器驗證後回報捲動漸入強調線動效在其瀏覽器無效，追查為 `animation-timeline: view()` 目前僅 Chrome/Edge 115+ 支援，依開發者指示改用 vanilla JavaScript `IntersectionObserver` 重做（跨瀏覽器相容），reviewer 審查 Approved
+- 依開發者多輪視覺回饋微調：強調線寬度改為對齊標題文字寬度（`inline-size: fit-content`/`100%`）、動效時間依序調整 600ms→1200ms→1800ms，最終開發者確認效果良好
+- 全部變更已 commit 並 push 至 `worktree-ml-site-skeleton-pilot` 遠端分支
+
+**遇到的瓶頸：**
+- 上一階段交接文件記載的「已判斷標準解法」實際上未被完整驗證，本階段花了一輪討論重新診斷才找到真正可行的修法，提醒未來交接文件的「解法」應註明是否已實際跑通
+- `.reading-progress`（頂部閱讀進度條）也用了同一種 `animation-timeline: scroll()` Chromium-only 效果，本階段刻意排除在修法範圍外，開發者尚未決定是否要一併處理
+
+**開發者交代備忘事項：**
+- 下次工作待處理：3D 迴歸圖表（`RegressionScatter3D.tsx`）的座標軸範圍需要固定（目前隨預設特徵組合自動縮放）、圖表外框長寬需要放大（尚未指定目標尺寸，需先討論）
+- `.reading-progress` 的跨瀏覽器相容性問題是否要一併修，待開發者決定
+- 剩餘計畫任務：Task 12（GitHub Pages 部署）尚未開始
+- 下一階段開工請先讀交接文件 `docs/handover.md`
+
+**本機測試用 server：** 本階段結束前已確認關閉（`astro dev stop` + `astro dev status` 顯示無執行中的 dev server），`netstat` 檢查 4320-4329 埠皆無殘留。未發現其他與本專案相關的殘留 server。
