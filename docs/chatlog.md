@@ -282,3 +282,79 @@ Agent 調整為 `1800ms`，重啟 dev server。
 開發者：「目前改動效果均良好，請記錄下次工作仍須調整顯示版面問題：3D圖的預設座標軸固定、3D圖外框長寬需要放大 請結束本階段工作」
 
 Agent commit 最終微調（`9c57fe1`），在 SDD ledger 記錄 3D 圖表待辦事項供下次接手，停止本機 dev server 並確認無殘留（`astro dev status`／`netstat` 檢查 4320-4329 埠皆無殘留），push worktree 分支至遠端，準備撰寫工作日誌、交接文件。
+
+## 2026-07-29（第 3 個工作階段）
+
+### 段落一：開工前置與待辦事項確認
+
+開發者：「早安，請閱讀交接文檔及工作規則後與我討論，開始本階段工作」
+
+Agent 讀取 `docs/handover.md` 與最近一次工作日誌（2026-07-28 第 2 階段），彙整三項交接文件記載「尚未討論」的待辦事項，逐一提出選項詢問開發者：
+1. 3D 迴歸圖表座標軸固定方式（聯集範圍／各自固定值／其他）
+2. 圖表外框放大目標尺寸
+3. `.reading-progress` 頂部進度條是否要比照上階段的強調線，一併改成跨瀏覽器相容的 JS 版本
+
+### 段落二：釐清「座標軸固定」實際需求為旋轉鎖定
+
+開發者針對第 1 點選擇「C：其他方式」，並說明實際需求跟交接文件記載的不同——不是座標軸數值範圍縮放問題，而是希望符合人類直覺：X/Y 軸固定水平、Z 軸固定垂直向上，「測試只提供保持水平旋轉的作法」。第 2 點要求先啟動本地 dev server 以便當場描述外框尺寸需求；第 3 點同意一併改成 JS 版本。
+
+Agent 指出這跟交接文件記載的「座標軸範圍隨資料自動縮放」是不同問題，讀取 `RegressionScatter3D.tsx` 後說明目前 `scene` 沒有指定 `dragmode`，提出用 Plotly `scene.dragmode: 'turntable'`（鎖定上方向量，僅允許水平方位角旋轉）對應開發者描述的需求，並確認是否為同一議題。啟動 dev server（http://localhost:4321）供開發者測試畫面。
+
+### 段落三：turntable 方案實測失敗，依除錯規則停下討論
+
+開發者實測 `dragmode: 'turntable'` 後回報：「實測結果還是可以上下大翻轉，沒有顯示只能水平翻轉的鎖定效果」。
+
+依專案 Debug 規則（開發者回報一次「不正確」即需停止、不可自行二次嘗試修正），Agent 先確認程式碼改動確實有套用（重開 server 前已編輯），列出三個可能原因供討論而非預設是程式碼問題：① 瀏覽器快取舊版本、② `turntable` 模式本身沒有限制仰角範圍（只鎖上方向量，仍可拖到接近垂直甚至過頭）、③ 測試操作方式。
+
+開發者：「我確認有關閉分頁並且重新整理，為了避免瀏覽器快取舊版本問題，已經規定要重新開SERVER這個規定」——排除快取因素。
+
+Agent 針對原因②提出兩個方向選項供開發者選擇：
+- 選項 A：保留原生拖曳，額外用 `plotly_relayout` 事件攔截、把仰角夾回設定範圍內（有回彈感）
+- 選項 B：完全關閉 Plotly 原生拖曳（`dragmode: false`），改用自訂 pointer 事件只控制方位角、仰角寫死不變，透過三角函數換算 `camera.eye`（100% 保證只能水平轉，但需另刻互動邏輯）
+
+開發者選擇 B，要求實作後讓他測試。
+
+### 段落四：實作水平鎖定旋轉（Option B）
+
+Agent 在 `RegressionScatter3D.tsx` 新增：以 Plotly 預設視角 `(1.25,1.25,1.25)` 反推固定半徑與仰角，`dragmode: false`，pointer down/move/up 處理拖曳只改變方位角、`cameraEyeFromAzimuth` 換算成 `camera.eye`。`npx astro check` 0 錯誤，重開 dev server 供測試。
+
+開發者實測後回報：「水平旋轉的鎖定功能已經成功」，並附上截圖，提出三項新調整需求：
+1. 移除右上角 Plotly 工具列（相機/縮放/Turntable rotation 提示），只需要拖曳旋轉
+2. 骨架格線應拉伸成長方形填滿外框最大範圍（目前選 R&D+Admin 組合時散布圖看起來像正方形）
+3. 切換三種特徵組合時，骨架格線應固定一個大小不隨之變換，方便比較不同組合下回歸平面的差異
+
+### 段落五：討論並實作工具列、外框比例、固定軸範圍三項
+
+Agent 逐項分析並提出方案跟開發者確認：
+- 第 1 點：`displayModeBar: false`，屬單純設定調整，直接處理
+- 第 2 點：解釋目前 Plotly `aspectmode: 'auto'` 因三軸範圍比例未達 4/3 倍閾值而退回等比例立方體渲染，導致外框留白；提出改成 `aspectmode: 'manual'` + 初始 `aspectratio: {x:1.6, y:1.6, z:1}`，讓開發者肉眼判斷後續是否要更寬/更窄
+- 第 3 點：說明 `regressionPlaneData.ts` 目前用「當前選到的特徵組合自己的 min/max」計算範圍，導致切組合會變動；提出改成用三個原始變數（rdSpend/administration/marketingSpend）與 profit 在全部 50 筆資料的全域 min/max 當固定範圍。並提出兩個子決策詢問開發者：(a) 用資料實際 min/max 還是要留白/取整數、(b) 迴歸平面要不要外插畫滿整個固定範圍，還是只畫在該組合實際取樣範圍內
+
+開發者回覆：「第１點　ＯＫ　第２點　ＯＫ　第３點　1.OK　2.a　請實作」
+
+Agent 實作：
+- `datasets.ts` 新增 `fixedRanges`（四個變數的全域 min/max）
+- `regressionPlaneData.ts` 簽名改為接受外部傳入的 `x1Range`/`x2Range`（原本自己從 `points` 算 min/max），同步更新 `regressionPlaneData.test.ts`
+- `RegressionScatter3D.tsx` 串接 `fixedRanges` 到 Plotly `xaxis`/`yaxis`/`zaxis` 的 `range`，加上 `aspectmode: 'manual'`／`aspectratio`，`config` 加 `displayModeBar: false`
+
+`npm test`（14 個測試）與 `npx astro check` 皆通過，重開 dev server。開發者測試後回報：「本次的修改皆正確呈現」。
+
+### 段落六：追加仰角可調範圍與軸說明圖例
+
+開發者提出兩項新需求：
+1. 前階段設定成仰角完全固定不可動，改成可旋轉 ±30 度讓他測試效果
+2. 希望圖表下方（不影響 3D 展示本體）顯示 X/Y/Z 軸各自代表什麼變數，方便學習
+
+Agent 實作：
+- 仰角改為 `useState`，`clampElevation` 限制在「預設仰角 ±30 度」範圍內，pointer move 同時更新方位角與仰角（並明確跟開發者說明這是「以預設視角為中心上下各 30 度」的假設，若要別的區間之後再調整）
+- `datasets.ts` 新增 `fieldLabels`（中英對照：研發支出 R&D Spend / 行政支出 Administration / 行銷支出 Marketing Spend / 獲利 Profit），沿用章節內文既有中文用詞
+- `RegressionScatter3D.tsx` 在圖表外框下方、統計數字上方加 `<ul className="regression-chart__axis-legend">`，顯示目前 X/Y/Z 軸對應的變數名稱，切換組合時同步更新
+- `global.css` 新增 `.regression-chart__axis-legend`／`.regression-chart__axis-badge` 樣式，配色沿用既有 `--color-accent`（teal）與既有邊框/背景變數，未引入新色以避免對比度未驗證的風險
+
+`npm test`／`npx astro check` 皆通過，重開 dev server。開發者測試後回報：「目前顯示效果均良好　請結束本階段工作」。
+
+### 段落七：收工
+
+Agent commit（`b9cd3fa`）並 push 至 `worktree-ml-site-skeleton-pilot` 遠端分支，停止本機 dev server（`astro dev stop` + `astro dev status` 確認無執行中程序，`netstat` 檢查 4320-4329 埠無殘留），準備撰寫工作日誌與交接文件。
+
+**注意（Agent 主動提醒，非開發者確認事項）**：本階段開頭已口頭同意的「`.reading-progress` 改成 JS 版本」在後續討論全部聚焦在 3D 圖表調整，實際上**尚未實作**；另外交接文件原本記載的「3D 圖表外框需要放大」（物理尺寸，480px 高）也還沒給出目標數值且未調整，本階段做的是外框比例（aspectratio）調整，不是外框本身的 CSS 尺寸放大。兩項都記錄進下次交接文件的待辦事項。
