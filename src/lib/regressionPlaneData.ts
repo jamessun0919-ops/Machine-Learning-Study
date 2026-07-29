@@ -4,6 +4,11 @@ export interface DataPoint {
   y: number;
 }
 
+export interface AxisRange {
+  min: number;
+  max: number;
+}
+
 export interface ScatterPlaneData {
   scatter: { x: number[]; y: number[]; z: number[] };
   plane: { x: number[]; y: number[]; z: number[][] };
@@ -12,6 +17,8 @@ export interface ScatterPlaneData {
 export function buildScatterPlaneData(
   points: DataPoint[],
   coefficients: number[],
+  x1Range: AxisRange,
+  x2Range: AxisRange,
   gridSize = 10
 ): ScatterPlaneData {
   const scatter = {
@@ -20,16 +27,11 @@ export function buildScatterPlaneData(
     z: points.map((p) => p.y),
   };
 
-  const x1Min = Math.min(...scatter.x);
-  const x1Max = Math.max(...scatter.x);
-  const x2Min = Math.min(...scatter.y);
-  const x2Max = Math.max(...scatter.y);
-
   const xAxis: number[] = [];
   const yAxis: number[] = [];
   for (let i = 0; i <= gridSize; i++) {
-    xAxis.push(x1Min + ((x1Max - x1Min) * i) / gridSize);
-    yAxis.push(x2Min + ((x2Max - x2Min) * i) / gridSize);
+    xAxis.push(x1Range.min + ((x1Range.max - x1Range.min) * i) / gridSize);
+    yAxis.push(x2Range.min + ((x2Range.max - x2Range.min) * i) / gridSize);
   }
 
   const zGrid: number[][] = yAxis.map((x2) =>
