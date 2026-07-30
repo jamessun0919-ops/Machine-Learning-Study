@@ -1,0 +1,111 @@
+# 機器學習互動學習網站 — 章節開發範本與架構指南
+
+本指南旨在規範後續章節開發的檔案結構、內容區塊、互動元件，以及部署至 GitHub Pages 時的關鍵路徑規則，確保各章節的實作品質與全站風格一致。
+
+---
+
+## 1. 章節頁面結構與內容架構 (九大固定區塊)
+
+每個新開發的演算法章節頁面，其 Markdown 內容必須嚴格依序包含以下九個區塊，不可遺漏或調換順序：
+
+1. **簡介** (`## 簡介`)  
+   定義該演算法是什麼，並說明其主要解決的核心問題。
+2. **分類方式** (`## 分類方式`)  
+   使用無序清單列出模型定位（例如：監督式/非監督式學習、分類/迴歸任務、參數/非參數模型）。
+3. **數學原理** (`## 數學原理`)  
+   使用 KaTeX 公式（行內式如 `$x$`，獨立段落如 `$$A = B$$`）推導該演算法的核心數學機制（例如常態方程式、損失函數最佳化等）。
+4. **運用範例** (`## 運用範例`)  
+   列舉 2-3 個真實世界的應用場景（例如：房價預測、客戶分群、信用評分等）。
+5. **適用情境與限制** (`## 適用情境與限制`)  
+   詳細列出適合使用的情境、優點，以及該模型的底層假設與限制（例如多重共線性、非線性限制等）。
+6. **評估指標** (`## 評估指標`)  
+   說明如何評估該模型的表現（例如迴歸的 $R^2$ / RMSE，分類的 Accuracy / F1-Score，分群的 Silhouette Score 等）。
+7. **常見誤區** (`## 常見誤區`)  
+   列出學生或初學者常犯的錯誤或認知偏差（例如：相關性與因果性的混淆、過度外插等）。
+8. **學習摘要資訊圖表** (`## 學習摘要`)  
+   此區塊由 `ChapterSummaryCard.astro` 元件負責渲染。可選用靜態圖片（向量圖表風格，以 `summary.image` 指定）或文字式摘要（公式卡與關鍵統計數據）。
+9. **互動式操作與演示** (`## 互動式操作與演示`)  
+   在此區塊掛載專屬的 React island 元件，提供直觀的視覺化展示。
+
+---
+
+## 2. Astro 專案規範與內部連結規則
+
+由於專案採用靜態部署於 GitHub Pages（具有子目錄前綴 `/Machine-Learning-Study/`），在處理所有內部連結與靜態資源路徑時，必須嚴格遵守以下規則：
+
+* **禁用寫死的根路徑**：絕對不能使用 `/css/...` 或 `/chapters/...` 這種以 `/` 開頭的寫死絕對路徑，這會導致在 GitHub Pages 部署時產生 404 錯誤。
+* **使用 Base URL 前綴**：對於所有靜態連結或跳轉，必須使用 `import.meta.env.BASE_URL` 前綴：
+  ```astro
+  <a href={`${import.meta.env.BASE_URL}chapters/${chapter.id}`}>
+  ```
+* **Astro `<Image>` 元件**：引入圖片資產時，請使用相對路徑，並透過 Astro 的 `Image` 元件進行優化：
+  ```astro
+  import myImage from '../../assets/my-image.png';
+  <Image src={myImage} alt="說明文字" />
+  ```
+
+---
+
+## 3. React Islands 互動圖表元件開發規範
+
+* **客戶端渲染 (Client-Only)**：所有包含繪圖套件（如 Plotly.js）的 React 元件，必須在 Astro 中以 `client:only="react"` 方式掛載，避免在伺服器端（SSR）建置時因為 Node.js 解析瀏覽器特定 API 而出錯：
+  ```astro
+  <MyChartComponent client:only="react">
+    <div slot="fallback" class="regression-chart__skeleton">圖表載入中……</div>
+  </MyChartComponent>
+  ```
+* **字面 JSX 引用 (Literal JSX)**：Astro 模板中必須使用**字面 JSX** 直接引用 React 元件，禁止透過動態查找表或變數間接渲染，否則 Astro 的編譯器將無法正確打包該 island 資源。
+* **教學導向 (YAGNI)**：互動元件的定位是「預先設計的展示」，並非自由調參的分析工具。資料集應採白名單制（打包在前端），參數調整應採預設選項（如預設特徵組合按鈕），避免給予使用者過大的自由度以保持學習焦點。
+
+---
+
+## 4. Plotly 3D 圖表水平旋轉控制邏輯
+
+Plotly 內建的 3D 旋轉模式會允許相機翻轉至水平面以下，導致場景上下顛倒。本專案採用的標準旋轉控制方案如下：
+
+1. **關閉內建旋轉**：在 `<Plot>` 的 `layout.scene` 設定 `dragmode: false`。
+2. **手刻 Pointer 事件**：在外層的容器元素上綁定自訂的指標事件以擷取拖曳距離：
+   ```tsx
+   onPointerDown={handlePointerDown}
+   onPointerMove={handlePointerMove}
+   onPointerUp={handlePointerUp}
+   ```
+3. **仰角範圍限制**：使用三角函數將相機的水平方位角（Azimuth）保持自由旋轉，但限制仰角（Elevation）在預設視角上下 30 度（`±30°`）範圍內，避免視角顛倒：
+   ```tsx
+   function cameraEyeFromAngles(azimuthDeg: number, elevationDeg: number) {
+     const azimuthRad = (azimuthDeg * Math.PI) / 180;
+     const elevationRad = (elevationDeg * Math.PI) / 180;
+     const horizontalRadius = CAMERA_RADIUS * Math.cos(elevationRad);
+     return {
+       x: horizontalRadius * Math.cos(azimuthRad),
+       y: horizontalRadius * Math.sin(azimuthRad),
+       z: CAMERA_RADIUS * Math.sin(elevationRad),
+     };
+   }
+   ```
+
+---
+
+## 5. 學習摘要資訊圖表（Infographic）風格
+
+各章節的摘要資訊圖表（PNG）應遵循以下規劃：
+
+* **風格選擇尚未固定，每個新章節開工時都要重新詢問開發者一次**：目前有兩種並存的風格選項，尚在比較階段，**不可自行預設沿用上一章節的風格**：
+  1. **白底向量風格**：仿照 `pic/Bayes.png`、`multiple-linear-regression-summary.png` 等風格，乾淨白底、簡明色塊、清晰 KaTeX 公式與明確配色語意；由開發者用外部圖像生成工具手動製作。
+  2. **Excalidraw 手繪風格**：`simple-linear-regression-summary.png` 採用此風格，實作方式是用 rough.js（Excalidraw 本身的手繪渲染引擎）搭配 HTML/CSS 排版、手寫字體（如 Segoe Print），寫成一頁 A4 尺寸網頁後，用無頭瀏覽器（headless msedge）渲染輸出成 PNG——**不是**用 AI 圖像生成模型直接畫。
+* **內容結構（不論選用哪種風格皆適用）**：
+  1. **簡介**：固定為第一區塊，濃縮自章節 `簡介` 段落。
+  2. 模型公式
+  3. 適用情境與假設限制
+  4. 評估指標
+  5. 常見誤區
+  6. **案例分析**（固定放在最底部，與其餘區塊視覺區隔——例如深色 footer 或黑板樣式）：整合原本分散的「頂部案例 metabar」與「重點總結」，集中呈現資料集資訊、係數表、R²/RMSE 等數值、數據洞察文字。標題格式為「案例分析：{資料集英文名}（{資料集中文全稱翻譯}）」，例如「案例分析：50 Startups（50 家新創公司財務資料及利潤預測）」。
+* **內容優先順序**：資訊圖表總結的是**學習/概念資訊**，案例的數字結果是次要佐證，不可讓案例數字主導版面或出現在案例分析區塊以外的地方。
+
+---
+
+## 6. 連續捲動與進入視野動態效果
+
+* **跨瀏覽器相容性**：嚴禁使用 Chromium-only 的 CSS `animation-timeline` 屬性。
+* **進入視野動態**：若需要元素（如章節標題底線）在進入視野時觸發一次性的漸入/展開動效，使用 `IntersectionObserver` 進行監聽，並在觸發後立即 `unobserve`。
+* **連續比例動態**：若需要隨著滾動進度產生連續變化（如頂部閱讀進度條），使用 window 的 `scroll` 事件監聽，並使用 `requestAnimationFrame` 進行節流（throttle）計算以維持流暢度。

@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Nav from '../../components/Nav.astro';
 import ChapterSummaryCard from '../../components/ChapterSummaryCard.astro';
 import RegressionScatter3D from '../../components/charts/RegressionScatter3D';
+import RegressionScatter2D from '../../components/charts/RegressionScatter2D';
 
 export async function getStaticPaths() {
   const chapters = await getCollection('chapters');
@@ -42,6 +43,14 @@ const { Content } = await render(chapter);
         <RegressionScatter3D client:only="react">
           <div slot="fallback" class="regression-chart__skeleton">互動圖表載入中……</div>
         </RegressionScatter3D>
+      </section>
+    )}
+    {chapter.data.interactiveComponent === 'regression-scatter-2d' && (
+      <section class="chapter__interactive" id="interactive">
+        <h2>互動式操作與演示</h2>
+        <RegressionScatter2D client:only="react">
+          <div slot="fallback" class="regression-chart__skeleton">互動圖表載入中……</div>
+        </RegressionScatter2D>
       </section>
     )}
   </main>
