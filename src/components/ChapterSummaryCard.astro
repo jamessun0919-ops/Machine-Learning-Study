@@ -1,0 +1,104 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import katex from 'katex';
+
+interface Props {
+  formulas: string[];
+  keyStats: { label: string; value: string }[];
+  image?: ImageMetadata;
+}
+
+// image and formulas/keyStats are mutually exclusive display modes — when image is set,
+// formulas/keyStats are still required by the schema but intentionally not rendered.
+const { formulas, keyStats, image } = Astro.props;
+const renderedFormulas = formulas.map((f) =>
+  katex.renderToString(f, { throwOnError: false })
+);
+---
+<section class="summary-card" id="summary">
+  <h2>學習摘要</h2>
+  {image ? (
+    <div class="summary-card__image-wrap">
+      <button type="button" class="summary-card__image-trigger" aria-label="放大檢視學習摘要資訊圖">
+        <Image src={image} alt="本章學習摘要資訊圖" class="summary-card__image" />
+        <span class="summary-card__image-hint">點擊放大</span>
+      </button>
+      <div class="summary-card__lightbox" role="dialog" aria-modal="true" aria-label="學習摘要資訊圖全螢幕檢視" hidden>
+        <button type="button" class="summary-card__lightbox-close" aria-label="關閉全螢幕檢視">✕</button>
+        <Image
+          src={image}
+          alt="本章學習摘要資訊圖（全螢幕）"
+          class="summary-card__lightbox-image"
+        />
+      </div>
+    </div>
+  ) : (
+    <>
+      <div class="summary-card__formulas">
+        {renderedFormulas.map((html) => <div class="katex-formula" set:html={html} />)}
+      </div>
+      <ul class="summary-card__stats">
+        {keyStats.map((stat) => (
+          <li>
+            <span class="summary-card__stat-label">{stat.label}</span>
+            <span class="summary-card__stat-value">{stat.value}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  )}
+</section>
+
+{image && (
+  <script is:inline>
+    (function () {
+      var wrap = document.querySelector('.summary-card__image-wrap');
+      if (!wrap) return;
+
+      var trigger = wrap.querySelector('.summary-card__image-trigger');
+      var lightbox = wrap.querySelector('.summary-card__lightbox');
+      var closeBtn = wrap.querySelector('.summary-card__lightbox-close');
+      if (!trigger || !lightbox || !closeBtn) return;
+
+      function focusableElements() {
+        return Array.prototype.slice.call(
+          lightbox.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])')
+        );
+      }
+
+      function open() {
+        lightbox.hidden = false;
+        closeBtn.focus();
+      }
+      function close() {
+        lightbox.hidden = true;
+        trigger.focus();
+      }
+
+      trigger.addEventListener('click', open);
+      closeBtn.addEventListener('click', close);
+      lightbox.addEventListener('click', function (e) {
+        if (e.target === lightbox) close();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (lightbox.hidden) return;
+        if (e.key === 'Escape') {
+          close();
+          return;
+        }
+        if (e.key !== 'Tab') return;
+        var focusable = focusableElements();
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      });
+    })();
+  </script>
+)}

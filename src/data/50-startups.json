@@ -1,0 +1,352 @@
+[
+  {
+    "rdSpend": 165349.2,
+    "administration": 136897.8,
+    "marketingSpend": 471784.1,
+    "state": "New York",
+    "profit": 192261.83
+  },
+  {
+    "rdSpend": 162597.7,
+    "administration": 151377.59,
+    "marketingSpend": 443898.53,
+    "state": "California",
+    "profit": 191792.06
+  },
+  {
+    "rdSpend": 153441.51,
+    "administration": 101145.55,
+    "marketingSpend": 407934.54,
+    "state": "Florida",
+    "profit": 191050.39
+  },
+  {
+    "rdSpend": 144372.41,
+    "administration": 118671.85,
+    "marketingSpend": 383199.62,
+    "state": "New York",
+    "profit": 182901.99
+  },
+  {
+    "rdSpend": 142107.34,
+    "administration": 91391.77,
+    "marketingSpend": 366168.42,
+    "state": "Florida",
+    "profit": 166187.94
+  },
+  {
+    "rdSpend": 131876.9,
+    "administration": 99814.71,
+    "marketingSpend": 362861.36,
+    "state": "New York",
+    "profit": 156991.12
+  },
+  {
+    "rdSpend": 134615.46,
+    "administration": 147198.87,
+    "marketingSpend": 127716.82,
+    "state": "California",
+    "profit": 156122.51
+  },
+  {
+    "rdSpend": 130298.13,
+    "administration": 145530.06,
+    "marketingSpend": 323876.68,
+    "state": "Florida",
+    "profit": 155752.6
+  },
+  {
+    "rdSpend": 120542.52,
+    "administration": 148718.95,
+    "marketingSpend": 311613.29,
+    "state": "New York",
+    "profit": 152211.77
+  },
+  {
+    "rdSpend": 123334.88,
+    "administration": 108679.17,
+    "marketingSpend": 304981.62,
+    "state": "California",
+    "profit": 149759.96
+  },
+  {
+    "rdSpend": 101913.08,
+    "administration": 110594.11,
+    "marketingSpend": 229160.95,
+    "state": "Florida",
+    "profit": 146121.95
+  },
+  {
+    "rdSpend": 100671.96,
+    "administration": 91790.61,
+    "marketingSpend": 249744.55,
+    "state": "California",
+    "profit": 144259.4
+  },
+  {
+    "rdSpend": 93863.75,
+    "administration": 127320.38,
+    "marketingSpend": 249839.44,
+    "state": "Florida",
+    "profit": 141585.52
+  },
+  {
+    "rdSpend": 91992.39,
+    "administration": 135495.07,
+    "marketingSpend": 252664.93,
+    "state": "California",
+    "profit": 134307.35
+  },
+  {
+    "rdSpend": 119943.24,
+    "administration": 156547.42,
+    "marketingSpend": 256512.92,
+    "state": "Florida",
+    "profit": 132602.65
+  },
+  {
+    "rdSpend": 114523.61,
+    "administration": 122616.84,
+    "marketingSpend": 261776.23,
+    "state": "New York",
+    "profit": 129917.04
+  },
+  {
+    "rdSpend": 78013.11,
+    "administration": 121597.55,
+    "marketingSpend": 264346.06,
+    "state": "California",
+    "profit": 126992.93
+  },
+  {
+    "rdSpend": 94657.16,
+    "administration": 145077.58,
+    "marketingSpend": 282574.31,
+    "state": "New York",
+    "profit": 125370.37
+  },
+  {
+    "rdSpend": 91749.16,
+    "administration": 114175.79,
+    "marketingSpend": 294919.57,
+    "state": "Florida",
+    "profit": 124266.9
+  },
+  {
+    "rdSpend": 86419.7,
+    "administration": 153514.11,
+    "marketingSpend": 0,
+    "state": "New York",
+    "profit": 122776.86
+  },
+  {
+    "rdSpend": 76253.86,
+    "administration": 113867.3,
+    "marketingSpend": 298664.47,
+    "state": "California",
+    "profit": 118474.03
+  },
+  {
+    "rdSpend": 78389.47,
+    "administration": 153773.43,
+    "marketingSpend": 299737.29,
+    "state": "New York",
+    "profit": 111313.02
+  },
+  {
+    "rdSpend": 73994.56,
+    "administration": 122782.75,
+    "marketingSpend": 303319.26,
+    "state": "Florida",
+    "profit": 110352.25
+  },
+  {
+    "rdSpend": 67532.53,
+    "administration": 105751.03,
+    "marketingSpend": 304768.73,
+    "state": "Florida",
+    "profit": 108733.99
+  },
+  {
+    "rdSpend": 77044.01,
+    "administration": 99281.34,
+    "marketingSpend": 140574.81,
+    "state": "New York",
+    "profit": 108552.04
+  },
+  {
+    "rdSpend": 64664.71,
+    "administration": 139553.16,
+    "marketingSpend": 137962.62,
+    "state": "California",
+    "profit": 107404.34
+  },
+  {
+    "rdSpend": 75328.87,
+    "administration": 144135.98,
+    "marketingSpend": 134050.07,
+    "state": "Florida",
+    "profit": 105733.54
+  },
+  {
+    "rdSpend": 72107.6,
+    "administration": 127864.55,
+    "marketingSpend": 353183.81,
+    "state": "New York",
+    "profit": 105008.31
+  },
+  {
+    "rdSpend": 66051.52,
+    "administration": 182645.56,
+    "marketingSpend": 118148.2,
+    "state": "Florida",
+    "profit": 103282.38
+  },
+  {
+    "rdSpend": 65605.48,
+    "administration": 153032.06,
+    "marketingSpend": 107138.38,
+    "state": "New York",
+    "profit": 101004.64
+  },
+  {
+    "rdSpend": 61994.48,
+    "administration": 115641.28,
+    "marketingSpend": 91131.24,
+    "state": "Florida",
+    "profit": 99937.59
+  },
+  {
+    "rdSpend": 61136.38,
+    "administration": 152701.92,
+    "marketingSpend": 88218.23,
+    "state": "New York",
+    "profit": 97483.56
+  },
+  {
+    "rdSpend": 63408.86,
+    "administration": 129219.61,
+    "marketingSpend": 46085.25,
+    "state": "California",
+    "profit": 97427.84
+  },
+  {
+    "rdSpend": 55493.95,
+    "administration": 103057.49,
+    "marketingSpend": 214634.81,
+    "state": "Florida",
+    "profit": 96778.92
+  },
+  {
+    "rdSpend": 46426.07,
+    "administration": 157693.92,
+    "marketingSpend": 210797.67,
+    "state": "California",
+    "profit": 96712.8
+  },
+  {
+    "rdSpend": 46014.02,
+    "administration": 85047.44,
+    "marketingSpend": 205517.64,
+    "state": "New York",
+    "profit": 96479.51
+  },
+  {
+    "rdSpend": 28663.76,
+    "administration": 127056.21,
+    "marketingSpend": 201126.82,
+    "state": "Florida",
+    "profit": 90708.19
+  },
+  {
+    "rdSpend": 44069.95,
+    "administration": 51283.14,
+    "marketingSpend": 197029.42,
+    "state": "California",
+    "profit": 89949.14
+  },
+  {
+    "rdSpend": 20229.59,
+    "administration": 65947.93,
+    "marketingSpend": 185265.1,
+    "state": "New York",
+    "profit": 81229.06
+  },
+  {
+    "rdSpend": 38558.51,
+    "administration": 82982.09,
+    "marketingSpend": 174999.3,
+    "state": "California",
+    "profit": 81005.76
+  },
+  {
+    "rdSpend": 28754.33,
+    "administration": 118546.05,
+    "marketingSpend": 172795.67,
+    "state": "California",
+    "profit": 78239.91
+  },
+  {
+    "rdSpend": 27892.92,
+    "administration": 84710.77,
+    "marketingSpend": 164470.71,
+    "state": "Florida",
+    "profit": 77798.83
+  },
+  {
+    "rdSpend": 23640.93,
+    "administration": 96189.63,
+    "marketingSpend": 148001.11,
+    "state": "California",
+    "profit": 71498.49
+  },
+  {
+    "rdSpend": 15505.73,
+    "administration": 127382.3,
+    "marketingSpend": 35534.17,
+    "state": "New York",
+    "profit": 69758.98
+  },
+  {
+    "rdSpend": 22177.74,
+    "administration": 154806.14,
+    "marketingSpend": 28334.72,
+    "state": "California",
+    "profit": 65200.33
+  },
+  {
+    "rdSpend": 1000.23,
+    "administration": 124153.04,
+    "marketingSpend": 1903.93,
+    "state": "New York",
+    "profit": 64926.08
+  },
+  {
+    "rdSpend": 1315.46,
+    "administration": 115816.21,
+    "marketingSpend": 297114.46,
+    "state": "Florida",
+    "profit": 49490.75
+  },
+  {
+    "rdSpend": 0,
+    "administration": 135426.92,
+    "marketingSpend": 0,
+    "state": "California",
+    "profit": 42559.73
+  },
+  {
+    "rdSpend": 542.05,
+    "administration": 51743.15,
+    "marketingSpend": 0,
+    "state": "New York",
+    "profit": 35673.41
+  },
+  {
+    "rdSpend": 0,
+    "administration": 116983.8,
+    "marketingSpend": 45173.06,
+    "state": "California",
+    "profit": 14681.4
+  }
+]

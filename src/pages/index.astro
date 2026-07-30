@@ -1,0 +1,28 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import { chapterOrder } from '../config/chapters';
+
+const chapters = await getCollection('chapters');
+const chapterById = new Map(chapters.map((c) => [c.id, c]));
+const base = import.meta.env.BASE_URL;
+---
+<BaseLayout title="機器學習互動學習網站">
+  <Nav />
+  <main class="home">
+    <h1>機器學習互動學習網站</h1>
+    <p class="home__lead">從入門到進階，透過互動演示理解機器學習核心演算法。</p>
+    <ul class="chapter-list">
+      {chapterOrder.map((meta) => {
+        const chapter = chapterById.get(meta.slug);
+        if (!chapter) return null;
+        return (
+          <li>
+            <a href={`${base}chapters/${meta.slug}/`}>{chapter.data.title}</a>
+          </li>
+        );
+      })}
+    </ul>
+  </main>
+</BaseLayout>
