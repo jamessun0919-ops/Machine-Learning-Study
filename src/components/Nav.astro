@@ -5,15 +5,16 @@ import { chapterOrder } from '../config/chapters';
 const chapters = await getCollection('chapters');
 const chapterById = new Map(chapters.map((c) => [c.id, c]));
 const currentPath = Astro.url.pathname;
+const base = import.meta.env.BASE_URL;
 ---
 <nav class="site-nav">
   <div class="site-nav__inner">
-    <a class="site-nav__brand" href="/">機器學習互動學習網站</a>
+    <a class="site-nav__brand" href={base}>機器學習互動學習網站</a>
     <ul>
       {chapterOrder.map((meta) => {
         const chapter = chapterById.get(meta.slug);
         if (!chapter) return null;
-        const href = `/chapters/${meta.slug}/`;
+        const href = `${base}chapters/${meta.slug}/`;
         return (
           <li>
             <a href={href} aria-current={currentPath === href ? 'page' : undefined}>

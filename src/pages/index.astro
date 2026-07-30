@@ -6,6 +6,7 @@ import { chapterOrder } from '../config/chapters';
 
 const chapters = await getCollection('chapters');
 const chapterById = new Map(chapters.map((c) => [c.id, c]));
+const base = import.meta.env.BASE_URL;
 ---
 <BaseLayout title="機器學習互動學習網站">
   <Nav />
@@ -18,7 +19,7 @@ const chapterById = new Map(chapters.map((c) => [c.id, c]));
         if (!chapter) return null;
         return (
           <li>
-            <a href={`/chapters/${meta.slug}/`}>{chapter.data.title}</a>
+            <a href={`${base}chapters/${meta.slug}/`}>{chapter.data.title}</a>
           </li>
         );
       })}
