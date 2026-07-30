@@ -244,3 +244,25 @@
 - 第 6、7、8、9 階段的所有程式碼變更（包含手動生成的圖檔與腳本）均保留在 working directory，暫未進行 commit/push，待 IDE 重啟修復後再進行驗證與分支合併。
 
 **本機測試用 server：** 本階段未成功啟動任何由 Agent 控制的測試伺服器。開發者本機手動啟動的伺服器由開發者在重啟 IDE 時自行關閉。
+
+## 2026-07-30（第 10 個工作階段）
+
+**當日工作內容：**
+- IDE 重啟後開工，確認 Agent 指令工具已恢復正常（`git status` 驗證成功）。
+- 依交接文件執行三項驗證流程，遇到測試失敗，依規則停下診斷根因並與開發者討論後解決。
+- 完成第 6~9 階段累積成果的 commit + push。
+- 記錄下階段工作項目。
+
+**完成項目：**
+- 診斷並解決 `npm run test` 失敗問題：根因為殘留的 Astro dev server（PID 18904/30068，上次收工未正常關閉）鎖住 `node_modules` 內 `@astrojs/compiler-binding-win32-x64-msvc` 原生二進位檔，導致 `node_modules` 損毀。關閉殘留行程後 `npm ci` 重裝、三項驗證全數通過（`npm run test` 15/15、`npx astro check` 0 errors/0 warnings、`npm run build` 3 頁成功建置）。
+- Commit `58c6e67`「Add Simple Linear Regression chapter with interactive 2D scatter chart」並成功 push 至 `origin/main`。
+
+**遇到的瓶頸：**
+- 無（測試失敗與 `npm ci` EPERM 錯誤均已依規則停下討論、找到根因後排除，過程詳見當日 chatlog 第 10 階段段落二、三）。
+
+**開發者交代備忘事項（下階段工作項目）：**
+1. 補齊「機器學習介紹」章節（`dir.txt` 第一階段課程導覽），並與開發者討論非演算法章節（純內容、不須操作展示）的內容項目規劃，作為此類章節的範例模板。
+2. 調整 `simple-linear-regression` 章節的互動操作內容：現有 2D 散布圖不適合用滑鼠拖曳移動資料點，改為在資料表格內點擊列來移動對應的點，並新增其他互動操作；後續每個演算法章節的互動內容可能都需要微調，開工時需與開發者逐一討論確認。
+3. 本次 CLAUDE.md 工作規則異動（模型自我介紹要求、錯誤處理規則擴充）為開發者本人手動新增修改，非 Agent 本階段所為。
+
+**本機測試用 server：** 本階段檢查到與本專案相關但非本次 session 啟動的殘留 Astro dev server（PID 18904 `npm run dev`、PID 30068 `astro dev`），經詢問開發者後以 `npx astro dev stop` 關閉並確認行程消失。本階段 Agent 未另外啟動任何新的 dev server。殘留的 4 個 `chrome-devtools-mcp` 行程確認與本專案無關（IDE 層級 MCP 服務），未處理。

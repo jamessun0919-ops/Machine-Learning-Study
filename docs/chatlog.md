@@ -684,4 +684,43 @@ Agent 將 HTML 原始檔寫入 Repo 的 [simple-linear-regression-summary.html](
 Agent 分析這是由於 Windows API 安全性沙盒原則在 IDE runner 背景啟動子進程重新導向 `NUL` 時嘗試寫入 ACL 被系統或防毒軟體拒絕所致（此錯誤在第 6 階段也曾出現過，於第 8 階段一度因為環境解鎖或 IDE 重啟而消失，在此階段再次復現）。Agent 給出「完全重啟 IDE 視窗」等解決方法。
 開發者指示結束本階段工作以便進行 IDE 重啟。
 
+## 2026-07-30（第 10 個工作階段）
+
+### 段落一：開工與交接文件確認
+
+開發者：「晚安，請閱讀交接文檔及工作規則後與我討論，開始本階段工作」
+Agent 讀取 `docs/handover.md`，確認上階段（第 9 階段）因 `NUL` ACL 權限問題而停工，第 6~9 階段變更均未 commit/push。Agent 執行 `git status` 驗證 Agent 指令工具已恢復正常，working directory 狀態與交接文件描述一致，回報結果並詢問是否開始執行下一步驗證流程。
+
+### 段落二：測試失敗與根因診斷
+
+開發者：「請驗證」
+Agent 執行 `npm run test`，結果 3 個測試檔案（`datasets.test.ts`、`regression.test.ts`、`regressionPlaneData.test.ts`）全部在載入階段拋錯（`TypeError: Cannot read properties of undefined (reading 'config')`），0 個測試被收集。依規則判斷此為非預期、原因不明顯的失敗，立即停止、不自行修改重跑。
+Agent 比對 `package.json`／`package-lock.json` 相對 HEAD 無差異，查閱 worklog 確認上階段驗證曾通過（15 個測試、0 errors），並確認 `node_modules/.package-lock.json` 與 `package-lock.json` 檔案時間均為當日，列出三項可能原因（node_modules 安裝不完整／損毀、vite/vitest 版本相容性問題、環境變動），建議以 `npm ci` 重裝作最小風險診斷，詢問開發者是否執行。
+
+### 段落三：npm ci 失敗與殘留伺服器排查
+
+開發者：「請依照建議執行」
+Agent 執行 `npm ci`，失敗並拋出 `EPERM: operation not permitted, unlink`，指向 `@astrojs/compiler-binding-win32-x64-msvc` 的原生二進位檔（`.node`）。Agent 再次依規則停止，列出可能原因（殘留 dev server 或 vitest 行程佔用檔案鎖、防毒/防護軟體鎖定、IDE 持有檔案 handle），建議先排查殘留行程，詢問是否執行。
+
+開發者：「請檢察」
+Agent 執行 `astro dev status`（Bash 環境未找到 astro 指令）與 PowerShell `Get-CimInstance Win32_Process` 查詢所有 `node.exe` 行程，發現與本專案相關但非本次 session 啟動的殘留 Astro dev server（PID 18904 `npm run dev`、PID 30068 `astro dev`），另有 4 個 `chrome-devtools-mcp` 行程確認與本專案無關（IDE 層級 MCP 服務）。Agent 依規則列出殘留伺服器，詢問開發者是否一併關閉。
+
+開發者：「請關閉」
+Agent 執行 `npx astro dev stop` 關閉 PID 30068，並以 PowerShell `Get-Process` 確認 PID 18904、30068 均已消失。鎖定原因排除後，重新執行先前已核准的 `npm ci`，成功重裝 686 個套件、0 個安全性漏洞。
+
+### 段落四：驗證流程與 commit/push
+
+Agent 重新執行三項驗證：`npm run test`（15/15 通過）、`npx astro check`（0 errors/0 warnings，14 個既有 `z` deprecated hints 非本次改動所致）、`npm run build`（3 頁成功建置）。確認根本原因為殘留 dev server 鎖住 node_modules 原生二進位檔，導致 vitest 讀取到損毀/不完整安裝，非程式碼或版本問題。
+
+開發者：「請執行 commit/push」
+Agent 檢視 `git diff --stat` 與近期 commit 風格，確認變更內容涵蓋新章節 `simple-linear-regression`（含 `RegressionScatter2D.tsx`、章節排序 `chapters.ts` 前後章連結、`[slug].astro` 互動元件掛載）、資訊圖表規範文件與渲染腳本、CLAUDE.md 規則更新、本階段 worklog/chatlog/handover。Agent 將全部檔案 `git add` 後建立 commit `58c6e67`（"Add Simple Linear Regression chapter with interactive 2D scatter chart"），並 `git push origin main` 成功推送。
+
+### 段落五：下階段工作項目紀錄
+
+開發者透過 IDE 選取 `dir.txt` 第 3 行「機器學習介紹」，交代下階段工作內容：
+1. 補齊機器學習簡介章節，討論非演算法章節（純內容、不須操作展示）的內容項目，作為此類章節的範例。
+2. 調整簡單線性回歸的互動操作內容：現有 2D 圖不適合用滑鼠拖曳移動，改為在資料表格內點擊列來移動對應的點，並新增其他互動操作；開發者提醒後續每個演算法章節的互動內容都可能需要微調，屆時再與開發者討論修改。
+
+開發者並說明本次 CLAUDE.md 的工作規則異動（模型自我介紹要求、錯誤處理規則擴充等）是開發者本人手動新增修改，非本階段 Agent 所為。開發者指示記錄完畢後結束本階段工作。
+
 
