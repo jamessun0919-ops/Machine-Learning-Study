@@ -15,6 +15,35 @@ const { title } = Astro.props;
   </head>
   <body>
     <div class="reading-progress" aria-hidden="true"></div>
+    <script is:inline>
+      (function () {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        var bar = document.querySelector('.reading-progress');
+        if (!bar) return;
+
+        var ticking = false;
+        function updateProgress() {
+          var scrollTop = window.scrollY;
+          var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          var progress = docHeight > 0 ? scrollTop / docHeight : 0;
+          bar.style.transform = 'scaleX(' + progress + ')';
+          ticking = false;
+        }
+
+        window.addEventListener(
+          'scroll',
+          function () {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(updateProgress);
+          },
+          { passive: true }
+        );
+
+        updateProgress();
+      })();
+    </script>
     <slot />
   </body>
 </html>

@@ -16,6 +16,7 @@ summary:
       value: R², RMSE
     - label: 訓練方式
       value: 最小平方法（常態方程式）
+  image: ../../assets/chapters/multiple-linear-regression-summary.png
 ---
 
 ## 簡介

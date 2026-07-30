@@ -112,7 +112,9 @@ a:hover {
 
 /* ---------------------------------------------------------------------------
    Reading progress. Motivated: orientation inside a long nine-section chapter.
-   Pure CSS scroll-driven; collapses to invisible where unsupported.
+   Driven by vanilla JS (scroll + rAF, see BaseLayout.astro) instead of the
+   Chromium-only `animation-timeline: scroll()` API; scaleX is set inline by
+   that script. Stays at scaleX(0) (invisible) when JS doesn't run.
 --------------------------------------------------------------------------- */
 .reading-progress {
   position: fixed;
@@ -129,24 +131,6 @@ a:hover {
     var(--color-accent-secondary)
   );
   pointer-events: none;
-}
-
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .reading-progress {
-      animation: progress-grow linear both;
-      animation-timeline: scroll(root block);
-    }
-  }
-}
-
-@keyframes progress-grow {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -249,6 +233,46 @@ a:hover {
   text-wrap: balance;
 }
 
+.chapter__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  margin: 0 0 var(--space-md);
+}
+
+.chapter__header h1 {
+  margin: 0;
+}
+
+.chapter__jump-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  padding-block-start: var(--space-2xs);
+}
+
+.chapter__jump-nav a {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--step--1);
+  font-weight: 650;
+  color: var(--color-accent);
+  background: rgb(var(--accent-rgb) / 0.12);
+  border: 1px solid rgb(var(--accent-rgb) / 0.35);
+  text-decoration: none;
+  transition: background-color var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.chapter__jump-nav a:hover {
+  color: var(--color-text);
+  background: rgb(var(--accent-rgb) / 0.22);
+}
+
 /* ---------------------------------------------------------------------------
    Chapter prose
 --------------------------------------------------------------------------- */
@@ -264,7 +288,7 @@ a:hover {
   inline-size: fit-content;
 }
 
-.chapter h1 + h2 {
+.chapter__header + h2 {
   margin-block-start: var(--space-xl);
 }
 
@@ -442,6 +466,70 @@ a:hover {
   font-weight: 650;
   line-height: 1.5;
   color: var(--color-text);
+}
+
+.summary-card__image-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.summary-card__image-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm);
+  background: var(--color-bg-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: zoom-in;
+}
+
+.summary-card__image {
+  display: block;
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: var(--radius-sm);
+}
+
+.summary-card__image-hint {
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
+}
+
+.summary-card__lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  background: rgb(0 0 0 / 0.85);
+}
+
+.summary-card__lightbox:not([hidden]) {
+  display: block;
+}
+
+.summary-card__lightbox-image {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  margin-inline: auto;
+  border-radius: var(--radius-sm);
+}
+
+.summary-card__lightbox-close {
+  position: fixed;
+  inset-block-start: var(--space-lg);
+  inset-inline-end: var(--space-lg);
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 50%;
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  font-size: var(--step-0);
+  cursor: pointer;
 }
 
 /* ---------------------------------------------------------------------------
