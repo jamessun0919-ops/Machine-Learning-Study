@@ -9,6 +9,8 @@ interface Props {
   image?: ImageMetadata;
 }
 
+// image and formulas/keyStats are mutually exclusive display modes — when image is set,
+// formulas/keyStats are still required by the schema but intentionally not rendered.
 const { formulas, keyStats, image } = Astro.props;
 const renderedFormulas = formulas.map((f) =>
   katex.renderToString(f, { throwOnError: false })
@@ -22,7 +24,7 @@ const renderedFormulas = formulas.map((f) =>
         <Image src={image} alt="本章學習摘要資訊圖" class="summary-card__image" />
         <span class="summary-card__image-hint">點擊放大</span>
       </button>
-      <div class="summary-card__lightbox" hidden>
+      <div class="summary-card__lightbox" role="dialog" aria-modal="true" aria-label="學習摘要資訊圖全螢幕檢視" hidden>
         <button type="button" class="summary-card__lightbox-close" aria-label="關閉全螢幕檢視">✕</button>
         <Image
           src={image}
@@ -59,11 +61,19 @@ const renderedFormulas = formulas.map((f) =>
       var closeBtn = wrap.querySelector('.summary-card__lightbox-close');
       if (!trigger || !lightbox || !closeBtn) return;
 
+      function focusableElements() {
+        return Array.prototype.slice.call(
+          lightbox.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])')
+        );
+      }
+
       function open() {
         lightbox.hidden = false;
+        closeBtn.focus();
       }
       function close() {
         lightbox.hidden = true;
+        trigger.focus();
       }
 
       trigger.addEventListener('click', open);
@@ -72,7 +82,22 @@ const renderedFormulas = formulas.map((f) =>
         if (e.target === lightbox) close();
       });
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') close();
+        if (lightbox.hidden) return;
+        if (e.key === 'Escape') {
+          close();
+          return;
+        }
+        if (e.key !== 'Tab') return;
+        var focusable = focusableElements();
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
       });
     })();
   </script>

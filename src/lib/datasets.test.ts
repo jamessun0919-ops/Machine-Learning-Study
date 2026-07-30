@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { startups, featurePresets } from './datasets';
+import { startups, featurePresets, fixedRanges } from './datasets';
 
 describe('startups dataset', () => {
   it('contains exactly 50 records', () => {
@@ -34,5 +34,16 @@ describe('startups dataset', () => {
 describe('featurePresets', () => {
   it('defines three preset feature combinations', () => {
     expect(featurePresets).toHaveLength(3);
+  });
+});
+
+describe('fixedRanges', () => {
+  it('spans the full dataset for each field, not just one preset subset', () => {
+    const fields = ['rdSpend', 'administration', 'marketingSpend', 'profit'] as const;
+    fields.forEach((field) => {
+      const values = startups.map((s) => s[field]);
+      expect(fixedRanges[field].min).toBe(Math.min(...values));
+      expect(fixedRanges[field].max).toBe(Math.max(...values));
+    });
   });
 });

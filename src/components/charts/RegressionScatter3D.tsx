@@ -130,6 +130,8 @@ export default function RegressionScatter3D() {
       </div>
       <div
         className="regression-chart__frame"
+        role="img"
+        aria-label="3D 迴歸圖表，可用滑鼠或觸控拖曳旋轉視角"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
