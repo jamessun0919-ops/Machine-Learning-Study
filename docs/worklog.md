@@ -128,6 +128,7 @@
 - 依 finishing-a-development-branch skill：測試通過（15/15）→ 開發者選擇「Merge back to main locally」→ 本機 checkout main、merge `worktree-ml-site-skeleton-pilot`（merge commit `ea6a75b`）→ 合併後於 main 重新 `npm install`／`npm test`／`astro check` 驗證通過 → 清理本機分支與 worktree（`.claude/worktrees/ml-site-skeleton-pilot`）
 - Push `main` 到 origin，觸發 GitHub Pages 部署 workflow，執行成功（`completed|success`），實測首頁／章節頁／favicon 皆回應 200，網站正式上線：`https://jamessun0919-ops.github.io/Machine-Learning-Study/`
 - 開發者確認後，刪除遠端 `worktree-ml-site-skeleton-pilot` 分支
+- 依開發者要求，改寫 `README.md`（取代 Astro 預設英文範本），依 CLAUDE.md 規定順序（DEMO 按鍵→專案目標→計畫架構→已完成進度→未完成事項）以中文撰寫，計畫架構取自 `dir.txt` 八階段課程規劃
 
 **遇到的瓶頸：**
 - 環境沒有 `gh` CLI，原計畫「push 後用 `gh run watch` 驗證」的步驟改用「開發者手動網頁操作 + 公開 API（`curl` 查詢 Actions API，repo 為 public 免登入）輪詢」替代

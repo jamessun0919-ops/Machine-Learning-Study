@@ -498,3 +498,11 @@ Agent 說明本機 merge 完成、main 領先 origin/main 20 個 commit，push �
 Push 後用公開 Actions API（repo 為 public，免登入）輪詢部署 workflow 狀態，約 45 秒後確認 `completed|success`。實測三個線上網址（首頁、章節頁、favicon）皆回應 HTTP 200，確認網站正式上線於 `https://jamessun0919-ops.github.io/Machine-Learning-Study/`。
 
 Agent 詢問是否刪除已合併完畢的遠端分支 `origin/worktree-ml-site-skeleton-pilot`，開發者：「刪除遠端分支」。執行 `git push origin --delete worktree-ml-site-skeleton-pilot` 完成。
+
+### 段落九：README 更新
+
+開發者：「請生成github的Readme欄位並推送，依照CLAUDE.md檔案中規定，以中文撰寫」。Agent 讀取現有 `README.md`（仍是 Astro 預設英文範本，從未客製化過），依 CLAUDE.md 規定的欄位順序（DEMO 按鍵→專案目標→計畫架構→已完成進度→未完成事項）改寫：DEMO 連結指向已上線的 GitHub Pages 網址；專案目標取自 handover 的一句話總結；計畫架構整理 `dir.txt` 八階段課程表格＋章節固定九區塊結構＋技術棧；已完成進度列出網站骨架與 Multiple Linear Regression 章節內容；未完成事項列出 `dir.txt` 其餘章節、資訊圖表流程未正式化、測驗題目排除在外。Commit（`ec6e7ed`）並 push。
+
+### 段落十：收工
+
+開發者：「結束本階段工作，感謝，辛苦了」。Agent 補上工作日誌與對話紀錄的 README 段落記錄，確認本階段無啟動任何本機測試用 server，最終確認交接文件現況不需再更動（README 更新為文件性質，不影響下一階段的技術交接內容）。
