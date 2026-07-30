@@ -723,4 +723,80 @@ Agent 檢視 `git diff --stat` 與近期 commit 風格，確認變更內容涵�
 
 開發者並說明本次 CLAUDE.md 的工作規則異動（模型自我介紹要求、錯誤處理規則擴充等）是開發者本人手動新增修改，非本階段 Agent 所為。開發者指示記錄完畢後結束本階段工作。
 
+## 2026-07-30（第 11 個工作階段）
+
+### 段落一：開工與環境確認
+
+開發者：「晚安，請閱讀交接文檔及工作規則後與我討論，開始本階段工作」
+Agent 自我介紹為 Sonnet 5 模型，載入 `using-superpowers` 技能，讀取 `docs/handover.md`（第 10 階段交接內容），確認 Astro dev server 無殘留（`npx astro dev status` 回報 `No dev server is running`）。Agent 摘要交接文件的兩項下階段候選工作項目（機器學習介紹章節、simple-linear-regression 互動內容調整），並詢問開發者本階段優先項目。
+
+Agent 提供選項：
+1. 機器學習介紹章節（規劃非演算法章節內容範本）
+2. 調整簡單線性迴歸互動內容
+3. 兩項都討論方案架構，但只動工一項的程式碼
+
+開發者選擇：「機器學習介紹章節」
+
+### 段落二：Brainstorming — 非演算法章節內容架構
+
+Agent 判斷此為開放式內容架構設計任務，載入 `brainstorming` 技能，並探查專案現況（`docs/specs/chapter_template_guide.md` 九大區塊範本、`src/config/chapters.ts`、`src/content.config.ts` schema、既有兩章節 `.md` 內容）。
+
+**知識地圖呈現形式**：Agent 提供「純文字清單」／「靜態視覺化圖表」／「互動式 React 元件」三個選項，開發者選擇「互動式 React 元件」。
+
+**地圖互動行為**：Agent 提供「點擊直接跳轉」／「展開/收合 + 跳轉」／「純視覺展示不跳轉」三個選項，開發者選擇「點擊直接跳轉」（已完成章節可點擊跳轉，未完成反灰標示「即將推出」，八階段全部展開不收合）。
+
+**是否需要 ChapterSummaryCard 摘要圖表**：Agent 提供「不需要」／「需要但內容重新設計」兩個選項，開發者選擇「不需要」（知識地圖本身已是視覺化總結）。Agent 進一步查看 `[slug].astro` 與 `ChapterSummaryCard.astro`，發現摘要卡片目前是全章節無條件渲染、`summary` 欄位在 schema 中為必填，確認此決定需要調整共用範本與 schema。
+
+**內容區塊結構**：Agent 提案 5 區塊（簡介／機器學習的分類／典型應用場景／常見誤區／全課程知識地圖），取代九大區塊範本中不適用的數學原理、評估指標等區塊，開發者選擇「確認，依此 5 區塊進行」。
+
+**知識地圖巢狀結構**：`dir.txt` 中 Linear Regression、Ensemble Model、Clustering 等主題有子項目，Agent 提供「展開到子項級別」／「只顯示父項層級」兩個選項，開發者選擇「暫定展開到子項，如節點過多再進行調整」。
+
+Agent 彙整前述決定為完整架構方案（內容架構、知識地圖元件、共用範本調整），並詢問是否可以確認寫成 spec。開發者回覆：「確認，可以寫成 spec」。
+
+### 段落三：內容項目細節確認
+
+依 CLAUDE.md 規則，規劃型任務需確認到內容項目層級，Agent 逐項詢問：
+
+**機器學習的分類維度**：Agent 提供「學習方式」／「任務類型」／「參數/非參數模型」三個複選項，開發者選擇「學習方式與任務類型都需要說明，參數選項暫不加入」。
+
+**典型應用場景**：Agent 提案 5 個案例（房價預測、垃圾郵件分類、客戶分群、影像辨識、推薦系統），開發者選擇「可以，依此 5 個案例」。
+
+**常見誤區**：Agent 提案 4 點（ML=AI、資料越多越好、模型越複雜越好、相關性不等於因果性），開發者選擇「可以，依此 4 點」。
+
+### 段落四：發現與骨架設計文件的規格落差，重新確認知識地圖範圍
+
+Agent 在確認 spec 存檔慣例（`docs/superpowers/specs/`）時，回頭查閱第一階段骨架設計文件 `2026-07-28-ml-learning-site-skeleton-design.md` 第 5 節，發現該文件已預先規定知識地圖需呈現「演算法間的概念關聯」（例如 Logistic Regression 是 Linear Regression 的橋樑、Random Forest 由 Decision Tree 組成等），與剛才討論定案的「純課程導覽點擊跳轉」不是同一件事。Agent 主動向開發者指出此落差並提出疑問，而非自行決定取捨。
+
+**地圖範圍**：Agent 提供「先做純導覽，關聯圖後續再說」／「現在就加入關聯資訊」兩個選項，開發者選擇「現在就要同時加入關聯資訊」。
+
+**跨階段關聯視覺化方式**：因關聯常跨階段（如 Random Forest 在階段五、Decision Tree 在階段四），Agent 提供「分階段列表 + 文字標註關聯」／「真正節點連線的網狀概念圖」兩個選項，開發者選擇「在互動式知識地圖上採分階段列表＋文字標註關聯，另外生成一張節點連線概念圖做視覺輔助」（即兩者並用）。
+
+**概念圖定位**：Agent 提供「靜態輔助圖片」／「嵌入式 Mermaid 技術流程圖」兩個選項，開發者選擇「靜態輔助圖片」。
+
+**概念圖風格**：依既有規則（每個新章節需重新詢問資訊圖表風格），Agent 提供「白底向量風格」／「Excalidraw 手繪風格」兩個選項，開發者選擇「Excalidraw 手繪風格」。
+
+**關聯內容清單**：Agent 提案沿用骨架文件原本舉例的 4 條關聯，並詢問是否需要新增其他關聯，開發者選擇「新增 Boosting↔Decision Tree 與 KNN↔Clustering」，最終定案 6 條關聯。
+
+### 段落五：Spec 文件撰寫與確認
+
+Agent 查閱 `content.config.ts`、`[slug].astro`、`ChapterSummaryCard.astro`、既有渲染腳本 `scripts/render-infographic.ps1` 等技術細節後，將完整方案寫成 spec 文件 `docs/superpowers/specs/2026-07-30-ml-introduction-chapter-design.md`（涵蓋內容範本、知識地圖靜態圖與互動清單設計、共用範本 schema 調整、章節註冊），並 commit（未 push）。Agent 請開發者 review 文件內容。
+
+開發者（透過 IDE 開啟該檔案後）：「請進行實作進化」（=請進行實作規劃）。Agent 視為 spec 已核准，依 brainstorming 技能流程，載入 `writing-plans` 技能撰寫實作計畫，而非直接跳過去寫程式碼。
+
+### 段落六：撰寫實作計畫
+
+Agent 查閱 `package.json`、既有測試檔案（`src/lib/*.test.ts`）、`RegressionScatter2D.tsx`、`global.css`、`datasets.ts` 等既有程式碼慣例，將 spec 拆解為 6 個 Task 的實作計畫，存至 `docs/superpowers/plans/2026-07-30-ml-introduction-chapter.md`：
+1. 課程資料模組 `curriculum.ts`（含測試）
+2. schema／`[slug].astro` 改為條件渲染摘要卡片
+3. 互動式知識地圖元件 `CourseKnowledgeMap.tsx` + CSS
+4. 靜態概念關聯圖（Excalidraw 手繪風格 PNG，6 張關聯卡片網格版面）
+5. 章節內容撰寫、`chapters.ts` 註冊、`[slug].astro` 掛載
+6. 瀏覽器實測與收工驗證
+
+### 段落七：執行方式決定與收工
+
+Agent 依技能規則詢問執行方式：「Subagent-Driven（推薦）」／「Inline Execution」。
+
+開發者選擇：「將本問題紀錄於下一階段工作，先結束本階段工作」。Agent 依此結束本階段工作，未執行任何 Task，轉為執行收工流程（更新 worklog、補齊本 chatlog、更新 handover、推送成果）。
+
 

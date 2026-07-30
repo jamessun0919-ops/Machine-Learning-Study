@@ -266,3 +266,27 @@
 3. 本次 CLAUDE.md 工作規則異動（模型自我介紹要求、錯誤處理規則擴充）為開發者本人手動新增修改，非 Agent 本階段所為。
 
 **本機測試用 server：** 本階段檢查到與本專案相關但非本次 session 啟動的殘留 Astro dev server（PID 18904 `npm run dev`、PID 30068 `astro dev`），經詢問開發者後以 `npx astro dev stop` 關閉並確認行程消失。本階段 Agent 未另外啟動任何新的 dev server。殘留的 4 個 `chrome-devtools-mcp` 行程確認與本專案無關（IDE 層級 MCP 服務），未處理。
+
+## 2026-07-30（第 11 個工作階段）
+
+**當日工作內容：**
+- 開工確認環境無殘留 dev server，與開發者確認本階段優先項目為「機器學習介紹」章節。
+- 使用 `brainstorming` 技能，逐項與開發者討論非演算法章節的內容架構、知識地圖呈現方式與互動行為、是否需要摘要圖表。
+- 過程中發現本階段討論結果與第 1 階段骨架設計文件（知識地圖需呈現演算法概念關聯）有落差，主動提出並與開發者確認範圍擴充。
+- 完成內容項目細節（分類維度、應用場景案例、常見誤區、6 條概念關聯）逐項確認。
+- 撰寫並 commit spec 文件，經開發者示意核准後，使用 `writing-plans` 技能撰寫實作計畫。
+- 依技能規則詢問執行方式，開發者指示留待下階段執行，本階段收工。
+
+**完成項目：**
+- Spec 文件：`docs/superpowers/specs/2026-07-30-ml-introduction-chapter-design.md`（已 commit，local only）。
+- 實作計畫：`docs/superpowers/plans/2026-07-30-ml-introduction-chapter.md`，共 6 個 Task（課程資料模組、schema/範本條件渲染、互動式知識地圖元件、靜態 Excalidraw 概念關聯圖、章節內容與掛載、瀏覽器實測收工）。
+- 本階段未實際動工程式碼／內容，僅完成規劃與 spec/plan 文件。
+
+**遇到的瓶頸：**
+- 無阻塞。發現的「知識地圖範圍與骨架設計文件不一致」問題已當場與開發者討論確認，非卡住，詳見當日 chatlog 第 11 階段段落四。
+
+**開發者交代備忘事項（下階段工作項目）：**
+1. 執行 `docs/superpowers/plans/2026-07-30-ml-introduction-chapter.md` 的 6 個 Task。開工時需先與開發者確認執行方式：Subagent-Driven（每 Task 派新 subagent + 逐一審查）或 Inline Execution（本 session 內批次執行 + 檢查點確認）。
+2. 交接文件中原第 10 階段記錄的另一項工作（調整 `simple-linear-regression` 互動內容，改用表格點擊列移動資料點）仍待安排，尚未排入本階段。
+
+**本機測試用 server：** 本階段全程僅進行規劃討論與文件撰寫，未啟動任何 dev server（開工時已確認無殘留、收工時仍為無運行狀態）。
