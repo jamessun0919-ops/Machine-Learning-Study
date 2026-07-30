@@ -111,3 +111,30 @@
 - 剩餘計畫任務：Task 12（GitHub Pages 部署）尚未開始
 
 **本機測試用 server：** 本階段結束前已確認關閉（`astro dev stop`，`netstat` 確認 4321 埠無 LISTEN 中的程序）。發現的其餘背景程序為 chrome-devtools MCP 相關，與本專案無關（非本階段啟動），未處理。
+
+## 2026-07-30（第 5 個工作階段）
+
+**當日工作內容：**
+- 開工前讀交接文件，確認執行 **Task 12（GitHub Pages 部署）**，接著進行 12 個任務的最終整體審查，最後依 finishing-a-development-branch skill 決定分支整合方式
+
+**完成項目：**
+- Task 12：`astro.config.mjs` 加上 `site: 'https://jamessun0919-ops.github.io'`、`base: '/Machine-Learning-Study/'`；發現並修正 `Nav.astro`、`index.astro` 裡兩處寫死的絕對路徑連結（改用 `import.meta.env.BASE_URL` 前綴），避免加了 base path 後導覽連結全部失效；新增 `.github/workflows/deploy.yml`（`withastro/action` + `actions/deploy-pages`，Node 22）
+- 環境沒有安裝 GitHub CLI（`gh`），改為請開發者手動到 GitHub 網頁設定 Pages Source 為 GitHub Actions，並手動觸發 workflow 測試部署
+- 過程中發現 GitHub 限制：`workflow_dispatch`／Actions 分頁的 workflow 清單只認 default branch（`main`）上存在的檔案，且 `main` 分支當時完全沒有網站程式碼，因此單獨測試 `deploy.yml` 沒有意義，開發者決定推遲部署驗證到最終審查通過、正式 merge 進 main 時一併確認
+- 最終整體審查：dispatch code-reviewer subagent 審查全部 12 個任務（base `6ceb51c`..head `2d25395`）。結果 Ready to merge（With fixes）：
+  - Important：學習摘要全螢幕 lightbox 缺少 `role="dialog"`/`aria-modal`、開關時無焦點管理與 tab trap → 已修復（`ChapterSummaryCard.astro`）
+  - Minor（開發者選定要處理的 4 項，已全部完成）：`summary.image` 與 `formulas`/`keyStats` 二選一邏輯加註解；3D 圖表旋轉區塊加 `aria-label`；補 `fixedRanges`/`fieldLabels` 涵蓋全資料集的測試；`BaseLayout.astro` 補 favicon `<link rel="icon">`
+  - 其餘 Minor（`--accent-2-rgb` 死 token 等舊帳、3D 圖表放大需求）確認為之前已討論過要延後或已取消的項目，維持現狀
+- 依 finishing-a-development-branch skill：測試通過（15/15）→ 開發者選擇「Merge back to main locally」→ 本機 checkout main、merge `worktree-ml-site-skeleton-pilot`（merge commit `ea6a75b`）→ 合併後於 main 重新 `npm install`／`npm test`／`astro check` 驗證通過 → 清理本機分支與 worktree（`.claude/worktrees/ml-site-skeleton-pilot`）
+- Push `main` 到 origin，觸發 GitHub Pages 部署 workflow，執行成功（`completed|success`），實測首頁／章節頁／favicon 皆回應 200，網站正式上線：`https://jamessun0919-ops.github.io/Machine-Learning-Study/`
+- 開發者確認後，刪除遠端 `worktree-ml-site-skeleton-pilot` 分支
+
+**遇到的瓶頸：**
+- 環境沒有 `gh` CLI，原計畫「push 後用 `gh run watch` 驗證」的步驟改用「開發者手動網頁操作 + 公開 API（`curl` 查詢 Actions API，repo 為 public 免登入）輪詢」替代
+- 從 main 根目錄跑 `npm test` 時發現測試數量變成 30（應為 15 的兩倍）：因為 worktree 路徑 `.claude/worktrees/ml-site-skeleton-pilot` 雖然在 `.gitignore` 中，但 vitest 預設不會讀 `.gitignore`，掃描時把 worktree 內同一份程式碼的測試又跑了一次。已在合併後的清理步驟中移除該 worktree 目錄，問題自然解除；未對 vitest 設定本身做改動（非本次任務範圍，且清理 worktree 後已不再發生）
+
+**開發者交代備忘事項：**
+- 12 個任務、Task 12 部署全部完成並已上線，worktree 分支已整合進 main 並清理
+- 下一階段開工前先讀交接文件 `docs/handover.md`
+
+**本機測試用 server：** 本階段未啟動任何本機測試用 server（僅執行 `npm run build`／`npm test`，非 dev server），確認無殘留。

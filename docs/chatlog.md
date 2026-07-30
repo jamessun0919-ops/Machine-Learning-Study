@@ -432,3 +432,69 @@ Agent 用 Playwright 檢查發現伺服器回傳 `504 (Outdated Optimize Dep)`�
 ### 段落十一：收工
 
 Agent commit（`1022e32`）並 push 至 `worktree-ml-site-skeleton-pilot` 遠端分支，停止本機 dev server（`astro dev stop`，`netstat` 確認 4321 埠無殘留），確認其餘背景程序（chrome-devtools MCP 相關）與本專案無關、非本階段啟動，不處理，撰寫工作日誌與交接文件。
+
+## 第 5 個工作階段（2026-07-30）
+
+### 段落一：開工、Task 12 架構確認
+
+開發者：「午安，請閱讀交接文檔及工作規則，開始本階段工作」。Agent 讀取 `docs/handover.md` 與工作日誌第4階段範圍，確認 worktree 分支乾淨、無殘留 dev server，摘要現況並詢問下一步是否進行 Task 12（GitHub Pages 部署）。
+
+開發者：「進行最終審查」——此為誤觸/跳過，實際上先確認要做 Task 12。Agent 檢查程式碼發現 `Nav.astro`、`index.astro` 有寫死的絕對路徑連結（`href="/"`、`href="/chapters/${slug}/"`），若直接加上 `base` 設定會在部署後導致導覽全部失效，於是先詢問：
+- 部署目標倉庫與網址範圍（主倉庫 Machine-Learning-Study 的 Pages／其他倉庫或自訂網域）
+- 是否確認採用「修正絕對路徑連結 + 新增 GitHub Actions 部署流程」的架構
+
+開發者選擇：主倉庫 Machine-Learning-Study 的 Pages；確認按此架構進行。
+
+### 段落二：Task 12 實作與本機驗證
+
+Agent 依序完成：`astro.config.mjs` 加 `site: 'https://jamessun0919-ops.github.io'`、`base: '/Machine-Learning-Study/'`；修正 `Nav.astro`／`index.astro` 三處絕對路徑連結改用 `import.meta.env.BASE_URL` 前綴；新增 `.github/workflows/deploy.yml`（`withastro/action@v3` + `actions/deploy-pages@v4`，Node 22 對齊 `package.json` engines）。本機 `npm test`（14 項）、`npx astro check`（0 錯誤）、`npm run build` 皆通過，並用 `grep` 確認 build 後 `dist/index.html` 的連結與圖片路徑都正確帶 `/Machine-Learning-Study/` 前綴。Commit（`2d25395`）並 push 到 worktree 分支。
+
+### 段落三：gh CLI 缺失與 Pages Source 設定
+
+Agent 嘗試用 `gh api` 確認/啟用 Pages Source，發現 Bash 與 PowerShell 環境都沒有安裝 GitHub CLI，詢問開發者：自行到網頁設定，或由 Agent 安裝 gh CLI 並執行認證流程。
+
+開發者選擇：開發者自行到 GitHub 網頁設定。Agent 提供步驟（Settings → Pages → Source 選 GitHub Actions），開發者回報「設定完畢」。
+
+### 段落四：部署驗證卡關——workflow_dispatch 限制與 main 無程式碼
+
+Agent 建議開發者到 Actions 分頁手動觸發 workflow（分支選 worktree 分支）進行驗證。開發者回報畫面顯示「This workflow does not exist」並附截圖。Agent 判斷這是 GitHub 正常限制：`workflow_dispatch`／Actions 分頁的 workflow 清單只認 default branch（`main`）上存在的檔案，deploy.yml 目前只在 worktree 分支上，因此完全不可見。詢問開發者三個處理方向；開發者選擇「先把 deploy.yml 單獨 merge 進 main 測試」。
+
+Agent 進一步檢查發現更根本的問題：`main` 分支目前完全沒有這個 Astro 專案的任何程式碼（沒有 `package.json`/`src/`），整個網站都還只在未經最終審查的 worktree 分支上——單獨 merge `deploy.yml` 測試會因為找不到 `package.json` 而失敗，測不出真正的部署邏輯是否正確。回報此發現後再次詢問，開發者最終選擇：「推遲驗證到最終審查後的正式 merge」，維持原計畫順序不變。
+
+### 段落五：最終整體審查（12 個任務）
+
+開發者：「進行最終審查」。Agent 用 `requesting-code-review` skill，以 `git merge-base main HEAD`（`6ceb51c`）到 worktree HEAD（`2d25395`，30 個檔案、12379 行新增）為範圍，dispatch 一個 general-purpose code-reviewer subagent，附上完整的計畫依據（`docs/superpowers/plans/2026-07-28-ml-site-skeleton-pilot-chapter.md`）、專案固定約束（`client:only="react"` 字面引用、9 區塊結構、`dir.txt` 排序來源、`#7c5ee6` 對比度規則等）與「已知且開發者已核准的偏離事項」清單（3D 圖表自訂旋轉、vanilla JS 捲動動效、資訊圖表手動腳本流程、測驗題目排除在外、部署尚未端到端驗證），避免審查者重複列舉已討論過的舊項目。
+
+審查結果：Ready to merge（With fixes）。優點：base path 修正徹底、`deploy.yml` 設定正確、Plotly 97MB 套件無重複打包、`client:only` 用法正確、顏色對比規則有遵守、14 測試全過、`astro check` 0 錯誤。Important 1 項：學習摘要全螢幕 lightbox 缺少 `role="dialog"`/`aria-modal`、開關無焦點管理與 tab trap。Minor 6 項：`summary.image` 與文字二選一邏輯無註解、3D 圖表缺 `aria-label`／鍵盤替代操作、`fixedRanges`/`fieldLabels` 無測試覆蓋、第11階段已知舊帳未清（`--accent-2-rgb` 死 token 等）、favicon 檔案存在但未接上 `<link rel="icon">`、3D 圖表框放大需求疑似未處理。
+
+Agent 回報摘要後，核對工作日誌發現「3D 圖表框放大」其實第4階段已明確記錄「開發者確認比例調整已足夠，取消此項需求」，判斷審查者是看到 SDD ledger 舊記錄誤報，向開發者說明此項實為舊帳非新問題。
+
+### 段落六：修復決策
+
+Agent 詢問 Important 項目處理方式，開發者選擇「現在修復後再 merge」。
+
+針對 6 項 Minor，Agent 先給出對每一項的成本/性質判斷（何者成本低建議做、何者屬於已討論過的舊帳），開發者選擇「我想逐項討論哪些要處理」。Agent 重新列出 4 個可選項（第4項舊帳已預設保持現狀不列入選項），開發者回覆：「4項都依你的建議處理」——即：①`summary.image` 二選一邏輯加註解；②3D 圖表加 `aria-label`（不含鍵盤操作）；③補 `fixedRanges`/`fieldLabels` 測試；④加 favicon link tag。
+
+Agent 逐項實作：
+- `ChapterSummaryCard.astro`：lightbox 加 `role="dialog"`/`aria-modal`/`aria-label`，開啟時焦點移至關閉按鈕、關閉時焦點還原至觸發按鈕，新增 Tab 循環的 focus trap；`Astro.props` 上方加註解說明 image 與 formulas/keyStats 為互斥顯示模式
+- `RegressionScatter3D.tsx`：旋轉容器加 `role="img"` + `aria-label="3D 迴歸圖表，可用滑鼠或觸控拖曳旋轉視角"`
+- `datasets.test.ts`：新增測試斷言 `fixedRanges` 各欄位 min/max 涵蓋整個資料集而非單一 preset 子集
+- `BaseLayout.astro`：加 `<link rel="icon" href={`${import.meta.env.BASE_URL}favicon.svg`} .../>`
+
+驗證：`npm test` 15/15 通過、`astro check` 0 錯誤、`npm run build` 成功且 favicon 連結正確帶 base path 前綴。Commit（`ad5b81f`）並 push。
+
+### 段落七：finishing-a-development-branch 與最終 merge
+
+開發者：「現在進行」finishing-a-development-branch 流程。Agent 執行 skill：確認測試通過（15/15）→ 偵測環境為具名分支 worktree（非 detached HEAD）→ 呈現標準三選項，開發者選擇「Merge back to main locally」。
+
+執行：`main` 上 `git merge worktree-ml-site-skeleton-pilot`（merge commit `ea6a75b`，30 檔案／12418 行新增，因為 main 之前完全沒有這個子專案），合併後在 `main` 根目錄重新 `npm install`／`npm test`／`astro check` 驗證通過（測試數量顯示 30，是 15 的兩倍——因為 worktree 目錄 `.claude/worktrees/ml-site-skeleton-pilot` 雖列在 `.gitignore` 但 vitest 預設不讀 `.gitignore`，掃描時把同一份程式碼的測試又跑了一次；清理 worktree 後此現象自然消失，未另外修改 vitest 設定）。
+
+清理階段遇到 Windows 權限問題：`git worktree remove` 第一次因「Permission denied」失敗，但已經把 `.git/worktrees/` 的登記移除、把目錄內容清空，只剩一個空的頂層目錄殘留；重試 `rmdir` 成功清除，`git worktree prune` 確認無殘留登記，`git branch -d worktree-ml-site-skeleton-pilot` 順利刪除本機分支。
+
+### 段落八：Push main 與線上部署驗證
+
+Agent 說明本機 merge 完成、main 領先 origin/main 20 個 commit，push 會觸發 GitHub Pages 部署 workflow 第一次實際上線，詢問是否 push。開發者：「現在 push」。
+
+Push 後用公開 Actions API（repo 為 public，免登入）輪詢部署 workflow 狀態，約 45 秒後確認 `completed|success`。實測三個線上網址（首頁、章節頁、favicon）皆回應 HTTP 200，確認網站正式上線於 `https://jamessun0919-ops.github.io/Machine-Learning-Study/`。
+
+Agent 詢問是否刪除已合併完畢的遠端分支 `origin/worktree-ml-site-skeleton-pilot`，開發者：「刪除遠端分支」。執行 `git push origin --delete worktree-ml-site-skeleton-pilot` 完成。
