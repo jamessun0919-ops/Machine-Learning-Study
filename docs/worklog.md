@@ -82,3 +82,32 @@
 - 下一階段開工請先讀交接文件 `docs/handover.md`
 
 **本機測試用 server：** 本階段結束前已確認關閉（`astro dev stop` + `astro dev status` 顯示無執行中的 dev server），`netstat` 檢查 4320-4329 埠皆無殘留。未發現其他與本專案相關的殘留 server。
+
+## 2026-07-30（第 4 個工作階段）
+
+**當日工作內容：**
+- 開工前讀取交接文件，處理上階段記載的遺留事項，並依開發者新需求陸續調整章節頁面與學習摘要區塊
+
+**完成項目：**
+- `.reading-progress`（頂部閱讀進度條）改成 JS 版本：與開發者確認架構後，用 `scroll` + `requestAnimationFrame` 節流計算連續捲動百分比（非 `IntersectionObserver`，因該 API 不適合連續比例場景），取代 Chromium-only 的 `animation-timeline: scroll()`
+- 3D 圖表外框物理尺寸放大：開發者確認比例調整已足夠，取消此項需求
+- 章節主標題右側新增「資訊圖表」「互動操作」兩個跳轉按鈕（`chapter__jump-nav`），沿用網站既有 `scroll-padding-block-start` 設定，跳轉後不會被 sticky nav 遮住
+- 學習摘要區塊改為顯示生成圖片（取代原本的公式+keyStats 文字），並支援點擊全螢幕 lightbox：
+  - 圖片風格與參考圖（`pic/Bayes.png`、`pic/CRISPDM.png`）討論後，確認為「仿參考圖乾淨資訊圖表風格」而非字面 excalidraw 手繪風
+  - 內容用網站自己的 50 Startups 資料集重新計算迴歸結果（非援用參考圖數字，因方法論不同）
+  - 技術作法：HTML/CSS 排版（KaTeX 走專案既有 npm 套件渲染，不依賴 CDN）+ Playwright 截圖產生 PNG（Playwright 裝在 session 暫存資料夾，未列入專案依賴）
+  - `content.config.ts` 新增可選的 `summary.image` schema 欄位，未設定的章節仍維持原文字顯示
+  - 依開發者多輪回饋調整全螢幕顯示邏輯（從「縮小塞進視窗高度」改為「寬度撐滿、維持 A4 比例、超出視窗高度用捲動查看」）與內容架構（從「案例結果穿插在概念中間」改為「上半部純概念（簡介→模型公式→適用情境→評估指標→常見誤區），下半部把所有案例數字整合成單一『案例分析』區塊」）
+  - 標題文字追加「50 Startups」的中文翻譯註記
+- 全部變更已 commit（`1022e32`）並 push 至 `worktree-ml-site-skeleton-pilot` 遠端分支
+
+**遇到的瓶頸：**
+- 全螢幕 lightbox 開發過程中抓到一個真實 CSS bug：`.summary-card__lightbox` 原本寫死 `display: flex`，蓋掉瀏覽器對 `hidden` 屬性預設的 `display: none`，導致遮罩其實一直是顯示狀態；改用 `:not([hidden])` 選擇器修正
+- 環境沒有預裝瀏覽器自動化工具（`chromium-cli`、Playwright 皆不存在），與開發者確認後臨時在 session 暫存目錄安裝 Playwright + Chromium 才能實際驗證 UI 行為（非專案依賴，不影響 `package.json`）
+- 為了確保新圖片不被快取影響，清除了 `node_modules/.vite` 依賴快取，導致 `react-plotly.js`（97MB 原始套件）需要重新 esbuild 打包，第一次檢查等待時間不夠就誤判互動圖表故障，重新等待後確認正常——提醒之後只需要更新圖片資產時，不必連 Vite 的 JS 依賴快取一起清，只清 `.astro` 內容快取即可，避免無謂觸發大型套件重新打包
+
+**開發者交代備忘事項：**
+- 下一階段開工請先讀交接文件 `docs/handover.md`
+- 剩餘計畫任務：Task 12（GitHub Pages 部署）尚未開始
+
+**本機測試用 server：** 本階段結束前已確認關閉（`astro dev stop`，`netstat` 確認 4321 埠無 LISTEN 中的程序）。發現的其餘背景程序為 chrome-devtools MCP 相關，與本專案無關（非本階段啟動），未處理。

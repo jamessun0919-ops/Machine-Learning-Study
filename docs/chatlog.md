@@ -358,3 +358,77 @@ Agent 實作：
 Agent commit（`b9cd3fa`）並 push 至 `worktree-ml-site-skeleton-pilot` 遠端分支，停止本機 dev server（`astro dev stop` + `astro dev status` 確認無執行中程序，`netstat` 檢查 4320-4329 埠無殘留），準備撰寫工作日誌與交接文件。
 
 **注意（Agent 主動提醒，非開發者確認事項）**：本階段開頭已口頭同意的「`.reading-progress` 改成 JS 版本」在後續討論全部聚焦在 3D 圖表調整，實際上**尚未實作**；另外交接文件原本記載的「3D 圖表外框需要放大」（物理尺寸，480px 高）也還沒給出目標數值且未調整，本階段做的是外框比例（aspectratio）調整，不是外框本身的 CSS 尺寸放大。兩項都記錄進下次交接文件的待辦事項。
+
+## 2026-07-30（第 4 個工作階段）
+
+### 段落一：開工前置與遺留事項確認
+
+開發者：「早安，請閱讀交接文檔及規則後與我討論，開始本階段工作」
+
+Agent 讀取 `docs/handover.md`，彙整兩項上階段記載「口頭同意但實際未完成」的事項，詢問開發者是否要在本階段處理：
+1. `.reading-progress` 改成 JS（IntersectionObserver）版本
+2. 3D 圖表外框物理尺寸放大（目前 480px 高）
+
+開發者選擇：第 1 項本階段處理；第 2 項不需要了，比例調整已足夠。
+
+### 段落二：進度條 JS 實作方式的技術澄清
+
+Agent 讀取現有 `.reading-progress` CSS 與上階段強調線的 JS 寫法後，指出兩者技術性質不同：強調線是「進入/離開」二元事件，適合 `IntersectionObserver`；進度條需要連續百分比，`IntersectionObserver` 不適合。提出兩個實作選項詢問：
+- A：`scroll` + `requestAnimationFrame`（推薦）
+- B：用大量 sentinel 元素模擬 `IntersectionObserver` 分段近似
+
+開發者選擇 A。Agent 實作：`global.css` 移除 `@supports (animation-timeline: scroll())` 區塊，`BaseLayout.astro` 新增 inline script 用 `scroll` 事件 + rAF 節流計算 `scrollTop/(scrollHeight-innerHeight)` 設定 `transform: scaleX()`，`prefers-reduced-motion: reduce` 時不執行。
+
+### 段落三：瀏覽器驗證能力缺口與 Playwright 臨時安裝
+
+`npm test`／`npx astro check` 皆通過後，Agent 說明環境沒有瀏覽器自動化工具（`chromium-cli`、Playwright 皆不存在），無法依 CLAUDE.md 規則「用瀏覽器實際測試 UI 效果」，詢問開發者要自行檢查還是由 Agent 安裝 Playwright。
+
+開發者：「你自己到瀏覽器檢查」——Agent 澄清自己實際上沒有瀏覽器可用，只能重新提問，開發者改為：「幫我安裝 Playwright 來自動驗證」。Agent 在 session 暫存目錄（非專案 `package.json`）安裝 Playwright + Chromium，寫腳本驗證捲動時 `scaleX` 由 0 連續遞增到 1、無 console 錯誤，並用截圖確認視覺效果，驗證通過。
+
+### 段落四：學習摘要改生成資訊圖片，風格與內容範圍澄清
+
+開發者：「我要調整學習摘要欄位的內容，改為生成一張圖片，風格與內容訊息量參考pic資料夾內兩個png，生成一張A4大小，excalidraw風格的資訊圖片，圖片在網頁內可點擊放大至全螢幕。請生成讓我確認」
+
+Agent 讀取 `pic/Bayes.png`、`pic/CRISPDM.png` 後指出兩點需要先澄清：①兩張參考圖其實是乾淨的向量資訊圖表風格，並非 excalidraw 手繪風，兩者衝突；②環境沒有 AI 圖片生成模型，只能用「真·excalidraw 函式庫組場景」或「仿參考圖風格的 HTML/CSS + 截圖」兩條路徑之一；③現有 summary 欄位內容遠少於參考圖資訊密度，需要整章濃縮才能達到相近密度。分別提出選項詢問。
+
+開發者選擇：仿參考圖乾淨設計風格（非 excalidraw 手繪）；內容整章節濃縮。Agent 提出完整實作計畫（內容區塊、技術作法、程式碼整合方式）並詢問背景色，開發者選擇白底（同參考圖）。
+
+### 段落五：真實數字計算與初版生成
+
+Agent 用網站自己的 `50-startups.json` 資料集重新計算常態方程式迴歸結果（非援用 `CRISPDM.png` 的數字，因該圖用了 train/test split＋標準化＋State 類別編碼，跟本章節「全部 50 筆、僅 3 特徵、常態方程式」的教學設定不一致），得出係數、R²=0.9507、RMSE=8855.34、三組相關係數。用 HTML/CSS + 專案既有 `katex` 套件渲染公式，Playwright 截圖產生 PNG 初版，發現並修正一個 bug（區塊 1 說明文字裡 `$\beta_0$` 等符號沒有實際用 KaTeX 渲染、印出原始 LaTeX 語法），重新生成後交開發者確認。
+
+開發者：「測試完畢，效果符合預期」，接著提出新需求：「增加跳轉的功能：在章節主標題右側增加兩個按鍵，跳轉到資訊圖表及互動操作欄位」（見段落七）。
+
+### 段落六：全螢幕顯示效果修正（縮小塞進視窗 → 撐滿寬度捲動查看）
+
+圖片與 lightbox 整合進站後（`ChapterSummaryCard.astro` 新增可選 `summaryImage`/`image` 支援＋lightbox，`content.config.ts` 新增 `summary.image` schema），Playwright 驗證發現一個真實 CSS bug：`.summary-card__lightbox` 寫死 `display: flex` 蓋掉 `hidden` 屬性預設的 `display: none`，改用 `:not([hidden])` 選擇器修正。
+
+開發者截圖回報：「如截圖，目前顯示會壓縮到文字。資訊圖表全螢幕的功能，我的描述不夠清楚，請維持原設定A4大小的長寬比例，寬度放大到全螢幕，長度比維持，使用者向下滑動看到全圖。」
+
+Agent 將 `.summary-card__lightbox-image` 從「`max-block-size: 90vh` 縮小塞滿視窗」改成「`inline-size: 100%` 撐滿容器寬度、`overflow-y: auto` 讓使用者捲動」，Playwright 驗證捲動前後畫面文字清晰可讀、關閉按鈕維持固定位置，開發者確認：「測試完畢，效果符合預期」。
+
+### 段落七：章節內跳轉導覽按鈕
+
+沿用段落五末開發者提出的需求，Agent 在 `[slug].astro` 把 `<h1>` 包進新增的 `.chapter__header` flex 容器，旁邊加 `.chapter__jump-nav`（連到 `#summary`／`#interactive` 兩個錨點，互動操作按鈕依 `interactiveComponent` 條件顯示），同步把 `.chapter h1 + h2` CSS 選擇器改成 `.chapter__header + h2` 維持原本間距。確認網站已有全域 `scroll-padding-block-start` 設定，錨點跳轉不需要額外處理即可避開 sticky nav 遮擋。Playwright 驗證兩個按鈕跳轉皆正確定位，開發者確認：「跳轉功能正確運作」。
+
+### 段落八：資訊圖表內容架構第一輪調整——拿掉本章實例、加簡介
+
+開發者：「請調整學習摘要中資訊圖表的內容，資訊圖表以概念的學習優先，案例的結果次之。如截圖，取消２．本章實例的欄位，加入簡介欄位的內容，順序調整為第一位，後續順序不變。如截圖，底部的重點總結文字改為案例分析，將目前最頂端案例資訊欄位，與最底下的案例分析結合在一起。不清楚的部分請與我討論」
+
+Agent 複述理解（簡介新增為第一區塊、後續依序遞補；原「本章實例」的係數表/R²/RMSE/相關係數搬到最底部跟「重點總結」合併成「案例分析」）確認無誤後動工：新增「簡介」區塊（濃縮自章節 `簡介` 段落）、移除原區塊 2、把案例數字＋洞察文字合併進底部深色 footer 並改標題為「案例分析」，新增對應的深色版表格/卡片/長條圖 CSS。
+
+### 段落九：資訊圖表內容架構第二輪調整——metabar 也併入案例分析
+
+開發者中途打斷：「頂部的 metabar（資料集/樣本數/特徵/目標變數/求解方式）與：原本「2. 本章實例」的資料＋原本最底部重點總結內容，摘要後合併成一個範例分析欄位。這張圖表應該總結的是學習資訊，不是總結案例的資訊，所以原本重點總結內只提到案例資訊是不恰當的，將所有與案例有關的數字內容，整理在一個欄位內」
+
+Agent 理解為：頂部 metabar 也要移出，整張圖表上半部（簡介→模型公式→適用情境→評估指標→常見誤區）維持純概念、不帶任何案例數字，所有案例相關數字（含 metabar）集中到底部單一「案例分析」區塊。複述確認後實作：移除頂部 `.metabar`，在案例分析 footer 頂端新增深色版 `.footer-meta` 顯示同樣的資料集資訊，並移除孤兒的 `.metabar` CSS。重新生成截圖確認排版正常。
+
+### 段落十：關閉重開 server、案例標題中文翻譯、互動圖表故障排查
+
+開發者：「圖表只需要再修改一個沒講到的小地方，案例分析的50 Startups，後方加入中文翻譯50 家新創公司財務資料及利潤預測。另有一問題，當前版本的互動操作無法顯示，請檢查動到哪邊了」
+
+Agent 用 Playwright 檢查發現伺服器回傳 `504 (Outdated Optimize Dep)`，是稍早為避免圖片快取殘留而清除 `node_modules/.vite` 快取＋重啟伺服器後，Vite 需要重新用 esbuild 打包 `react-plotly.js`（原始套件 97MB）造成的競態，第一次檢查等待時間不夠就誤判為故障；乾淨重啟並等待打包完成（確認 `node_modules/.vite/deps/react-plotly__js.js` 已生成，9.5MB）後，Playwright 截圖確認 3D 圖表正常渲染，判定非程式碼問題。同時完成標題翻譯（改為「50 Startups（50 家新創公司財務資料及利潤預測）迴歸結果」），複製新圖回專案、只清 `.astro` 內容快取（不再清 Vite deps 快取）重開 server，測試與型別檢查皆通過，開發者確認：「測試正常，請結束本階段工作，謝謝，辛苦了」。
+
+### 段落十一：收工
+
+Agent commit（`1022e32`）並 push 至 `worktree-ml-site-skeleton-pilot` 遠端分支，停止本機 dev server（`astro dev stop`，`netstat` 確認 4321 埠無殘留），確認其餘背景程序（chrome-devtools MCP 相關）與本專案無關、非本階段啟動，不處理，撰寫工作日誌與交接文件。
