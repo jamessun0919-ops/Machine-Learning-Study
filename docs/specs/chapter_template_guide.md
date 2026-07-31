@@ -91,7 +91,7 @@ Plotly 內建的 3D 旋轉模式會允許相機翻轉至水平面以下，導致
 各章節的摘要資訊圖表（PNG）應遵循以下規劃：
 
 * **風格已定案為 Excalidraw 手繪風格，後續章節不再逐一詢問**：2026-07-31 與開發者確認，後續所有章節的資訊圖表統一採用 Excalidraw 手繪風格，不再選用白底向量風格，開工時無需重新詢問。
-  1. **Excalidraw 手繪風格**（目前唯一採用的風格）：`simple-linear-regression-summary.png`、`ml-curriculum-concept-map.png` 皆採用此風格，實作方式是用 rough.js（Excalidraw 本身的手繪渲染引擎）搭配 HTML/CSS 排版、手寫字體（如 Segoe Print），寫成一頁網頁後，用無頭瀏覽器（headless msedge）渲染輸出成 PNG——**不是**用 AI 圖像生成模型直接畫。rough.js 引擎程式碼統一存放於共用檔 `docs/specs/assets-src/rough-engine.js`，各資產 HTML 以 `<script src="rough-engine.js"></script>` 引入，不再逐檔複製。
+  1. **Excalidraw 手繪風格**（目前唯一採用的風格）：`simple-linear-regression-summary.png` 採用此風格，實作方式是用 rough.js（Excalidraw 本身的手繪渲染引擎）搭配 HTML/CSS 排版、手寫字體（如 Segoe Print），寫成一頁網頁後，用無頭瀏覽器（headless msedge）渲染輸出成 PNG——**不是**用 AI 圖像生成模型直接畫。rough.js 引擎程式碼統一存放於共用檔 `docs/specs/assets-src/rough-engine.js`，各資產 HTML 以 `<script src="rough-engine.js"></script>` 引入，不再逐檔複製。
   2. **白底向量風格**（已停用）：`pic/Bayes.png`、`multiple-linear-regression-summary.png` 為此風格的既有範例，由開發者用外部圖像生成工具手動製作；此風格不再用於新章節，既有檔案維持不變。
 * **內容結構（不論選用哪種風格皆適用）**：
   1. **簡介**：固定為第一區塊，濃縮自章節 `簡介` 段落。
