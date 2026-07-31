@@ -1,10 +1,12 @@
 ---
 import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Nav from '../../components/Nav.astro';
 import ChapterSummaryCard from '../../components/ChapterSummaryCard.astro';
 import RegressionScatter3D from '../../components/charts/RegressionScatter3D';
 import RegressionScatter2D from '../../components/charts/RegressionScatter2D';
+import CourseKnowledgeMap from '../../components/CourseKnowledgeMap';
 
 export async function getStaticPaths() {
   const chapters = await getCollection('chapters');
@@ -53,6 +55,21 @@ const { Content } = await render(chapter);
         <RegressionScatter2D client:only="react">
           <div slot="fallback" class="regression-chart__skeleton">互動圖表載入中……</div>
         </RegressionScatter2D>
+      </section>
+    )}
+    {chapter.data.interactiveComponent === 'course-knowledge-map' && (
+      <section class="chapter__interactive" id="interactive">
+        <h2>互動式操作與演示</h2>
+        {chapter.data.conceptMapImage && (
+          <Image
+            src={chapter.data.conceptMapImage}
+            alt="全課程演算法概念關聯圖"
+            class="knowledge-map__concept-image"
+          />
+        )}
+        <CourseKnowledgeMap client:only="react">
+          <div slot="fallback" class="regression-chart__skeleton">知識地圖載入中……</div>
+        </CourseKnowledgeMap>
       </section>
     )}
   </main>
