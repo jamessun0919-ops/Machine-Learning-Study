@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>多元線性回歸 資訊圖表（Excalidraw 風格）</title>
+  <style>
+    :root {
+      --paper: #f3efe2;
+      --paper-edge: #e8e1cd;
+      --ink: #2b2a33;
+      --ink-soft: #4a4854;
+      --intro: #5b5f97;
+      --intro-fill: #e4e5f3;
+      --formula: #2f8f7a;
+      --formula-fill: #dcf0ec;
+      --scope: #c07f2e;
+      --scope-fill: #f7e9d2;
+      --metric: #3f7ea6;
+      --metric-fill: #dcebf3;
+      --pitfall: #b5533c;
+      --pitfall-fill: #f6e0d8;
+      --board: #24433a;
+      --board-line: #4f7a6c;
+      --chalk: #f4efe0;
+      --chalk-accent: #e8d97a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #d8d2bd;
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 0;
+      background: #f3efe2;
+    }
+    .hint-bar { display: none; }
+
+    .page {
+      position: relative;
+      width: 210mm;
+      background: var(--paper);
+      box-shadow: none;
+      padding: 14mm 14mm 12mm;
+      color: var(--ink);
+      font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+    }
+
+    header.title-block {
+      position: relative;
+      text-align: center;
+      padding: 4px 0 18px;
+      margin-bottom: 14px;
+    }
+
+    h1.main-title {
+      font-size: 46px;
+      margin: 0 0 2px;
+      color: var(--ink);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      font-family: "Segoe UI", sans-serif;
+      font-size: 15px;
+      color: var(--ink-soft);
+      letter-spacing: 0.5px;
+    }
+
+    .doodle {
+      position: absolute;
+      top: 2px;
+      right: 6px;
+      width: 92px;
+      height: 72px;
+    }
+
+    .title-underline {
+      position: absolute;
+      left: 50%;
+      top: 58px;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 20px;
+    }
+
+    section.card {
+      position: relative;
+      margin: 0 0 16px;
+      padding: 16px 20px 18px;
+    }
+
+    .sketch-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .card-head .num {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .card-head h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: normal;
+    }
+
+    .card-body {
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: var(--ink);
+    }
+
+    .card.intro .card-head { color: var(--intro); }
+    .card.formula .card-head { color: var(--formula); }
+    .card.scope .card-head { color: var(--scope); }
+    .card.metric .card-head { color: var(--metric); }
+    .card.pitfall .card-head { color: var(--pitfall); }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-family: "Segoe Print", cursive;
+      font-size: 13px;
+      padding: 3px 12px 5px;
+      color: var(--intro);
+      position: relative;
+    }
+    .tag .sketch-bg { z-index: 0; }
+    .tag span { position: relative; z-index: 1; }
+
+    .formula-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 10px 0 12px;
+    }
+
+    .eq {
+      font-family: "Segoe Print", cursive;
+      font-size: 19px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .frac {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      font-size: 15px;
+      margin: 0 4px;
+    }
+    .frac .num-row, .frac .den-row { padding: 0 4px; white-space: nowrap; }
+    .frac .num-row { border-bottom: 2px solid var(--ink); padding-bottom: 2px; }
+    .frac .den-row { padding-top: 2px; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .two-col h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-family: "Segoe Print", cursive;
+    }
+    .two-col.scope-cols h3.good { color: #3f7a3f; }
+    .two-col.scope-cols h3.bad { color: var(--pitfall); }
+
+    .card-body ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .card-body li { margin-bottom: 6px; }
+    .card-body li:last-child { margin-bottom: 0; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .metric-box {
+      position: relative;
+      padding: 10px 14px 12px;
+    }
+    .metric-box h4 {
+      margin: 0 0 6px;
+      font-size: 14.5px;
+      font-family: "Segoe Print", cursive;
+      color: var(--metric);
+    }
+    .metric-box p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    /* ---- 案例分析：黑板風格 ---- */
+    section.board {
+      position: relative;
+      margin: 20px 0 0;
+      padding: 22px 40px 24px;
+      color: var(--chalk);
+    }
+    .board .sketch-bg { z-index: 0; }
+    .board .card-inner { z-index: 1; }
+
+    .board h2 {
+      font-family: "Segoe Print", cursive;
+      font-size: 23px;
+      margin: 0 0 6px;
+      color: var(--chalk-accent);
+      line-height: 1.2;
+    }
+    .board .board-sub {
+      font-family: "Segoe UI", sans-serif;
+      font-size: 13px;
+      color: #cfd9d2;
+      margin-bottom: 14px;
+    }
+
+    .metabar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .metabar .meta-item {
+      text-align: center;
+      font-family: "Segoe UI", sans-serif;
+    }
+    .metabar .meta-item .label {
+      font-size: 11px;
+      color: #b9c4bd;
+      margin-bottom: 3px;
+    }
+    .metabar .meta-item .value {
+      font-family: "Segoe Print", cursive;
+      font-size: 15px;
+      color: var(--chalk);
+    }
+
+    .board-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    table.coef-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: "Segoe UI", sans-serif;
+      font-size: 13.5px;
+    }
+    table.coef-table th, table.coef-table td {
+      border-bottom: 1px dashed var(--board-line);
+      padding: 6px 8px;
+      text-align: center;
+    }
+    table.coef-table th {
+      color: var(--chalk-accent);
+      font-weight: normal;
+      font-family: "Segoe Print", cursive;
+      font-size: 14px;
+    }
+    table.coef-table td {
+      font-variant-numeric: tabular-nums;
+    }
+    table.coef-table td:first-child {
+      text-align: left;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    .big-stats {
+      display: flex;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .big-stat {
+      flex: 1;
+      text-align: center;
+      padding: 10px 6px;
+    }
+    .big-stat .label {
+      font-size: 12px;
+      color: #cfd9d2;
+      font-family: "Segoe UI", sans-serif;
+    }
+    .big-stat .value {
+      font-family: "Segoe Print", cursive;
+      font-size: 26px;
+      color: var(--chalk-accent);
+      margin-top: 2px;
+    }
+
+    .insight-list {
+      font-family: "Segoe UI", sans-serif;
+      font-size: 13.5px;
+      line-height: 1.7;
+      margin: 0;
+      padding-left: 18px;
+      color: var(--chalk);
+    }
+    .insight-list li { margin-bottom: 8px; }
+    .insight-list li:last-child { margin-bottom: 0; }
+    .insight-list .hl { color: var(--chalk-accent); }
+
+    @media print {
+      body { background: none; padding: 0; }
+      .hint-bar { display: none; }
+      .page { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page" id="page">
+  <header class="title-block">
+    <canvas class="doodle" id="doodle"></canvas>
+    <h1 class="main-title">多元線性回歸</h1>
+    <div class="subtitle">Multiple Linear Regression · 監督式學習－迴歸</div>
+    <canvas class="title-underline" id="title-underline"></canvas>
+  </header>
+
+  <section class="card intro" data-sketch="intro">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">①</span><h2>簡介</h2></div>
+      <div class="card-body">
+        多元線性回歸是簡單線性回歸的延伸，用<b>兩個以上自變數（特徵）</b>來預測一個連續的目標變數。例如：用新創公司的「研發、行政、行銷」三項支出，預測其「獲利」。假設目標變數與各特徵之間存在線性關係，只是這條「線」變成了高維度的「平面」或「超平面」。
+        <div class="tag-row">
+          <span class="tag" data-sketch="tag1"><canvas class="sketch-bg"></canvas><span>監督式學習</span></span>
+          <span class="tag" data-sketch="tag2"><canvas class="sketch-bg"></canvas><span>迴歸任務</span></span>
+          <span class="tag" data-sketch="tag3"><canvas class="sketch-bg"></canvas><span>最小平方法（常態方程式）</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card formula" data-sketch="formula">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">②</span><h2>模型公式</h2></div>
+      <div class="card-body">
+        <div class="formula-block">
+          <div class="eq">y &nbsp;=&nbsp; β₀ + β₁x₁ + β₂x₂ + ⋯ + βₙxₙ + ε</div>
+          <div class="eq">β̂ &nbsp;=&nbsp; (Xᵀ X)⁻¹ Xᵀ y</div>
+        </div>
+        β₀ 是截距、β₁…βₙ 是各特徵的係數、ε 是誤差項。訓練目標是找到一組 β̂ 使殘差平方和（RSS）最小——上面第二條公式就是這個最佳化問題的代數閉式解，稱為常態方程式（Normal Equation）。
+      </div>
+    </div>
+  </section>
+
+  <section class="card scope" data-sketch="scope">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">③</span><h2>適用情境與假設限制</h2></div>
+      <div class="card-body two-col scope-cols">
+        <div>
+          <h3 class="good">✓ 適合使用的情境</h3>
+          <ul>
+            <li>目標變數與特徵之間大致呈線性關係</li>
+            <li>需要模型「可解釋」——每個係數直接告訴你該特徵每增加一單位對目標值的影響</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="bad">⚠ 假設與限制</h3>
+          <ul>
+            <li>線性關係假設：明顯非線性時應考慮 Polynomial Regression</li>
+            <li>殘差獨立同分布：違反時標準誤與信賴區間會不準確</li>
+            <li>多重共線性：特徵間高度相關時，係數估計會變得不穩定</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card metric" data-sketch="metric">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">④</span><h2>評估指標</h2></div>
+      <div class="card-body metric-grid">
+        <div class="metric-box" data-sketch="m1">
+          <canvas class="sketch-bg"></canvas>
+          <div class="card-inner">
+            <h4>R²（決定係數）</h4>
+            <div class="eq" style="font-size:15px">
+              R² &nbsp;=&nbsp; 1 −
+              <span class="frac">
+                <span class="num-row">Σ(yᵢ − ŷᵢ)²</span>
+                <span class="den-row">Σ(yᵢ − ȳ)²</span>
+              </span>
+            </div>
+            <p>範圍 0～1，越接近 1 代表模型解釋力越強。</p>
+          </div>
+        </div>
+        <div class="metric-box" data-sketch="m2">
+          <canvas class="sketch-bg"></canvas>
+          <div class="card-inner">
+            <h4>RMSE（均方根誤差）</h4>
+            <div class="eq" style="font-size:15px">RMSE &nbsp;=&nbsp; √( mean( (yᵢ−ŷᵢ)² ) )</div>
+            <p>單位與目標變數相同，數值越小代表預測越準。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card pitfall" data-sketch="pitfall">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">⑤</span><h2>常見誤區</h2></div>
+      <div class="card-body">
+        <ul>
+          <li><b>把相關性當因果</b>——R&amp;D 支出與獲利高度相關，不代表「花更多錢在研發上」必然「因果上」導致獲利提高，可能兩者都受第三個因素（如公司規模）影響。</li>
+          <li><b>忽略多重共線性</b>——看到某特徵的係數很小，就直接判斷「這個特徵不重要」，但如果它跟另一個特徵高度相關，係數的大小可能只是反映了共線性，而非真實的影響力。</li>
+          <li><b>外插（Extrapolation）</b>——模型只在訓練資料的數值範圍內可靠，超出範圍的預測不保證線性關係依然成立。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="board" data-sketch="board">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <h2>案例分析：50 Startups（50 家新創公司財務資料及利潤預測）</h2>
+      <div class="board-sub">同時用「研發、行政、行銷」三項支出配適，示範多元線性回歸的常態方程式解</div>
+
+      <div class="metabar">
+        <div class="meta-item"><div class="label">資料集</div><div class="value">50 Startups</div></div>
+        <div class="meta-item"><div class="label">樣本數</div><div class="value">50</div></div>
+        <div class="meta-item"><div class="label">特徵</div><div class="value">3 項支出</div></div>
+        <div class="meta-item"><div class="label">目標變數</div><div class="value">Profit</div></div>
+        <div class="meta-item"><div class="label">求解方式</div><div class="value">常態方程式</div></div>
+      </div>
+
+      <div class="board-grid">
+        <div>
+          <table class="coef-table">
+            <thead>
+              <tr><th>係數</th><th>估計值</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>截距 β₀</td><td>50122.19</td></tr>
+              <tr><td>R&amp;D Spend β₁</td><td>0.8057</td></tr>
+              <tr><td>Administration β₂</td><td>-0.0268</td></tr>
+              <tr><td>Marketing Spend β₃</td><td>0.0272</td></tr>
+            </tbody>
+          </table>
+          <div class="big-stats">
+            <div class="big-stat"><div class="label">R²（決定係數）</div><div class="value">0.9507</div></div>
+            <div class="big-stat"><div class="label">RMSE（均方根誤差）</div><div class="value">8855.34</div></div>
+          </div>
+        </div>
+        <ul class="insight-list">
+          <li>研發支出每多花 <span class="hl">1 元</span>，預測獲利平均增加約 <span class="hl">0.81 元</span>。</li>
+          <li>行銷支出的邊際效應較小（約 <span class="hl">0.03 元／元</span>）；行政支出在控制其他變數後邊際效應接近零甚至輕微為負，反映多重共線性下單一係數的不穩定性。</li>
+          <li>R² = <span class="hl">0.9507</span>，模型解釋了約 95% 的獲利變異，配適度極高。</li>
+          <li>本結果為全樣本配適（非留出測試集），用於教學示範常態方程式的閉式解。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="rough-engine.js"></script>
+<script>
+(function () {
+  function seedFor(el, fallback) {
+    var s = el.getAttribute('data-sketch') || fallback || 'x';
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h % 2147483647 || 1;
+  }
+
+  function drawFrame(el, opts) {
+    var canvas = el.querySelector(':scope > canvas.sketch-bg') || el.querySelector('canvas.sketch-bg');
+    if (!canvas) return;
+    var rect = el.getBoundingClientRect();
+    var w = Math.max(1, Math.round(rect.width));
+    var h = Math.max(1, Math.round(rect.height));
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var rc = rough.canvas(canvas, { options: {} });
+    var seed = seedFor(el);
+    var margin = opts.margin || 6;
+    rc.rectangle(margin, margin, w - margin * 2, h - margin * 2, {
+      seed: seed,
+      roughness: opts.roughness || 1.6,
+      bowing: opts.bowing || 1.8,
+      stroke: opts.stroke,
+      strokeWidth: opts.strokeWidth || 2.4,
+      fill: opts.fill,
+      fillStyle: opts.fillStyle || 'hachure',
+      fillWeight: opts.fillWeight || 1.4,
+      hachureGap: opts.hachureGap || 5,
+      curveFitting: 1,
+    });
+  }
+
+  var palette = {
+    intro:   { stroke: '#5b5f97', fill: '#e4e5f3' },
+    formula: { stroke: '#2f8f7a', fill: '#dcf0ec' },
+    scope:   { stroke: '#c07f2e', fill: '#f7e9d2' },
+    metric:  { stroke: '#3f7ea6', fill: '#dcebf3' },
+    pitfall: { stroke: '#b5533c', fill: '#f6e0d8' },
+    board:   { stroke: '#8fb8a8', fill: '#24433a' },
+    tag1:    { stroke: '#5b5f97', fill: 'none' },
+    tag2:    { stroke: '#5b5f97', fill: 'none' },
+    tag3:    { stroke: '#5b5f97', fill: 'none' },
+    m1:      { stroke: '#3f7ea6', fill: '#eef6fa' },
+    m2:      { stroke: '#3f7ea6', fill: '#eef6fa' },
+  };
+
+  function paintAll() {
+    document.querySelectorAll('[data-sketch]').forEach(function (el) {
+      var key = el.getAttribute('data-sketch');
+      var p = palette[key] || { stroke: '#2b2a33', fill: 'none' };
+      var isTag = key.indexOf('tag') === 0;
+      drawFrame(el, {
+        stroke: p.stroke,
+        fill: p.fill === 'none' ? undefined : p.fill,
+        fillStyle: key === 'board' ? 'solid' : 'hachure',
+        roughness: isTag ? 2.2 : 1.5,
+        bowing: isTag ? 2.5 : 1.6,
+        strokeWidth: isTag ? 1.8 : 2.6,
+        margin: isTag ? 3 : 6,
+      });
+    });
+
+    var ul = document.getElementById('title-underline');
+    if (ul) {
+      var r = ul.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      ul.width = r.width * dpr;
+      ul.height = r.height * dpr;
+      var ctx = ul.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var rc = rough.canvas(ul, {});
+      rc.line(4, 10, r.width - 4, 10, { roughness: 1.8, bowing: 3, stroke: '#2b2a33', strokeWidth: 3 });
+      rc.line(30, 15, r.width - 30, 15, { roughness: 2.4, bowing: 4, stroke: '#5b5f97', strokeWidth: 2 });
+    }
+
+    var dd = document.getElementById('doodle');
+    if (dd) {
+      var dr = dd.getBoundingClientRect();
+      var dpr2 = window.devicePixelRatio || 1;
+      dd.width = dr.width * dpr2;
+      dd.height = dr.height * dpr2;
+      var dctx = dd.getContext('2d');
+      dctx.setTransform(dpr2, 0, 0, dpr2, 0, 0);
+      var rc2 = rough.canvas(dd, {});
+      rc2.line(8, 62, 84, 62, { roughness: 1.4, stroke: '#8a8570', strokeWidth: 1.5 });
+      rc2.line(8, 62, 8, 8, { roughness: 1.4, stroke: '#8a8570', strokeWidth: 1.5 });
+      var pts = [[16,50],[28,44],[34,50],[44,34],[52,38],[60,24],[70,20],[76,14]];
+      pts.forEach(function (pt) {
+        rc2.circle(pt[0], pt[1], 5, { roughness: 2, fill: '#5b5f97', fillStyle: 'solid', stroke: '#2b2a33', strokeWidth: 1 });
+      });
+      rc2.line(14, 54, 80, 12, { roughness: 1.6, bowing: 2, stroke: '#2f8f7a', strokeWidth: 2.5 });
+    }
+  }
+
+  if (document.readyState === 'complete') {
+    setTimeout(paintAll, 30);
+  } else {
+    window.addEventListener('load', function () { setTimeout(paintAll, 30); });
+  }
+  window.addEventListener('resize', function () {
+    clearTimeout(window.__rsz);
+    window.__rsz = setTimeout(paintAll, 150);
+  });
+})();
+</script>
+</body>
+</html>
