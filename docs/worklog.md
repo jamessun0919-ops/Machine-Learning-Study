@@ -321,3 +321,35 @@
 4. 下一個章節規劃（CRISP-DM 或階段二主題），開工時需重新走 `brainstorming` 流程確認，不可預設沿用本章節範本。
 
 **本機測試用 server：** 本階段 Task 6 自行啟動一個 Astro dev server 進行瀏覽器驗證，驗證完成後已關閉。收工前開發者另要求開啟本機 server 供人工確認成果，Agent 啟動後於開發者確認完畢、交代備忘事項時以 `npx astro dev stop` 關閉，並以 `astro dev status` 確認無運行中的伺服器。
+
+## 2026-07-31（第 13 個工作階段）
+
+**當日工作內容：**
+- 開工閱讀交接文件（第 12 階段結束狀態：待辦第 1 項為「調整知識地圖顯示方式，需求未明」）。開發者提出具體需求：概念關聯圖片（`ml-curriculum-concept-map.png`）展示效果不佳，下方 8 階段互動連結已足夠，取消此圖片；原圖 6 組演算法關聯觀念改為寫入相關章節「簡介」段落，已建置頁面直接補充，未建置頁面則記錄進設計方案供未來使用。
+- 依 `brainstorming` 技能逐項釐清範圍：(1) 監督式/非監督式學習分類不適用此規則、不處理；(2) 本階段僅 Multiple Linear Regression↔Logistic Regression 一組有實際內文異動，其餘 4 組僅寫入文件；(3) 段落風格採「粗體引導語＋短句」；(4) `conceptMapImage` schema 欄位、渲染程式碼、PNG、原始 HTML、渲染腳本全部一併刪除；(5) 待建章節的關聯觀念寫入 `docs/specs/chapter_template_guide.md`（每次建章節必讀文件）。撰寫設計文件並取得開發者核准。
+- 依核准設計文件用 `writing-plans` 技能產出實作計畫（5 個 Task），開發者選擇 Subagent-Driven Development 執行。
+- 執行分支決策：開發者確認本階段沿用上階段慣例直接在 main 執行，但要求**下一階段起改用獨立 worktree**（已記錄至 Claude 記憶系統）。
+- 依序派 subagent 執行並審查 Task 1-5：移除概念圖渲染機制與孤兒程式碼、刪除孤兒資產檔、MLR 簡介新增關聯段落、範本指南新增跨章節關聯規則、全站最終驗證。Task 4 審查留下 1 項 Minor（「6 組」文字與 5 列表格不符）記錄延後處理。
+- Task 5 驗證時，知識地圖 React island 因無頭瀏覽器水合時序限制，兩次截圖皆卡在 loading skeleton，未能自動化確認畫面；依 CLAUDE.md 規則停止、列出可能原因（元件未受影響、JS 檔案確認可正常存取、另一頁既有元件同樣卡住）與開發者討論後，改為開啟本機伺服器供開發者親自瀏覽器確認，確認畫面正確。
+- 最終全分支審查（Opus）：判定「Ready to merge: with fixes」，發現 1 項 Important（跨章節關聯規則字面條件對唯一實作範例本身不成立，因 `curriculum.ts` 該關聯僅單向標註）+ 3 項 Minor（「6 組」應為「5 組」、表格出處指向已刪除檔案、表格與清單間缺空行、內文誇大「相關」連結可點擊性）。派一次性 fix subagent 修正，複審確認全部解決、無新增問題。
+
+**完成項目：**
+- 「機器學習介紹」章節概念關聯圖片（PNG + 原始 HTML + 渲染腳本 + schema 欄位 + 渲染程式碼 + CSS）完全移除，無孤兒殘留。
+- `multiple-linear-regression.md` 簡介段落新增與 Logistic Regression 關聯的獨立段落（含 KaTeX 行內公式，瀏覽器實測渲染正確）。
+- `docs/specs/chapter_template_guide.md` 新增 1.1 節跨章節關聯段落規則與 5 組關聯對照表，供未來 Decision Tree、Random Forest、Boosting、PCA、K-Means、KNN、Logistic Regression 等章節建置時使用。
+- 全部 20 項測試通過、`astro check` 0 錯誤/0 警告、`build` 成功產出 4 頁面；知識地圖 8 階段清單經開發者親自瀏覽器確認渲染正確。
+- 最終整體審查通過（0 Critical，1 Important + 3 Minor 皆已修正，複審乾淨）。
+
+**遇到的瓶頸：**
+- Task 5 無頭 Edge 截圖對 `client:only` React island 水合狀態的驗證限制再次出現（與第 12 階段 Task 6 類似），依規則停止並與開發者討論、改用人工瀏覽器確認，未自行修改截圖手法試錯。
+- 最終審查發現 Task 4 撰寫的規則對自己唯一的實作範例（MLR↔Logistic Regression 為單向 `relatedTo`）字面上不會觸發，屬規劃階段未核對資料方向性的盲點，已於 fix wave 修正措辭涵蓋單向標註情形。
+
+**開發者交代備忘事項（下階段工作項目）：**
+1. **下一階段起改用獨立 git worktree 執行 subagent-driven-development**（已記錄至記憶系統，不需再次詢問）。
+2. `curriculum.ts` 中 Multiple Linear Regression↔Logistic Regression 的 `relatedTo` 目前僅單向標註（僅 Logistic Regression 側），建議下階段補上雙向標註，讓知識地圖從 MLR 側也能顯示此關聯；本階段依計畫凍結範圍未處理。
+3. 其餘 4 組跨章節關聯（Decision Tree↔Random Forest、Decision Tree↔Boosting、PCA↔K-Means、KNN↔K-Means）已記錄於 `chapter_template_guide.md` 1.1 節，待對應章節建置時依規則補上簡介段落。
+4. 交接文件中原第 10 階段記錄的 `simple-linear-regression` 互動內容調整，仍待安排。
+5. 下一個章節規劃（CRISP-DM 或階段二主題），開工時需重新走 `brainstorming` 流程確認。
+6. 原留待處理的 3 項概念圖外觀類 Minor（PNG 底部色帶、箭頭 canvas 尺寸、paradigm 徽章配色）已隨圖片整體移除而失效，不再需要處理。
+
+**本機測試用 server：** 本階段為確認知識地圖畫面，啟動一個 `npm run preview` 伺服器供開發者親自瀏覽器檢查；確認完成後已用 `taskkill` 強制終止並以 `netstat` 確認無殘留 LISTENING 連線。

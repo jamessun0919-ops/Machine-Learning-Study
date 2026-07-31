@@ -860,3 +860,64 @@ Agent 向開發者說明並詢問 Minor 處理方式：開發者選擇「只修�
 開發者：「請開啟本地測試ＳＥＲＶＥＲ給我確認」。Agent 啟動 `npm run dev`，確認伺服器就緒後提供首頁與三個章節頁面連結供開發者檢視。
 
 開發者：「請記錄下一階段工作，調整知識地圖的顯示方式，請結束本階段工作，謝謝，辛苦了」。Agent 關閉本次啟動的 dev server（確認 `astro dev status` 顯示無運行中的伺服器），將「調整知識地圖顯示方式」記錄為 handover.md 下一步行動第一項（開發者未說明具體調整內容，記錄為開工時需先與開發者釐清範圍，不可自行臆測），本階段收工。
+
+## 2026-07-31（第 13 個工作階段）
+
+### 段落一：開工與需求提出
+
+Agent 自我介紹為 Claude Sonnet 5，讀取交接文件（第 12 階段待辦第 1 項：調整知識地圖顯示方式，需求未明）後請開發者說明具體範圍。
+
+開發者：「本階段工作先調整知識地圖的呈現，當前生成的概念關聯圖片展示效果不佳，下方八個階段的互動連結按鍵已經足以展示，故取消本章節的概念關聯圖片。但是我希望在各章節內文中，補充入這六個連結觀念，例如在多元線性回歸單元的簡介欄位中，補充與邏輯斯回歸的關係：從回歸走入分類的橋樑，此訊息單獨一個段落，存在與多元線性回歸與邏輯斯回鍋頁面的簡介欄位內。同樣邏輯處理其他五的連結觀念，如果未建立的頁面，將此觀念補充進入到設計方案中」。
+
+Agent 判斷此為創意/內容設計變更，呼叫 `brainstorming` 技能。查閱 `ml-curriculum-concept-map.html` 找出原始 6 組關聯：Linear Regression↔Logistic Regression（迴歸走向分類的橋樑）、Decision Tree↔Random Forest（Bagging：多顆 Decision Tree 組成）、Decision Tree↔Boosting（弱學習器逐步疊加組成）、PCA↔Clustering（常作為分群前的前處理，`curriculum.ts` 實際資料為 PCA↔K-Means）、KNN↔K-Means（同屬距離基礎方法）、監督式學習↔非監督式學習（本課程兩大學習典範）。並確認 `CourseKnowledgeMap.tsx` 已內建「相關：」連結顯示 `relatedTo` 資料。
+
+### 段落二：Brainstorming 逐項確認範圍
+
+Agent 依序提問，開發者逐一選擇：
+
+1. 監督式/非監督式學習分類是否需額外補充獨立段落？開發者選「不用額外處理（推薦）」——已由「機器學習的分類」段落涵蓋，性質也與其他 5 組不同（非兩個演算法頁面的關聯）。
+2. 確認本次實際修改範圍：僅 Multiple Linear Regression 簡介補一段文字，其餘 5 組寫入設計文件待未來建置時使用？開發者選「符合（推薦）」。
+3. Multiple Linear Regression 簡介補充「與 Logistic Regression 關係」的文字風格？提供「粗體引導語＋短句（貼近範例）」與「純粗體標籤＋極簡短句」兩個選項並各附文字預覽，開發者選前者。
+4. `conceptMapImage` 相關的 schema 欄位、渲染程式碼、PNG、原始 HTML 資產檔是否一併完全刪除？開發者選「全部刪除（推薦）」。
+5. 待建章節的 5 組連結觀念要寫進哪份文件？提供「新增到 `chapter_template_guide.md`」與「只放 `curriculum.ts` 資料欄位」兩個選項，開發者選前者——因為這是每次建章節必讀的規範文件，不會遺漏。
+
+Agent 依序呈現 A（內容變更文字）、B（清理範圍清單）、C（`chapter_template_guide.md` 新規則與對照表）三個段落設計內容，開發者逐段確認「OK，繼續」。三段皆通過後，Agent 撰寫設計文件 `docs/superpowers/specs/2026-07-31-knowledge-map-relation-paragraphs-design.md`，自我審查後提交 git，請開發者審閱。
+
+### 段落三：實作計畫與執行方式選擇
+
+開發者：「請產出實作計畫」。Agent 呼叫 `writing-plans` 技能，依設計文件產出 5 個 Task 的實作計畫 `docs/superpowers/plans/2026-07-31-knowledge-map-relation-paragraphs.md`（Task 1 移除概念圖渲染機制與孤兒程式碼、Task 2 刪除孤兒資產檔、Task 3 MLR 簡介新增關聯段落、Task 4 範本指南新增跨章節關聯規則、Task 5 全站最終驗證），自我審查後提供「Subagent-Driven（推薦）」與「Inline Execution」兩個執行選項。
+
+開發者：「１」（選擇 Subagent-Driven）。Agent 呼叫 `subagent-driven-development` 技能。
+
+### 段落四：執行分支決策
+
+Agent 查核歷史發現上階段（第 12 階段）雖使用 Subagent-Driven Development，但直接在 main 分支執行、無獨立 worktree，這是本專案目前唯一慣例。因本次規模較小（5 個 Task，皆內容/清理性質），Agent 詢問是否比照慣例直接在 main 執行，或改用獨立 worktree。
+
+開發者：「本次在main上執行，但後續章節請改用獨立worktree」。Agent 將此決定寫入 Claude 記憶系統（`feedback_use_worktree_going_forward.md`），確保下階段不需再次詢問即改用 worktree。
+
+### 段落五：Task 1-5 執行與審查
+
+Agent 建立 SDD ledger，依序派 subagent 執行並審查：
+- Task 1（移除概念圖渲染機制與孤兒程式碼，haiku 模型）：審查 Spec ✅，零瑕疵。
+- Task 2（刪除孤兒資產檔，haiku 模型）：審查 Spec ✅，零瑕疵，另以 grep 確認無跨檔案殘留引用。
+- Task 3（MLR 簡介新增關聯段落，sonnet 模型，含瀏覽器 KaTeX 驗證）：審查 Spec ✅，唯一⚠️（瀏覽器渲染無法從 diff 直接驗證）由實作者的 DOM dump 具體證據解決，判定非真正缺口。
+- Task 4（範本指南新增跨章節關聯規則，haiku 模型）：審查 Spec ✅，發現 1 項 Minor（規則文字說「6 組」但表格僅 5 列，係設計階段刻意排除監督/非監督組後文字未同步更新），記錄延後至最終審查處理。
+- Task 5（全站最終驗證，sonnet 模型，純驗證無程式碼變更）：測試/型別檢查/建置/`git status` 全數通過；瀏覽器實測發現「機器學習介紹」頁面知識地圖 React island 因 `client:only` 水合時序限制，無頭 Edge 截圖兩次皆卡在 loading skeleton，回報 DONE_WITH_CONCERNS。
+
+### 段落六：知識地圖水合疑慮的處理
+
+Agent 依 CLAUDE.md「非預期失敗須停止討論、不可自行判斷」規則，向開發者列出診斷證據（元件本身未受本階段變更影響、JS 檔案 curl 確認 200、`multiple-linear-regression` 頁面既有未受影響的另一互動圖表元件同樣卡住）並提供三個處理選項：接受間接證據直接結案、開發者自行手動瀏覽器檢查、或指示 subagent 嘗試延長等待時間的多步驟截圖流程。
+
+開發者：「改用開發者肉眼檢查，請說明應呈現甚麼樣的狀態，並請開啟本地測試伺服讓我卻」。Agent 啟動 `npm run preview`，說明知識地圖應呈現的具體畫面（無圖片、8 組階段區塊含徽章、已建置章節可點擊、`relatedTo` 主題顯示「相關：」行）。
+
+開發者提供截圖，顯示「階段三：監督式學習－迴歸」區塊，Logistic Regression 項目下方正確顯示「相關：Multiple Linear Regression（多元線性回歸）」可點擊連結：「確認項目均正確，可繼續進行工作」。Agent 關閉預覽伺服器（`taskkill` 強制終止 + `netstat` 確認無殘留 LISTENING），記錄 Task 5 完成。
+
+### 段落七：最終全分支審查與 Fix Wave
+
+Agent 派 Opus 執行最終全分支審查。結果「Ready to merge: With fixes」——零 Critical；1 項 Important：`chapter_template_guide.md` 1.1 節規則文字「若該主題設有 relatedTo」對本階段唯一實作範例（MLR）本身不成立，因 `curriculum.ts` 中此關聯僅單向標註在 Logistic Regression 側；3 項 Minor：「6 組」應改「5 組」且出處應指向 `curriculum.ts` 而非已刪除的 HTML 檔、表格與下一清單項間缺空行（GFM 安全性）、機器學習介紹頁面新引導句誇大「相關」連結一律可點擊（實際 9 條中僅 1 條可點）。
+
+Agent 向開發者摘要審查結果後，派一次性 fix subagent（haiku 模型，附精確修改前後文字）處理全部 4 項文件層修正；`docs/handover.md` 的過時內容則判定為「待收工處理」，不併入 fix wave。Fix 完成後派範圍限定複審（sonnet 模型），確認 4 項全數 ADDRESSED、無新增破壞。
+
+### 段落八：收尾
+
+最終審查乾淨，Agent 刪除本次 SDD workspace（`.superpowers/sdd/2026-07-31-knowledge-map-relation-paragraphs/`），呼叫 `finishing-a-development-branch` 技能。因本次直接在 main 執行、無獨立分支需要合併，Agent 改依專案 `CLAUDE.md` 慣例進行收尾：驗證測試（20/20 通過）、確認環境（一般 repo、目前於 main）、撰寫本次 worklog 與 chatlog、更新 handover.md（修正最終審查指出的過時內容）、確認推送目標倉庫並推送。
