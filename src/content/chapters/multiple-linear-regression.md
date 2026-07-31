@@ -23,6 +23,8 @@ summary:
 
 多元線性回歸（Multiple Linear Regression）是簡單線性回歸的延伸：用兩個以上的自變數（特徵）來預測一個連續的目標變數。例如，用一間新創公司在研發（R&D Spend）、行政（Administration）、行銷（Marketing Spend）上的支出，預測它的獲利（Profit）。跟簡單線性回歸一樣，它假設目標變數和每個特徵之間存在線性關係，只是現在這條「線」變成了一個高維度的「平面」或「超平面」。
 
+**與 Logistic Regression 的關係**：迴歸走向分類的橋樑。當預測目標從連續數值變成類別（例如「是否違約」）時，同樣的線性組合 $\beta_0+\beta_1x_1+\cdots+\beta_nx_n$ 搭配 Sigmoid 函數轉換成機率，就成為 Logistic Regression，也是本課程從迴歸過渡到分類的第一步。
+
 ## 分類方式
 
 - **學習類型**：監督式學習（Supervised Learning）
