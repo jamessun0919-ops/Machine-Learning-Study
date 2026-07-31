@@ -405,3 +405,30 @@
 2. 交接文件既有下一步行動清單（`curriculum.ts` 單向 `relatedTo` 補全、其餘 4 組跨章節關聯待建置章節時處理）維持不變。
 
 **本機測試用 server：** 本階段全程為文字規劃討論，未啟動任何本機伺服器。
+
+## 2026-07-31（第 16 個工作階段）
+
+**當日工作內容：**
+- 開工閱讀交接文件與第 1、12-15 階段 worklog，確認依第 15 階段已核准的實作計畫執行 CRISP-DM 章節的 Subagent-Driven Development。
+- 建立獨立 worktree（`.claude/worktrees/crisp-dm-chapter`，分支 `worktree-crisp-dm-chapter`），依序派 subagent 執行並審查全部 3 個 Task。
+- 最終整體審查（Opus）發現 2 項 Important，派一次性 fix subagent 修正並複審通過。
+- 依 `finishing-a-development-branch` 技能本機 merge 回 main、清理 worktree 與分支、push 至 origin，觸發 GitHub Pages 部署。
+
+**完成項目：**
+- 「CRISP-DM 資料分析方法」章節完整上線：章節內文（簡介／六大階段／常見誤區）、`curriculum.ts`/`chapters.ts` 課程導覽串接、`curriculum.test.ts` 斷言更新為四個已建置章節。
+- 全新 Excalidraw 風格學習摘要資訊圖表，含本站首個「六階段循環圖」視覺元件（六邊形環繞中央「Data」節點，主流程箭頭＋一條區隔明顯的回饋箭頭）。
+- 全站最終驗證：測試 20/20、`astro check` 0 錯誤/0 警告、`build` 5 頁成功、CRISP-DM 頁面與知識地圖連結、既有 3 章節皆無迴歸實測通過。
+- 最終整體審查（Ready to merge: with fixes）發現的 2 項 Important 已修正並複審確認：(1) 六階段循環圖箭頭因被節點方塊遮擋而完全不可見，改為線段縮短使箭頭落在方塊間隙；(2) 渲染腳本 `render-crisp-dm-infographic.ps1` 路徑寫死指向本次暫用的 worktree（合併後即不存在），改回與既有兩支渲染腳本一致的主倉庫路徑慣例，並用「複製到主 checkout 渲染、複製回 worktree、清除暫存」的可逆方式重新產出圖片，未污染主 checkout。
+- Main 分支已 merge、worktree 與分支已清理、`git push origin main` 成功，觸發 GitHub Pages 部署。
+
+**遇到的瓶頸：**
+- Agent 第一次派 Task 1 implementer 時誤用了 Agent 工具的 `isolation: "worktree"` 參數（會另外建立一個獨立暫時 worktree，與技能既定的共用 worktree 衝突），發現後立即 `TaskStop` 終止，確認未產生任何檔案變更或孤兒 worktree 後，改為不帶該參數重新派工，未造成實質影響。
+- 最終整體審查發現的循環圖箭頭不可見問題，根因是 canvas 圖層被不透明的節點方塊蓋住（z-index 疊層順序），非座標錯誤；fix subagent 採「依方向向量縮短線段長度」的方式解決，未更動任何節點座標。
+- 合併回 main 後 `npm run test` 一度顯示 40 個測試（應為 20 個），複查後確認是第 5 階段已記錄的已知問題重現（vitest 未讀 `.gitignore`，殘留的 worktree 目錄使測試被重複計算一次），清理 worktree 後測試數量恢復正常，非新缺陷。
+- 清理 worktree 時發現一個本次 session 內遺留的 `astro preview` 殘留伺服器（PID 23456，port 4322，鎖住 worktree 檔案導致無法刪除目錄），判斷為某個 subagent 收工前忘記關閉，已確認關閉後才成功清除 worktree。
+
+**開發者交代備忘事項：**
+- 無新增交代事項；交接文件既有下一步行動清單（`curriculum.ts` 單向 `relatedTo` 補全、其餘 4 組跨章節關聯待建置章節時處理、下一個章節規劃）維持不變。
+- 最終審查提出一項未在本次範圍內處理的建議：`docs/specs/chapter_template_guide.md` 尚未新增「方法論／流程類」章節範本的說明章節（目前僅設計文件記錄此範本），建議排入下階段待辦。
+
+**本機測試用 server：** 本階段由 subagent 啟動的預覽伺服器多次於各任務結束後正常關閉；清理 worktree 前額外發現並關閉 1 個本次 session 遺留的殘留 `astro preview` 伺服器（PID 23456, port 4322，詳見「遇到的瓶頸」）。收工前 `netstat` 確認 4321-4324 埠皆無 LISTENING 項目。其餘 `chrome-devtools-mcp` 相關行程確認與本專案無關，未處理。

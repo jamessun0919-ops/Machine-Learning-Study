@@ -997,3 +997,37 @@ Agent 呈現技術規劃（frontmatter 不設 `interactiveComponent`、`summary.
 ### 段落五：執行方式確認與收工
 
 Agent 提供執行方式選項（Subagent-Driven／Inline Execution）。開發者：「先回答，採用Subagent-Driven。本階段工作先在此結束，未完成工作下個階段繼續進行，謝謝，辛苦了」。Agent 記錄此決定（下階段開工即依此計畫執行 Subagent-Driven Development，並依先前標準指示改用獨立 git worktree），本階段未執行任何程式碼變更，直接進入收工流程：撰寫 worklog、chatlog，更新 handover.md，確認無殘留本機伺服器（本階段全程為文字規劃，未啟動任何伺服器），準備推送。
+
+## 2026-07-31（第 16 個工作階段）
+
+### 段落一：開工確認
+
+開發者：「晚安，請閱讀交接文檔與工作規則後與我討論，開始本階段工作」。Agent 自報模型（Sonnet 5），依規則讀取 `handover.md` 與 worklog 首日（第 1 階段）＋最近兩日（第 12-15 階段）範圍，確認上階段（第 15 階段）已完成 CRISP-DM 章節設計文件與實作計畫、皆已核准提交，但尚未執行任何程式碼。Agent 呼叫 `using-superpowers` 技能，確認working directory 乾淨後，詢問是否依已核准計畫直接開始執行 Subagent-Driven Development（建立獨立 worktree）。
+
+開發者：「是，直接開始（推薦）」。Agent 呼叫 `using-git-worktrees` 技能，偵測到有原生 `EnterWorktree` 工具可用，建立獨立 worktree（`.claude/worktrees/crisp-dm-chapter`，分支 `worktree-crisp-dm-chapter`），`npm install` 與 baseline 測試 20/20 通過。
+
+### 段落二：Subagent-Driven Development 執行 Task 1-3
+
+Agent 呼叫 `subagent-driven-development` 技能，掃描計畫確認 Global Constraints 與 3 個 Task 內容無衝突，建立 ledger 後開始執行。
+
+**Task 1（章節內文與課程資料串接）**：第一次派工時 Agent 誤用了 Agent 工具的 `isolation: "worktree"` 參數（會另外建立一個獨立暫時 worktree，與技能既定的共用 worktree 設計衝突），Agent 發現後立即用 `TaskStop` 終止該次派工，確認未產生任何檔案變更或孤兒 worktree 後，改為不帶該參數重新派工（haiku 模型，內容逐字比照 brief）。實作完成、審查（sonnet）結果為 Spec compliant，Task quality: Approved，無 Critical/Important/Minor 問題。
+
+**Task 2（Excalidraw 學習摘要圖表含六階段循環圖）**：Agent 派工時特別提醒 implementer 將 brief 內原寫死指向主倉庫的渲染腳本路徑改指向本次 worktree（因實際渲染需在 worktree 內進行）。Implementer（sonnet）完成後回報一項偏離：brief 指定的 DOM 量測校正視窗高度技術本次量測結果內部不一致（`.page` 寬度回報 768px 而非預期 794px），implementer 依規則判定該量測不可信、未盲目使用，改用直接對渲染輸出 PNG 做像素分析＋二分搜尋法定案視窗高度（`794,1348`），並在報告中詳列判斷過程供開發者/審查確認。Agent 親自檢視渲染出的圖片確認乾淨無捲軸殘留、六邊形循環圖清晰可辨後才交付審查。審查（sonnet）獨立驗證 HTML 逐字比對 brief 完全一致、像素分析證實視窗高度偏離的最終結果乾淨正確，結果為 Approved，僅 1 項 Minor（未使用的 CSS 變數，源自 brief 原始內容非 implementer 引入）記錄延後。
+
+**Task 3（全站最終驗證，無程式碼變更）**：Agent 派工時完整交代本站已知的 3 項瀏覽器實測工具限制（React island 水合時序、圖片優化端點首次建置延遲、`--dump-dom` 對 preview 伺服器的已知不穩定）供 implementer（sonnet）辨識，避免誤判為程式碼缺陷。全部 8 個驗證步驟皆通過，implementer 額外發現一個新現象（學習摘要圖片在特定截圖視窗高度下偶發黑色空白）並主動用「放大視窗高度重測」＋「對既有未變更頁面做相同交叉測試」＋「直接對圖片 URL 截圖驗證檔案本身」三種方式排除為程式碼問題，判定為無頭 Edge 工具本身限制。因無程式碼變更、無 diff 可審查，Agent 略過此 Task 的正式審查步驟。
+
+### 段落三：最終整體審查與修正
+
+Agent 派最終整體審查（Opus，最高能力模型），結果為「Ready to merge: with fixes」，發現 2 項 Important：(1) 六階段循環圖箭頭因被不透明節點方塊完全遮擋而不可見（違反計畫要求的「帶箭頭」驗收標準，且此圖表的功能正是要呈現「CRISP-DM 非單向流程」這個常見誤區，箭頭消失削弱了圖表本身的論證目的）；(2) 渲染腳本路徑寫死指向本次暫用的 worktree，合併後該路徑即不存在，與另兩支既有渲染腳本的主倉庫路徑慣例不一致。另有數項 Minor（未使用 CSS 變數、底部留白約 24px、標題塗鴉間距略緊、`chapter_template_guide.md` 尚未新增方法論類範本說明章節、README 章節數已過時）。
+
+Agent 依技能規則將 2 項 Important 與可順手處理的留白 Minor 打包為**單一**修正派工（sonnet），並詳細說明：修正箭頭需在繪製前依方向向量縮短線段（不可更動節點座標）；修正路徑需改回主倉庫慣例，並用「複製到主 checkout 渲染、複製回 worktree、清除主 checkout 暫存檔」的可逆方式重新產出圖片，避免污染主 checkout 或 worktree 任一方。Fix 完成後 Agent 親自檢視新圖片確認箭頭清楚可見、方向正確（六邊形主流程 1→2→3→4→5→6→1 ＋ 一條可清楚區隔的橘紅色回饋箭頭），再派限定範圍複審（sonnet），確認兩項 Important 皆已解決（Addressed）、無新增問題，另獨立驗證主 checkout `git status --short` 乾淨。
+
+其餘 Minor（未使用 CSS 變數、標題塗鴉間距、README 過時）判定為既有/繼承性質、非阻塞，記錄至 ledger 後隨 SDD workspace 一併清理；`chapter_template_guide.md` 待補範本說明章節列為下階段待辦建議，未擅自代為修改（涉及全站共用規範文件，留待與開發者確認後再處理）。
+
+### 段落四：合併與收尾
+
+刪除 SDD workspace 後呼叫 `finishing-a-development-branch` 技能，main 測試 20/20 通過，環境偵測為獨立 worktree（named branch），詢問整合方式。
+
+開發者：「本機 Merge 回 main（推薦）」。Agent merge（fast-forward）、於 main 重新驗證測試/astro check/build 全數通過。清理 worktree 時發現一個殘留的 `astro preview` 伺服器（PID 23456，port 4322，鎖住 worktree 檔案導致刪除失敗），判斷為本次 session 內某 subagent 收工前忘記關閉，確認關閉後成功清除 worktree 目錄與已合併分支（`git branch -d`，安全刪除確認已完全合併）。合併後 `npm run test` 一度顯示 40 個測試而非 20 個，Agent 依第 5 階段已記錄的已知原因（worktree 殘留導致 vitest 重複計算）判斷、待 worktree 清除後重新驗證恢復正常，未誤判為新缺陷。
+
+Agent 依 CLAUDE.md 規則詢問是否推送至程式碼倉庫。開發者：「是，推送（推薦）」。`git push origin main` 成功，觸發 GitHub Pages 部署，CRISP-DM 章節正式上線。
