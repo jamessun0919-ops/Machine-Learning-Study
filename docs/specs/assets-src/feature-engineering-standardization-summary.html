@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>特徵工程與標準化 資訊圖表（Excalidraw 風格）</title>
+  <style>
+    :root {
+      --paper: #f3efe2;
+      --ink: #2b2a33;
+      --ink-soft: #4a4854;
+      --intro: #5b5f97;
+      --intro-fill: #e4e5f3;
+      --formula: #2f8f7a;
+      --formula-fill: #dcf0ec;
+      --scope: #c07f2e;
+      --scope-fill: #f7e9d2;
+      --pitfall: #b5533c;
+      --pitfall-fill: #f6e0d8;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #d8d2bd;
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 0;
+      background: #f3efe2;
+    }
+
+    .page {
+      position: relative;
+      width: 210mm;
+      background: var(--paper);
+      box-shadow: none;
+      padding: 14mm 14mm 12mm;
+      color: var(--ink);
+      font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+    }
+
+    header.title-block {
+      position: relative;
+      text-align: center;
+      padding: 4px 0 18px;
+      margin-bottom: 14px;
+    }
+
+    h1.main-title {
+      font-size: 42px;
+      margin: 0 0 2px;
+      color: var(--ink);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      font-family: "Segoe UI", sans-serif;
+      font-size: 14px;
+      color: var(--ink-soft);
+      letter-spacing: 0.5px;
+    }
+
+    .doodle {
+      position: absolute;
+      top: 2px;
+      right: 6px;
+      width: 92px;
+      height: 72px;
+    }
+
+    .title-underline {
+      position: absolute;
+      left: 50%;
+      top: 54px;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 20px;
+    }
+
+    section.card {
+      position: relative;
+      margin: 0 0 16px;
+      padding: 16px 20px 18px;
+    }
+
+    .sketch-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .card-head .num {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .card-head h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: normal;
+    }
+
+    .card-body {
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: var(--ink);
+    }
+
+    .card.intro .card-head { color: var(--intro); }
+    .card.formula .card-head { color: var(--formula); }
+    .card.scope .card-head { color: var(--scope); }
+    .card.pitfall .card-head { color: var(--pitfall); }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-family: "Segoe Print", cursive;
+      font-size: 13px;
+      padding: 3px 12px 5px;
+      color: var(--intro);
+      position: relative;
+    }
+    .tag .sketch-bg { z-index: 0; }
+    .tag span { position: relative; z-index: 1; }
+
+    .eq {
+      font-family: "Segoe Print", cursive;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .frac {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      vertical-align: middle;
+      font-size: 14px;
+      margin: 0 4px;
+    }
+    .frac .num-row, .frac .den-row { padding: 0 4px; white-space: nowrap; }
+    .frac .num-row { border-bottom: 2px solid var(--ink); padding-bottom: 2px; }
+    .frac .den-row { padding-top: 2px; }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .method-box {
+      position: relative;
+      padding: 10px 14px 12px;
+    }
+    .method-box h4 {
+      margin: 0 0 6px;
+      font-size: 14.5px;
+      font-family: "Segoe Print", cursive;
+      color: var(--formula);
+    }
+    .method-box p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .two-col h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-family: "Segoe Print", cursive;
+    }
+    .two-col.scope-cols h3.good { color: #3f7a3f; }
+    .two-col.scope-cols h3.neutral { color: var(--ink-soft); }
+
+    .card-body ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .card-body li { margin-bottom: 6px; }
+    .card-body li:last-child { margin-bottom: 0; }
+
+    @media print {
+      body { background: none; padding: 0; }
+      .page { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page" id="page">
+  <header class="title-block">
+    <canvas class="doodle" id="doodle"></canvas>
+    <h1 class="main-title">特徵工程與標準化</h1>
+    <div class="subtitle">Feature Engineering & Standardization · 方法論基礎</div>
+    <canvas class="title-underline" id="title-underline"></canvas>
+  </header>
+
+  <section class="card intro" data-sketch="intro">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">①</span><h2>簡介</h2></div>
+      <div class="card-body">
+        不同特徵的數值尺度差異，會讓某些機器學習演算法產生偏差判斷。特徵工程（Feature Engineering）泛指所有讓原始資料更適合模型學習的前處理技巧，本站聚焦其中最基礎、最常用的兩類：數值特徵的標準化/縮放，以及類別特徵的編碼。
+        <div class="tag-row">
+          <span class="tag" data-sketch="tag1"><canvas class="sketch-bg"></canvas><span>特徵工程</span></span>
+          <span class="tag" data-sketch="tag2"><canvas class="sketch-bg"></canvas><span>標準化與縮放</span></span>
+          <span class="tag" data-sketch="tag3"><canvas class="sketch-bg"></canvas><span>類別變數編碼</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card formula" data-sketch="formula">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">②</span><h2>縮放方法</h2></div>
+      <div class="card-body method-grid">
+        <div class="method-box" data-sketch="m1">
+          <canvas class="sketch-bg"></canvas>
+          <div class="card-inner">
+            <h4>Z-score 標準化</h4>
+            <div class="eq">z &nbsp;=&nbsp; <span class="frac"><span class="num-row">x − μ</span><span class="den-row">σ</span></span></div>
+            <p>平均值為 0、標準差為 1，仍保留離群值的相對位置。</p>
+          </div>
+        </div>
+        <div class="method-box" data-sketch="m2">
+          <canvas class="sketch-bg"></canvas>
+          <div class="card-inner">
+            <h4>Min-Max 縮放</h4>
+            <div class="eq">x' &nbsp;=&nbsp; <span class="frac"><span class="num-row">x − min</span><span class="den-row">max − min</span></span></div>
+            <p>固定落在 [0, 1] 範圍，但對離群值敏感。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card scope" data-sketch="scope">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">③</span><h2>適用情境</h2></div>
+      <div class="card-body two-col scope-cols">
+        <div>
+          <h3 class="good">✓ 需要標準化的模型</h3>
+          <ul>
+            <li>以「距離」為核心運算：KNN、SVM、K-Means</li>
+            <li>以「梯度」為核心運算：梯度下降訓練的迴歸/邏輯斯迴歸、神經網路</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="neutral">○ 不需要標準化的模型</h3>
+          <ul>
+            <li>樹狀模型：Decision Tree、Random Forest、Boosting</li>
+            <li>以「切分點」而非距離運算，特徵尺度不影響判斷</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card pitfall" data-sketch="pitfall">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">④</span><h2>常見誤區</h2></div>
+      <div class="card-body">
+        <ul>
+          <li><b>用整個資料集一起計算標準化參數</b>——正確做法是只用訓練集算出縮放參數再套用到測試集，否則會造成 Data Leakage、評估結果過度樂觀。</li>
+          <li><b>對無序類別使用 Label Encoding</b>——模型會誤讀類別間的大小/距離關係。</li>
+          <li><b>忘記標準化就套用距離型演算法</b>——尺度大的特徵會不成比例主導距離計算，且不會報錯，容易被忽略。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="rough-engine.js"></script>
+<script>
+(function () {
+  function seedFor(el, fallback) {
+    var s = el.getAttribute('data-sketch') || fallback || 'x';
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h % 2147483647 || 1;
+  }
+
+  function drawFrame(el, opts) {
+    var canvas = el.querySelector(':scope > canvas.sketch-bg') || el.querySelector('canvas.sketch-bg');
+    if (!canvas) return;
+    var rect = el.getBoundingClientRect();
+    var w = Math.max(1, Math.round(rect.width));
+    var h = Math.max(1, Math.round(rect.height));
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var rc = rough.canvas(canvas, { options: {} });
+    var seed = seedFor(el);
+    var margin = opts.margin || 6;
+    rc.rectangle(margin, margin, w - margin * 2, h - margin * 2, {
+      seed: seed,
+      roughness: opts.roughness || 1.6,
+      bowing: opts.bowing || 1.8,
+      stroke: opts.stroke,
+      strokeWidth: opts.strokeWidth || 2.4,
+      fill: opts.fill,
+      fillStyle: opts.fillStyle || 'hachure',
+      fillWeight: opts.fillWeight || 1.4,
+      hachureGap: opts.hachureGap || 5,
+      curveFitting: 1,
+    });
+  }
+
+  var palette = {
+    intro:   { stroke: '#5b5f97', fill: '#e4e5f3' },
+    formula: { stroke: '#2f8f7a', fill: '#dcf0ec' },
+    scope:   { stroke: '#c07f2e', fill: '#f7e9d2' },
+    pitfall: { stroke: '#b5533c', fill: '#f6e0d8' },
+    tag1:    { stroke: '#5b5f97', fill: 'none' },
+    tag2:    { stroke: '#5b5f97', fill: 'none' },
+    tag3:    { stroke: '#5b5f97', fill: 'none' },
+    m1:      { stroke: '#2f8f7a', fill: '#eef7f4' },
+    m2:      { stroke: '#3f7ea6', fill: '#eef6fa' },
+  };
+
+  function paintAll() {
+    document.querySelectorAll('[data-sketch]').forEach(function (el) {
+      var key = el.getAttribute('data-sketch');
+      var p = palette[key] || { stroke: '#2b2a33', fill: 'none' };
+      var isTag = key.indexOf('tag') === 0;
+      drawFrame(el, {
+        stroke: p.stroke,
+        fill: p.fill === 'none' ? undefined : p.fill,
+        fillStyle: 'hachure',
+        roughness: isTag ? 2.2 : 1.5,
+        bowing: isTag ? 2.5 : 1.6,
+        strokeWidth: isTag ? 1.8 : 2.6,
+        margin: isTag ? 3 : 6,
+      });
+    });
+
+    var ul = document.getElementById('title-underline');
+    if (ul) {
+      var r = ul.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      ul.width = r.width * dpr;
+      ul.height = r.height * dpr;
+      var ctx = ul.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var rc = rough.canvas(ul, {});
+      rc.line(4, 10, r.width - 4, 10, { roughness: 1.8, bowing: 3, stroke: '#2b2a33', strokeWidth: 3 });
+      rc.line(30, 15, r.width - 30, 15, { roughness: 2.4, bowing: 4, stroke: '#5b5f97', strokeWidth: 2 });
+    }
+
+    var dd = document.getElementById('doodle');
+    if (dd) {
+      var dr = dd.getBoundingClientRect();
+      var dpr2 = window.devicePixelRatio || 1;
+      dd.width = dr.width * dpr2;
+      dd.height = dr.height * dpr2;
+      var dctx = dd.getContext('2d');
+      dctx.setTransform(dpr2, 0, 0, dpr2, 0, 0);
+      var rc2 = rough.canvas(dd, {});
+      rc2.line(8, 62, 84, 62, { roughness: 1.4, stroke: '#8a8570', strokeWidth: 1.5 });
+      rc2.line(8, 62, 8, 8, { roughness: 1.4, stroke: '#8a8570', strokeWidth: 1.5 });
+      var pts = [[16,50],[28,44],[34,50],[44,34],[52,38],[60,24],[70,20],[76,14]];
+      pts.forEach(function (pt) {
+        rc2.circle(pt[0], pt[1], 5, { roughness: 2, fill: '#5b5f97', fillStyle: 'solid', stroke: '#2b2a33', strokeWidth: 1 });
+      });
+      rc2.line(14, 54, 80, 12, { roughness: 1.6, bowing: 2, stroke: '#2f8f7a', strokeWidth: 2.5 });
+    }
+  }
+
+  if (document.readyState === 'complete') {
+    setTimeout(paintAll, 30);
+  } else {
+    window.addEventListener('load', function () { setTimeout(paintAll, 30); });
+  }
+  window.addEventListener('resize', function () {
+    clearTimeout(window.__rsz);
+    window.__rsz = setTimeout(paintAll, 150);
+  });
+})();
+</script>
+</body>
+</html>

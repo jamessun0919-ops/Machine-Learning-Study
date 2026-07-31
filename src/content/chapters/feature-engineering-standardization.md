@@ -4,6 +4,10 @@ stage: 方法論基礎
 category:
   - 方法論基礎
 interactiveComponent: feature-scaling-comparison
+summary:
+  formulas: []
+  keyStats: []
+  image: ../../assets/chapters/feature-engineering-standardization-summary.png
 ---
 
 ## 簡介
