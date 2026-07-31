@@ -35,7 +35,11 @@ export const curriculum: CurriculumStage[] = [
     paradigm: 'supervised',
     topics: [
       { name: 'Simple Linear Regression（簡單線性回歸）', slug: 'simple-linear-regression' },
-      { name: 'Multiple Linear Regression（多元線性回歸）', slug: 'multiple-linear-regression' },
+      {
+        name: 'Multiple Linear Regression（多元線性回歸）',
+        slug: 'multiple-linear-regression',
+        relatedTo: ['Logistic Regression（邏輯斯迴歸）'],
+      },
       { name: 'Polynomial Regression（多項式回歸）' },
       { name: 'Ridge Regression（Ridge 迴歸，正則化）' },
       { name: 'Lasso Regression（Lasso 迴歸，正則化）' },
