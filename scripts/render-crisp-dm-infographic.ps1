@@ -1,6 +1,6 @@
 # Render CRISP-DM Infographic HTML to PNG
-$htmlPath = "C:/Users/User/Desktop/Machine Learning Study/.claude/worktrees/crisp-dm-chapter/docs/specs/assets-src/crisp-dm-summary.html"
-$outputPath = "C:/Users/User/Desktop/Machine Learning Study/.claude/worktrees/crisp-dm-chapter/src/assets/chapters/crisp-dm-summary.png"
+$htmlPath = "C:/Users/User/Desktop/Machine Learning Study/docs/specs/assets-src/crisp-dm-summary.html"
+$outputPath = "C:/Users/User/Desktop/Machine Learning Study/src/assets/chapters/crisp-dm-summary.png"
 
 # Detect Edge Path
 $edgePaths = @(
@@ -27,7 +27,7 @@ Write-Host "Source: $htmlPath"
 Write-Host "Output: $outputPath"
 
 # Run screenshot
-& $edgePath --headless --disable-gpu --screenshot="$outputPath" --window-size=794,1348 --force-device-scale-factor=3 "file:///$htmlPath"
+& $edgePath --headless --disable-gpu --screenshot="$outputPath" --window-size=794,1347 --force-device-scale-factor=3 "file:///$htmlPath"
 
 if (Test-Path $outputPath) {
     Write-Host "Rendering completed successfully!"

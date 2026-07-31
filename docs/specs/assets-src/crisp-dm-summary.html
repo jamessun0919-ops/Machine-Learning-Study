@@ -270,27 +270,27 @@
         <p class="cycle-scenario">範例情境：一間新創加速器想用「50 Startups」財務資料集，預測新創公司的獲利，以篩選潛在投資標的。</p>
         <div class="cycle-diagram" id="cycle-diagram">
           <canvas class="cycle-diagram__canvas" id="cycle-canvas"></canvas>
-          <div class="cycle-node" style="left:240px; top:50px;">
+          <div class="cycle-node" data-node="p1" style="left:240px; top:50px;">
             <div class="cycle-node__title">1. Business Understanding</div>
             <div class="cycle-node__sub">業務理解</div>
           </div>
-          <div class="cycle-node" style="left:405px; top:145px;">
+          <div class="cycle-node" data-node="p2" style="left:405px; top:145px;">
             <div class="cycle-node__title">2. Data Understanding</div>
             <div class="cycle-node__sub">資料理解</div>
           </div>
-          <div class="cycle-node" style="left:405px; top:335px;">
+          <div class="cycle-node" data-node="p3" style="left:405px; top:335px;">
             <div class="cycle-node__title">3. Data Preparation</div>
             <div class="cycle-node__sub">資料準備</div>
           </div>
-          <div class="cycle-node" style="left:240px; top:430px;">
+          <div class="cycle-node" data-node="p4" style="left:240px; top:430px;">
             <div class="cycle-node__title">4. Modeling</div>
             <div class="cycle-node__sub">建模</div>
           </div>
-          <div class="cycle-node" style="left:75px; top:335px;">
+          <div class="cycle-node" data-node="p5" style="left:75px; top:335px;">
             <div class="cycle-node__title">5. Evaluation</div>
             <div class="cycle-node__sub">評估</div>
           </div>
-          <div class="cycle-node" style="left:75px; top:145px;">
+          <div class="cycle-node" data-node="p6" style="left:75px; top:145px;">
             <div class="cycle-node__title">6. Deployment</div>
             <div class="cycle-node__sub">部署</div>
           </div>
@@ -372,6 +372,30 @@
     head(x2, y2, angle);
   }
 
+  // Shortens the segment between two node centres so both endpoints land
+  // just outside each node's rectangular box (plus a small visual gap),
+  // instead of at the box centre where an arrowhead would be hidden underneath it.
+  function edgeGap(ax, ay, aSize, bx, by, bSize, gap) {
+    var dx = bx - ax;
+    var dy = by - ay;
+    var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ux = dx / dist;
+    var uy = dy / dist;
+    // NOTE: uses the *unit* direction (ux, uy), not the raw (dx, dy) edge-length
+    // components, since t is a distance-from-centre scale factor along a unit vector.
+    function boxT(halfW, halfH) {
+      if (ux === 0) return halfH / Math.abs(uy);
+      if (uy === 0) return halfW / Math.abs(ux);
+      return Math.min(halfW / Math.abs(ux), halfH / Math.abs(uy));
+    }
+    var ta = boxT(aSize.halfW, aSize.halfH) + gap;
+    var tb = boxT(bSize.halfW, bSize.halfH) + gap;
+    return {
+      x1: ax + ux * ta, y1: ay + uy * ta,
+      x2: bx - ux * tb, y2: by - uy * tb,
+    };
+  }
+
   function drawCycleDiagram() {
     var canvas = document.getElementById('cycle-canvas');
     var container = document.getElementById('cycle-diagram');
@@ -394,6 +418,15 @@
     };
     var hub = [240, 240];
 
+    // Measure each node's actual rendered box (half-width/half-height) so the
+    // edge-shortening below matches real layout, not a guessed constant.
+    var nodeSizes = {};
+    container.querySelectorAll('.cycle-node[data-node]').forEach(function (el) {
+      var key = el.getAttribute('data-node');
+      nodeSizes[key] = { halfW: el.offsetWidth / 2, halfH: el.offsetHeight / 2 };
+    });
+    var edgeGapPx = 8;
+
     var mainOpts = { roughness: 1.6, bowing: 1.8, stroke: '#2f8f7a', strokeWidth: 2.6 };
     var spokeOpts = { roughness: 1.4, bowing: 1.4, stroke: '#a9a48f', strokeWidth: 1.4 };
     var feedbackOpts = { roughness: 2.2, bowing: 3, stroke: '#b5533c', strokeWidth: 2.2 };
@@ -404,12 +437,16 @@
 
     var ring = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
     for (var i = 0; i < ring.length; i++) {
-      var from = nodes[ring[i]];
-      var to = nodes[ring[(i + 1) % ring.length]];
-      drawArrow(rc, from[0], from[1], to[0], to[1], mainOpts);
+      var fromKey = ring[i];
+      var toKey = ring[(i + 1) % ring.length];
+      var from = nodes[fromKey];
+      var to = nodes[toKey];
+      var pts = edgeGap(from[0], from[1], nodeSizes[fromKey], to[0], to[1], nodeSizes[toKey], edgeGapPx);
+      drawArrow(rc, pts.x1, pts.y1, pts.x2, pts.y2, mainOpts);
     }
 
-    drawArrow(rc, nodes.p4[0], nodes.p4[1], nodes.p3[0], nodes.p3[1], feedbackOpts);
+    var fb = edgeGap(nodes.p4[0], nodes.p4[1], nodeSizes.p4, nodes.p3[0], nodes.p3[1], nodeSizes.p3, edgeGapPx);
+    drawArrow(rc, fb.x1, fb.y1, fb.x2, fb.y2, feedbackOpts);
   }
 
   var palette = {
