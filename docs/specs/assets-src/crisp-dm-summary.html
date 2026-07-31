@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>CRISP-DM 資料分析方法 資訊圖表（Excalidraw 風格）</title>
+  <style>
+    :root {
+      --paper: #f3efe2;
+      --paper-edge: #e8e1cd;
+      --ink: #2b2a33;
+      --ink-soft: #4a4854;
+      --intro: #5b5f97;
+      --intro-fill: #e4e5f3;
+      --formula: #2f8f7a;
+      --formula-fill: #dcf0ec;
+      --pitfall: #b5533c;
+      --pitfall-fill: #f6e0d8;
+      --board: #24433a;
+      --chalk-accent: #e8d97a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #d8d2bd;
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 0;
+      background: #f3efe2;
+    }
+
+    .page {
+      position: relative;
+      width: 210mm;
+      background: var(--paper);
+      box-shadow: none;
+      padding: 14mm 14mm 12mm;
+      color: var(--ink);
+      font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+    }
+
+    header.title-block {
+      position: relative;
+      text-align: center;
+      padding: 4px 0 18px;
+      margin-bottom: 14px;
+    }
+
+    h1.main-title {
+      font-size: 42px;
+      margin: 0 0 2px;
+      color: var(--ink);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      font-family: "Segoe UI", sans-serif;
+      font-size: 14px;
+      color: var(--ink-soft);
+      letter-spacing: 0.5px;
+    }
+
+    .doodle {
+      position: absolute;
+      top: 2px;
+      right: 6px;
+      width: 92px;
+      height: 72px;
+    }
+
+    .title-underline {
+      position: absolute;
+      left: 50%;
+      top: 54px;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 20px;
+    }
+
+    section.card {
+      position: relative;
+      margin: 0 0 16px;
+      padding: 16px 20px 18px;
+    }
+
+    .sketch-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .card-head .num {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .card-head h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: normal;
+    }
+
+    .card-body {
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: var(--ink);
+    }
+
+    .card.intro .card-head { color: var(--intro); }
+    .card.cycle .card-head { color: var(--formula); }
+    .card.pitfall .card-head { color: var(--pitfall); }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-family: "Segoe Print", cursive;
+      font-size: 13px;
+      padding: 3px 12px 5px;
+      color: var(--intro);
+      position: relative;
+    }
+    .tag .sketch-bg { z-index: 0; }
+    .tag span { position: relative; z-index: 1; }
+
+    .card-body ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .card-body li { margin-bottom: 6px; }
+    .card-body li:last-child { margin-bottom: 0; }
+
+    /* ---- 六階段循環圖 ---- */
+    .cycle-scenario {
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      margin: 0 0 4px;
+    }
+
+    .cycle-diagram {
+      position: relative;
+      width: 480px;
+      height: 480px;
+      margin: 14px auto 6px;
+    }
+    .cycle-diagram__canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .cycle-node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      width: 136px;
+      padding: 8px 10px;
+      text-align: center;
+      background: var(--formula-fill);
+      border: 2px solid var(--formula);
+      border-radius: 8px;
+      z-index: 1;
+    }
+    .cycle-node__title {
+      font-family: "Segoe UI", sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.25;
+    }
+    .cycle-node__sub {
+      font-family: "Segoe Print", cursive;
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 2px;
+    }
+    .cycle-hub {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: var(--board);
+      color: var(--chalk-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Segoe Print", cursive;
+      font-size: 17px;
+      z-index: 1;
+    }
+    .cycle-legend {
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      list-style: none;
+      margin: 4px 0 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      font-size: 12.5px;
+      color: var(--ink-soft);
+    }
+    .cycle-legend li { display: flex; align-items: center; gap: 6px; }
+    .cycle-legend__swatch { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+    .cycle-legend__swatch--main { background: var(--formula); }
+    .cycle-legend__swatch--feedback { background: var(--pitfall); }
+
+    @media print {
+      body { background: none; padding: 0; }
+      .page { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page" id="page">
+  <header class="title-block">
+    <canvas class="doodle" id="doodle"></canvas>
+    <h1 class="main-title">CRISP-DM 資料分析方法</h1>
+    <div class="subtitle">Cross-Industry Standard Process for Data Mining · 課程導覽</div>
+    <canvas class="title-underline" id="title-underline"></canvas>
+  </header>
+
+  <section class="card intro" data-sketch="intro">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">①</span><h2>簡介</h2></div>
+      <div class="card-body">
+        CRISP-DM（跨產業資料探勘標準流程）把一個資料分析專案拆解成六個階段，從釐清業務目標到模型上線後的維護，提供一套可依循的檢查清單，避免專案一頭栽進建模卻忘了要解決什麼問題。
+        <div class="tag-row">
+          <span class="tag" data-sketch="tag1"><canvas class="sketch-bg"></canvas><span>資料科學方法論</span></span>
+          <span class="tag" data-sketch="tag2"><canvas class="sketch-bg"></canvas><span>六階段循環流程</span></span>
+          <span class="tag" data-sketch="tag3"><canvas class="sketch-bg"></canvas><span>業界標準流程</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card cycle" data-sketch="cycle">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">②</span><h2>CRISP-DM 六大階段</h2></div>
+      <div class="card-body">
+        <p class="cycle-scenario">範例情境：一間新創加速器想用「50 Startups」財務資料集，預測新創公司的獲利，以篩選潛在投資標的。</p>
+        <div class="cycle-diagram" id="cycle-diagram">
+          <canvas class="cycle-diagram__canvas" id="cycle-canvas"></canvas>
+          <div class="cycle-node" style="left:240px; top:50px;">
+            <div class="cycle-node__title">1. Business Understanding</div>
+            <div class="cycle-node__sub">業務理解</div>
+          </div>
+          <div class="cycle-node" style="left:405px; top:145px;">
+            <div class="cycle-node__title">2. Data Understanding</div>
+            <div class="cycle-node__sub">資料理解</div>
+          </div>
+          <div class="cycle-node" style="left:405px; top:335px;">
+            <div class="cycle-node__title">3. Data Preparation</div>
+            <div class="cycle-node__sub">資料準備</div>
+          </div>
+          <div class="cycle-node" style="left:240px; top:430px;">
+            <div class="cycle-node__title">4. Modeling</div>
+            <div class="cycle-node__sub">建模</div>
+          </div>
+          <div class="cycle-node" style="left:75px; top:335px;">
+            <div class="cycle-node__title">5. Evaluation</div>
+            <div class="cycle-node__sub">評估</div>
+          </div>
+          <div class="cycle-node" style="left:75px; top:145px;">
+            <div class="cycle-node__title">6. Deployment</div>
+            <div class="cycle-node__sub">部署</div>
+          </div>
+          <div class="cycle-hub" style="left:240px; top:240px;">Data</div>
+        </div>
+        <ul class="cycle-legend">
+          <li><span class="cycle-legend__swatch cycle-legend__swatch--main"></span>主要流程</li>
+          <li><span class="cycle-legend__swatch cycle-legend__swatch--feedback"></span>常見回頭調整</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card pitfall" data-sketch="pitfall">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">③</span><h2>常見誤區</h2></div>
+      <div class="card-body">
+        <ul>
+          <li><b>當成單向流程</b>——各階段（尤其 Data Preparation↔Modeling、Evaluation↔Business Understanding）常需反覆回頭調整，是循環而非一次性檢查清單。</li>
+          <li><b>跳過 Business Understanding</b>——沒先定義清楚業務目標與成功標準，容易做出「指標好看卻解決不了問題」的模型。</li>
+          <li><b>把 Deployment 當終點</b>——上線後若沒有持續監控資料與模型表現的漂移（Data／Model Drift），預測品質會隨時間劣化。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="rough-engine.js"></script>
+<script>
+(function () {
+  function seedFor(el, fallback) {
+    var s = el.getAttribute('data-sketch') || fallback || 'x';
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h % 2147483647 || 1;
+  }
+
+  function drawFrame(el, opts) {
+    var canvas = el.querySelector(':scope > canvas.sketch-bg') || el.querySelector('canvas.sketch-bg');
+    if (!canvas) return;
+    var rect = el.getBoundingClientRect();
+    var w = Math.max(1, Math.round(rect.width));
+    var h = Math.max(1, Math.round(rect.height));
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var rc = rough.canvas(canvas, { options: {} });
+    var seed = seedFor(el);
+    var margin = opts.margin || 6;
+    rc.rectangle(margin, margin, w - margin * 2, h - margin * 2, {
+      seed: seed,
+      roughness: opts.roughness || 1.6,
+      bowing: opts.bowing || 1.8,
+      stroke: opts.stroke,
+      strokeWidth: opts.strokeWidth || 2.4,
+      fill: opts.fill,
+      fillStyle: opts.fillStyle || 'hachure',
+      fillWeight: opts.fillWeight || 1.4,
+      hachureGap: opts.hachureGap || 5,
+      curveFitting: 1,
+    });
+  }
+
+  function drawArrow(rc, x1, y1, x2, y2, opts) {
+    rc.line(x1, y1, x2, y2, opts);
+    var angle = Math.atan2(y2 - y1, x2 - x1);
+    var headLen = 14;
+    function head(px, py, dirAngle) {
+      var a1 = dirAngle + Math.PI - 0.4;
+      var a2 = dirAngle + Math.PI + 0.4;
+      rc.line(px, py, px + headLen * Math.cos(a1), py + headLen * Math.sin(a1), opts);
+      rc.line(px, py, px + headLen * Math.cos(a2), py + headLen * Math.sin(a2), opts);
+    }
+    head(x2, y2, angle);
+  }
+
+  function drawCycleDiagram() {
+    var canvas = document.getElementById('cycle-canvas');
+    var container = document.getElementById('cycle-diagram');
+    if (!canvas || !container) return;
+    var rect = container.getBoundingClientRect();
+    var w = Math.max(1, Math.round(rect.width));
+    var h = Math.max(1, Math.round(rect.height));
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var rc = rough.canvas(canvas, {});
+
+    var nodes = {
+      p1: [240, 50], p2: [405, 145], p3: [405, 335],
+      p4: [240, 430], p5: [75, 335], p6: [75, 145],
+    };
+    var hub = [240, 240];
+
+    var mainOpts = { roughness: 1.6, bowing: 1.8, stroke: '#2f8f7a', strokeWidth: 2.6 };
+    var spokeOpts = { roughness: 1.4, bowing: 1.4, stroke: '#a9a48f', strokeWidth: 1.4 };
+    var feedbackOpts = { roughness: 2.2, bowing: 3, stroke: '#b5533c', strokeWidth: 2.2 };
+
+    Object.keys(nodes).forEach(function (key) {
+      rc.line(hub[0], hub[1], nodes[key][0], nodes[key][1], spokeOpts);
+    });
+
+    var ring = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'];
+    for (var i = 0; i < ring.length; i++) {
+      var from = nodes[ring[i]];
+      var to = nodes[ring[(i + 1) % ring.length]];
+      drawArrow(rc, from[0], from[1], to[0], to[1], mainOpts);
+    }
+
+    drawArrow(rc, nodes.p4[0], nodes.p4[1], nodes.p3[0], nodes.p3[1], feedbackOpts);
+  }
+
+  var palette = {
+    intro: { stroke: '#5b5f97', fill: '#e4e5f3' },
+    cycle: { stroke: '#2f8f7a', fill: '#dcf0ec' },
+    pitfall: { stroke: '#b5533c', fill: '#f6e0d8' },
+    tag1: { stroke: '#5b5f97', fill: 'none' },
+    tag2: { stroke: '#5b5f97', fill: 'none' },
+    tag3: { stroke: '#5b5f97', fill: 'none' },
+  };
+
+  function paintAll() {
+    document.querySelectorAll('[data-sketch]').forEach(function (el) {
+      var key = el.getAttribute('data-sketch');
+      var p = palette[key] || { stroke: '#2b2a33', fill: 'none' };
+      var isTag = key.indexOf('tag') === 0;
+      drawFrame(el, {
+        stroke: p.stroke,
+        fill: p.fill === 'none' ? undefined : p.fill,
+        fillStyle: 'hachure',
+        roughness: isTag ? 2.2 : 1.5,
+        bowing: isTag ? 2.5 : 1.6,
+        strokeWidth: isTag ? 1.8 : 2.6,
+        margin: isTag ? 3 : 6,
+      });
+    });
+
+    drawCycleDiagram();
+
+    var ul = document.getElementById('title-underline');
+    if (ul) {
+      var r = ul.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      ul.width = r.width * dpr;
+      ul.height = r.height * dpr;
+      var ctx = ul.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var rc = rough.canvas(ul, {});
+      rc.line(4, 10, r.width - 4, 10, { roughness: 1.8, bowing: 3, stroke: '#2b2a33', strokeWidth: 3 });
+      rc.line(30, 15, r.width - 30, 15, { roughness: 2.4, bowing: 4, stroke: '#5b5f97', strokeWidth: 2 });
+    }
+
+    var dd = document.getElementById('doodle');
+    if (dd) {
+      var dr = dd.getBoundingClientRect();
+      var dpr2 = window.devicePixelRatio || 1;
+      dd.width = dr.width * dpr2;
+      dd.height = dr.height * dpr2;
+      var dctx = dd.getContext('2d');
+      dctx.setTransform(dpr2, 0, 0, dpr2, 0, 0);
+      var rc2 = rough.canvas(dd, {});
+      rc2.line(8, 62, 84, 62, { roughness: 1.4, stroke: '#8a8570', strokeWidth: 1.5 });
+      rc2.line(8, 62, 8, 8, { roughness: 1.4, stroke: '#8a8570', strokeWidth: 1.5 });
+      var pts = [[16,50],[28,44],[34,50],[44,34],[52,38],[60,24],[70,20],[76,14]];
+      pts.forEach(function (pt) {
+        rc2.circle(pt[0], pt[1], 5, { roughness: 2, fill: '#5b5f97', fillStyle: 'solid', stroke: '#2b2a33', strokeWidth: 1 });
+      });
+      rc2.line(14, 54, 80, 12, { roughness: 1.6, bowing: 2, stroke: '#2f8f7a', strokeWidth: 2.5 });
+    }
+  }
+
+  if (document.readyState === 'complete') {
+    setTimeout(paintAll, 30);
+  } else {
+    window.addEventListener('load', function () { setTimeout(paintAll, 30); });
+  }
+  window.addEventListener('resize', function () {
+    clearTimeout(window.__rsz);
+    window.__rsz = setTimeout(paintAll, 150);
+  });
+})();
+</script>
+</body>
+</html>

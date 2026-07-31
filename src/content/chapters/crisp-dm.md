@@ -3,6 +3,10 @@ title: CRISP-DM 資料分析方法
 stage: 課程導覽
 category:
   - 課程導覽
+summary:
+  formulas: []
+  keyStats: []
+  image: ../../assets/chapters/crisp-dm-summary.png
 ---
 
 ## 簡介
