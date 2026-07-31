@@ -921,3 +921,45 @@ Agent 向開發者摘要審查結果後，派一次性 fix subagent（haiku 模�
 ### 段落八：收尾
 
 最終審查乾淨，Agent 刪除本次 SDD workspace（`.superpowers/sdd/2026-07-31-knowledge-map-relation-paragraphs/`），呼叫 `finishing-a-development-branch` 技能。因本次直接在 main 執行、無獨立分支需要合併，Agent 改依專案 `CLAUDE.md` 慣例進行收尾：驗證測試（20/20 通過）、確認環境（一般 repo、目前於 main）、撰寫本次 worklog 與 chatlog、更新 handover.md（修正最終審查指出的過時內容）、確認推送目標倉庫並推送。
+
+## 2026-07-31（第 14 個工作階段）
+
+### 段落一：開工，列出未完成事項
+
+開發者：「請繼續進行下一階段工作，請列出目前未完成事項」。Agent 依 `docs/handover.md` 下一步行動列出 4 項待辦（`curriculum.ts` 補全雙向 `relatedTo`、其餘 4 組關聯待建置章節時處理、`simple-linear-regression` 互動調整、下一章節規劃），並說明 worktree 執行模式已定案不需重新詢問。
+
+### 段落二：simple-linear-regression 取消圖表點擊
+
+開發者：「3.simple-linear-regression 章節互動內容調整：2D 散布圖取消圖表點擊的功能，圖表被點擊不產生任何效果，不增加其他互動功能，只保留切換特徵的功能」。Agent 讀取 `RegressionScatter2D.tsx`，發現元件本身無 onClick 邏輯，但 Plotly 預設仍有「圖例點擊切換顯示」與「拖曳縮放」兩種點擊會產生效果的內建行為，向開發者說明並提出改法（`dragmode: false` + `legend.itemclick/itemdoubleclick: false`，比照 `RegressionScatter3D.tsx` 既有的 `dragmode: false` 模式），詢問理解與範圍是否正確。
+
+開發者：「你的理解都正確，請實作」。Agent 判定為單檔案、無歧義的小型變更（符合 CLAUDE.md 例外規則），直接編輯、驗證（`astro check`/`build`/`test` 皆通過），啟動預覽伺服器請開發者確認。
+
+開發者：「效果正確」。
+
+### 段落三：新增 X/Y 軸說明
+
+開發者：「請在圖表下方加入Ｘ／Ｙ分別對應的哪項數值的說明（隨特徵選擇改變，效果同多元線性回歸頁面的圖表設計）」。Agent 查閱 `RegressionScatter3D.tsx` 找到既有的 `regression-chart__axis-legend` 樣式與資料繫結模式，直接比照實作於 2D 版本（X／Y 兩個徽章）。因 `npm run preview` 是靜態建置結果不會自動反映新程式碼，Agent 依規則關閉舊伺服器、重新建置、重啟伺服器才請開發者確認。
+
+開發者：「效果顯示正確」。
+
+### 段落四：多元線性回歸摘要圖表改風格 — Brainstorming
+
+開發者：「請修改多元線性回歸章節的學習摘要圖表，從白底向量風格改為一致的excalidraw風格」。Agent 判定為創意/內容設計變更，呼叫 `brainstorming` 技能。查閱 `ChapterSummaryCard.astro`（圖片／文字二選一渲染機制）與 `simple-linear-regression-summary.html`（既有 Excalidraw 範本），並實際執行與 `src/lib/regression.ts` 相同的常態方程式演算法，對 `50-startups.json` 全部 3 個數值特徵計算出真實迴歸結果（β₀=50122.19、β₁(R&D)=0.8057、β₂(Administration)=-0.0268、β₃(Marketing)=0.0272、R²=0.9507、RMSE=8855.34）。
+
+Agent 依序提問：(1) 案例分析要用完整 3 特徵模型還是沿用互動圖表預設的 2 特徵組合？開發者選「完整 3 特徵模型（推薦）」。(2) 舊的白底向量圖片怎麼處理？開發者選「一併刪除（推薦）」。Agent 呈現六區塊完整文字內容（簡介／模型公式／適用情境與假設限制／評估指標／常見誤區／案例分析，含係數表與洞察文字），開發者：「內容正確，請先生成圖表後給我確認再放到網頁中」——確認內容並指定執行順序（先產出圖片、經確認後才接入頁面）。Agent 撰寫設計文件並提交。
+
+### 段落五：實作 — 圖表生成、視窗高度校正、接入頁面
+
+開發者：「請實作」，隨後「連線恢復，請繼續工作」。因設計已高度明確、且開發者要求的執行順序（生成→人工確認→接入）有一個必經的人工視覺確認節點，Agent 判斷不需要走完整 writing-plans/subagent-driven-development 流程，直接依設計文件內容建立來源檔 `docs/specs/assets-src/multiple-linear-regression-summary.html`（比照既有範本與共用 `rough-engine.js`）與專用渲染腳本 `scripts/render-mlr-infographic.ps1`。
+
+首次渲染後畫面右側出現捲軸殘留痕跡，Agent 向開發者說明原因（`--window-size` 高度與實際內容高度不符）並重新渲染修正；改用 DOM 量測 `.page` 元素實際高度（1957px）校正腳本後，二次渲染畫面乾淨無裁切。Agent 展示最終渲染結果請開發者確認。
+
+開發者：「效果正確，請接入頁面」。Agent 執行後續步驟：因新舊圖片檔名相同，圖片直接覆蓋、frontmatter 不需修改；驗證 `astro check`/`build`/`test` 全數通過；重啟預覽伺服器，用無頭 Edge 截圖驗證頁面「學習摘要」區塊。
+
+過程中遇到兩個非預期狀況，皆依 CLAUDE.md 規則先排查原因、未自行盲目試錯：(1) `--dump-dom` 對本機 preview 伺服器連續 3 次回傳空白，判斷為工具本身已知不穩定行為，改回已驗證可行的 `--screenshot` 全頁截圖方式；(2) 全頁截圖顯示學習摘要圖片區塊空白，比對 `docs/handover.md` 已記錄的已知限制（Astro 圖片優化端點首次請求需要建置時間），用 `curl` 預熱該端點後重新截圖，確認圖片正確顯示、其餘章節內容無迴歸。
+
+Agent 同步更新 `chapter_template_guide.md` 第 5 節，移除 `multiple-linear-regression-summary.png` 屬於「白底向量風格（已停用）」範例的過時描述，分 3 個獨立 commit（圖表互動變更、新資訊圖表、範本指南更新）提交。
+
+### 段落六：收尾
+
+Agent 撰寫本次（第 14 階段）worklog 與 chatlog，更新 handover.md 反映本階段完成項目與最新待辦狀態，確認本次啟動的 2 個 `npm run preview` 伺服器與所有暫存截圖檔皆已清理，準備推送。

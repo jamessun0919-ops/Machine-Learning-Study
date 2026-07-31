@@ -353,3 +353,31 @@
 6. 原留待處理的 3 項概念圖外觀類 Minor（PNG 底部色帶、箭頭 canvas 尺寸、paradigm 徽章配色）已隨圖片整體移除而失效，不再需要處理。
 
 **本機測試用 server：** 本階段為確認知識地圖畫面，啟動一個 `npm run preview` 伺服器供開發者親自瀏覽器檢查；確認完成後已用 `taskkill` 強制終止並以 `netstat` 確認無殘留 LISTENING 連線。
+
+## 2026-07-31（第 14 個工作階段）
+
+**當日工作內容：**
+- 承接第 13 階段收工後同一 session，開發者選擇處理待辦第 3 項：`simple-linear-regression` 章節互動調整。開發者明確需求：2D 散布圖取消點擊互動（拖曳縮放、圖例點擊切換顯示），不新增其他互動，只保留切換特徵按鈕。判斷為單檔案、無歧義的小型變更，依 CLAUDE.md 例外規則不經 brainstorming 直接確認範圍後實作：`RegressionScatter2D.tsx` 新增 `layout.dragmode: false` 與 `legend.itemclick/itemdoubleclick: false`。開發者本機確認效果正確。
+- 開發者追加需求：圖表下方補上 X／Y 軸對應數值說明（比照 `RegressionScatter3D.tsx` 既有的 `regression-chart__axis-legend` 樣式）。同樣判定為小型變更，直接實作、重新建置＋重啟預覽伺服器（因 `npm run preview` 是靜態建置結果，不會自動反映新程式碼）驗證，開發者確認正確。
+- 開發者提出新需求：將「多元線性回歸」章節學習摘要圖表從白底向量風格改為 Excalidraw 風格。此為創意/內容設計變更，呼叫 `brainstorming` 技能：實際計算 50-Startups 資料集 3 特徵（R&D／Administration／Marketing Spend）完整迴歸結果作為案例分析真實數據（β₀=50122.19、β₁=0.8057、β₂=-0.0268、β₃=0.0272、R²=0.9507、RMSE=8855.34），依開發者選擇確認：案例分析用完整 3 特徵模型、舊圖一併刪除（實際上因檔名相同，新圖直接覆蓋既有檔案，不需額外刪除步驟）。撰寫設計文件並取得核准。
+- 開發者指定執行順序：先生成圖表、經開發者確認後才接入頁面。依此順序直接執行（未經 writing-plans/subagent-driven-development 正式流程，因範圍已高度明確且需要人工視覺確認節點，走完整 SDD 流程效益不高）：建立 `docs/specs/assets-src/multiple-linear-regression-summary.html`（比照 `simple-linear-regression-summary.html` 版面與共用 `rough-engine.js`）與專用渲染腳本 `scripts/render-mlr-infographic.ps1`；首次渲染出現視窗高度與內容不符、右側殘留捲軸痕跡，以 DOM 量測 `.page` 實際高度（1957px）校正 `--window-size` 後重新渲染，畫面乾淨無裁切。開發者確認圖表效果後，接入頁面：因新舊檔名相同，圖片直接覆蓋、frontmatter 免修改；瀏覽器實測確認頁面「學習摘要」區塊正確顯示（含放大提示與既有 lightbox 機制），其餘章節內容無迴歸。
+- 過程中無頭 Edge 的 `--dump-dom` 對本機 preview 伺服器連續 3 次回傳空白，判斷為工具本身的已知不穩定行為（非本次變更造成），改回已驗證可用的 `--screenshot` 全頁截圖方式完成驗證，未在 dump-dom 上繼續試錯。
+- 同時發現新截圖曾顯示學習摘要圖片區塊空白，判斷為 Astro 圖片優化端點（`_astro/*.webp`）首次請求需要建置時間的已知限制（`docs/handover.md` 已有記錄），改用 `curl` 預熱該端點後重新截圖即正確顯示，未誤判為程式碼缺陷。
+- 同步更新 `chapter_template_guide.md` 第 5 節，移除 `multiple-linear-regression-summary.png` 屬於「白底向量風格（已停用）」範例的過時描述。
+
+**完成項目：**
+- `RegressionScatter2D.tsx`：關閉圖表拖曳縮放與圖例點擊切換，新增 X／Y 軸對應數值說明（隨特徵切換更新），僅保留特徵切換按鈕互動。
+- 「多元線性回歸」章節學習摘要圖表改為 Excalidraw 手繪風格，內容含真實計算的 3 特徵迴歸案例分析數據，與「簡介」章節、「簡單線性回歸」章節視覺風格一致。
+- 全部測試（20/20）、`astro check`（0 錯誤/0 警告）、`npm run build` 皆通過；頁面瀏覽器實測確認新圖表正確顯示。
+- `chapter_template_guide.md` 已更新，不再有過時的白底向量風格範例描述。
+
+**遇到的瓶頸：**
+- 首次渲染 MLR 資訊圖表因 `--window-size` 高度與實際內容高度（1957px）不符，出現捲軸殘留；改用 DOM 量測 `.page` 元素 `getBoundingClientRect().height` 取得精確數值後一次校正解決，未憑猜測反覆試錯。
+- `--dump-dom` 對本機 preview 伺服器連續失敗（空白輸出），依規則停止嘗試、改用已驗證可行的替代驗證方式（全頁截圖），未持續在同一方法上試錯。
+- 學習摘要圖片首次截圖空白，依既有記錄的已知限制（圖片優化端點首次請求需建置時間）判斷並用 `curl` 預熱解決，未誤判為程式碼問題。
+
+**開發者交代備忘事項（下階段工作項目）：**
+- 交接文件下一步行動清單（`curriculum.ts` 單向 `relatedTo` 補全、其餘 4 組跨章節關聯待建置章節時處理、下一個章節規劃）維持不變，本階段未涉及。
+- `simple-linear-regression` 互動調整已完成本次要求範圍（取消點擊、新增軸說明）；如仍有交接文件原記錄的「表格點擊列移動資料點」等額外互動需求，需再與開發者確認是否要繼續處理。
+
+**本機測試用 server：** 本階段自行啟動兩次 `npm run preview`（一次驗證圖表點擊/軸說明變更、一次驗證新資訊圖表接入頁面後的顯示效果），皆已用 `taskkill` 強制終止並以 `netstat` 確認無殘留 LISTENING 連線；另外多次使用無頭 Edge 對本機伺服器截圖，過程中產生的暫存截圖檔（`.tmp-*.png`）皆為 session 暫存物，已於使用後刪除，未殘留於 repo。
