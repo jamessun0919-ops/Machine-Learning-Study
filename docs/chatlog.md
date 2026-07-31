@@ -854,3 +854,9 @@ Task 6 為純驗證任務（無程式碼變更），Agent 判斷不適合走 imp
 Agent 派最終整體審查（Opus 模型）。首次執行因 API 連線中斷而中止，以 SendMessage 恢復完成。結果：Ready to merge with fixes，0 Critical，2 項 Important（皆為文件/流程問題：`handover.md` 過時規則與本階段 worklog/chatlog/handover 尚未生成，非程式碼問題）、4 項 Minor（PNG 底部細窄色帶、箭頭畫布尺寸不一致、paradigm 徽章配色、`paradigmLabels` 型別可更嚴謹）。
 
 Agent 向開發者說明並詢問 Minor 處理方式：開發者選擇「只修型別定義（第 4 項），其餘留後」。Agent 派修正 subagent 完成型別收緊（`Record<CurriculumParadigm, string>`），scoped re-review 確認無新破壞。2 項 Important 文件問題由 Agent 於收工流程一併處理（本 chatlog、worklog、handover.md 更新即為此處理）。
+
+### 段落八：收工前開啟本機測試 Server 供開發者確認、追加備忘事項
+
+開發者：「請開啟本地測試ＳＥＲＶＥＲ給我確認」。Agent 啟動 `npm run dev`，確認伺服器就緒後提供首頁與三個章節頁面連結供開發者檢視。
+
+開發者：「請記錄下一階段工作，調整知識地圖的顯示方式，請結束本階段工作，謝謝，辛苦了」。Agent 關閉本次啟動的 dev server（確認 `astro dev status` 顯示無運行中的伺服器），將「調整知識地圖顯示方式」記錄為 handover.md 下一步行動第一項（開發者未說明具體調整內容，記錄為開工時需先與開發者釐清範圍，不可自行臆測），本階段收工。

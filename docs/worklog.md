@@ -315,8 +315,9 @@
 - 最終審查 subagent 因 API 連線中斷而未完成，以 SendMessage 恢復後續完成。
 
 **開發者交代備忘事項（下階段工作項目）：**
-1. 留待後續處理的 3 項外觀類 Minor（詳見 handover.md「下一步行動」）。
-2. 交接文件中原第 10 階段記錄的 `simple-linear-regression` 互動內容調整，仍待安排。
-3. 下一個章節規劃（CRISP-DM 或階段二主題），開工時需重新走 `brainstorming` 流程確認，不可預設沿用本章節範本。
+1. **調整知識地圖（`CourseKnowledgeMap.tsx`）的顯示方式**：推送完成後開發者要求本機開伺服器確認成果，並於收工前追加此項，尚未說明具體調整內容，開工時需先與開發者釐清範圍。
+2. 留待後續處理的 3 項外觀類 Minor（詳見 handover.md「下一步行動」）。
+3. 交接文件中原第 10 階段記錄的 `simple-linear-regression` 互動內容調整，仍待安排。
+4. 下一個章節規劃（CRISP-DM 或階段二主題），開工時需重新走 `brainstorming` 流程確認，不可預設沿用本章節範本。
 
-**本機測試用 server：** 本階段 Task 6 自行啟動一個 Astro dev server 進行瀏覽器驗證，驗證完成後已以 `npx astro dev stop` 關閉並以 `astro dev status` 確認無運行中的伺服器。
+**本機測試用 server：** 本階段 Task 6 自行啟動一個 Astro dev server 進行瀏覽器驗證，驗證完成後已關閉。收工前開發者另要求開啟本機 server 供人工確認成果，Agent 啟動後於開發者確認完畢、交代備忘事項時以 `npx astro dev stop` 關閉，並以 `astro dev status` 確認無運行中的伺服器。
