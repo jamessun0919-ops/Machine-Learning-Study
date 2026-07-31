@@ -800,3 +800,57 @@ Agent 依技能規則詢問執行方式：「Subagent-Driven（推薦）」／�
 開發者選擇：「將本問題紀錄於下一階段工作，先結束本階段工作」。Agent 依此結束本階段工作，未執行任何 Task，轉為執行收工流程（更新 worklog、補齊本 chatlog、更新 handover、推送成果）。
 
 
+
+## 2026-07-31（第 12 個工作階段）
+
+### 段落一：開工與執行方式確認
+
+Agent 自我介紹為 Claude Sonnet 5，依技能規則先呼叫 `using-superpowers`，讀取交接文件 `docs/handover.md`（第 11 階段結束狀態：規劃完成、尚未執行）。
+
+開發者：「請使用Subagent-Driven，請開始執行」。Agent 呼叫 `subagent-driven-development` 技能，依流程進入 Setup 階段。
+
+### 段落二：Worktree 建立與 Pre-flight 掃描
+
+Agent 呼叫 `using-git-worktrees` 技能，偵測到目前在 main 分支、非隔離工作區，依規則詢問是否建立獨立 worktree。開發者選擇「建立獨立 worktree (建議)」。Agent 以原生 `EnterWorktree` 工具建立 `worktree-ml-introduction-chapter` 分支，安裝依賴、確認 baseline 測試（15/15）乾淨。
+
+Agent 讀取完整計畫檔並依技能規則做衝突掃描，發現 Task 4 要求逐字複製既有 rough.js 引擎程式碼到新靜態資產檔，屬於審查慣例會標記的「逐字複製邏輯區塊」瑕疵，先批次詢問開發者。開發者：「請說明這個審查標記的意義，對程式碼或工作流程是否有負面影響，我再決定」。Agent 說明：此為建置期靜態資產（非執行期程式碼、不影響效能/型別安全），唯一風險是未來維護引擎需同步修改多處；抽出共用檔案的成本是要順帶修改既有已完成章節的資產檔。開發者：「維持計畫寫法，審查時如出現疑慮，詢問開發者決議」（先保留、真的被標記再決定）。
+
+### 段落三：Task 1～3 執行
+
+Agent 建立 SDD ledger，依序派 subagent 執行並審查：
+- Task 1（`curriculum.ts`，haiku 模型）：審查 Spec ✅，僅 1 項 Minor（實作者報告計數誤植，非程式碼問題），標記完成。
+- Task 2（schema 條件渲染，sonnet 模型）：審查 Spec ✅，零瑕疵，標記完成。
+- Task 3（`CourseKnowledgeMap.tsx`，haiku 模型）：審查 Spec ✅，2 項 Minor（paradigm 徽章配色、`.concept-image` CSS 疑似未用，後確認是 Task 5 會用到），標記完成。
+
+### 段落四：Task 4 — rough.js 複製與版面留白問題浮現
+
+Task 4（概念關聯圖 PNG，sonnet 模型）完成，DONE_WITH_CONCERNS：實作者回報渲染腳本硬編路徑指向主 checkout 而非 worktree，以「複製到主 checkout 渲染、渲染後清除」的可逆方式處理；並回報偏離計畫原始座標值（修正手繪箭頭被色塊遮擋的問題）。Agent 獨立確認主 checkout 乾淨無殘留、視覺檢視 PNG 正確。
+
+任務審查（sonnet 模型）確認上述兩處偏離皆有正當理由，同時如預期標記 rough.js 逐字複製為 Important（plan-mandated），並新發現一項：概念圖沿用前一章節「滿版 A4」模板，但本次內容僅佔頁面上方約 1/3，下方留白過大。
+
+Agent 將兩項發現一併呈報開發者決議。針對 rough.js 複製，開發者要求先說明意義再決定（如段落二所述說明後）：「請採用抽出共用檔案的方式處理，已經確認後續頁面會以excalidraw風格進行，不再選擇白底向量風格製作資訊圖表，請一併紀錄及修改」。針對版面留白，開發者選擇「回 Task 4 調整 HTML 高度自適應內容 (建議)」。
+
+Agent 據此：
+1. 更新 `docs/specs/chapter_template_guide.md` 第 5 節，將資訊圖表風格規則從「每章節詢問」改為「Excalidraw 已定案」。
+2. 寫入 Claude 記憶系統（`infographic_style_decided.md`），供未來章節開工參考不再詢問。
+3. 派修正回合（resume 原 Task 4 implementer）：抽出共用 `rough-engine.js`（含驗證既有 `simple-linear-regression-summary.html` 渲染結果視覺一致，未重新產生其 PNG）、調整 `.page` 高度與渲染腳本 `--window-size` 消除留白。
+
+修正完成，scoped re-review 確認兩項發現皆已處理、無新破壞。過程中實作者自行回報三個中途失誤（Edit 誤操作、編碼亂碼、誤刪主 checkout 追蹤檔案）皆已用 `git checkout --` 復原且未留痕跡，Agent 獨立驗證主 checkout 與 worktree 皆乾淨。Task 4 標記完成。
+
+### 段落五：Task 5 執行
+
+Task 5（章節內容、註冊與範本掛載，sonnet 模型）完成，DONE。任務審查 Spec ✅，零瑕疵，確認既有兩章節摘要卡片渲染邏輯未受影響（`chapter.data.summary` 判斷式正確跳過本章節）。標記完成。
+
+### 段落六：Task 6 瀏覽器實測
+
+Task 6 為純驗證任務（無程式碼變更），Agent 判斷不適合走 implementer/reviewer 迴圈，改自行呼叫 `run` 技能驅動。環境未安裝 Playwright/chromium-cli，改用既有的無頭 Microsoft Edge 截圖 + DOM dump 方式驗證。
+
+過程中概念圖區塊截圖呈現空白，Agent 依 CLAUDE.md 規則不猜測直接改程式碼，先排查：DOM dump 確認 `<img>` 標籤與互動元件皆正確水合、直接請求圖片端點確認圖片內容正確，判斷是無頭截圖工具 `--virtual-time-budget` 旗標與 lazy-load 圖片搭配的相容性問題，改用 `--run-all-compositor-stages-before-draw` 旗標後截圖恢復正常。首頁與既有兩章節皆驗證通過（首頁章節排序正確、既有章節渲染與摘要卡片不受影響）。
+
+最終驗證三項指令（`npm run test`、`astro check`、`npm run build`）全數通過，dev server 確認關閉。
+
+### 段落七：最終整體審查與收工
+
+Agent 派最終整體審查（Opus 模型）。首次執行因 API 連線中斷而中止，以 SendMessage 恢復完成。結果：Ready to merge with fixes，0 Critical，2 項 Important（皆為文件/流程問題：`handover.md` 過時規則與本階段 worklog/chatlog/handover 尚未生成，非程式碼問題）、4 項 Minor（PNG 底部細窄色帶、箭頭畫布尺寸不一致、paradigm 徽章配色、`paradigmLabels` 型別可更嚴謹）。
+
+Agent 向開發者說明並詢問 Minor 處理方式：開發者選擇「只修型別定義（第 4 項），其餘留後」。Agent 派修正 subagent 完成型別收緊（`Record<CurriculumParadigm, string>`），scoped re-review 確認無新破壞。2 項 Important 文件問題由 Agent 於收工流程一併處理（本 chatlog、worklog、handover.md 更新即為此處理）。

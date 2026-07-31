@@ -290,3 +290,33 @@
 2. 交接文件中原第 10 階段記錄的另一項工作（調整 `simple-linear-regression` 互動內容，改用表格點擊列移動資料點）仍待安排，尚未排入本階段。
 
 **本機測試用 server：** 本階段全程僅進行規劃討論與文件撰寫，未啟動任何 dev server（開工時已確認無殘留、收工時仍為無運行狀態）。
+
+## 2026-07-31（第 12 個工作階段）
+
+**當日工作內容：**
+- 開工閱讀交接文件，確認採用 Subagent-Driven Development 執行第 11 階段完成的實作計畫 `docs/superpowers/plans/2026-07-30-ml-introduction-chapter.md`。
+- 建立獨立 worktree（`.claude/worktrees/ml-introduction-chapter`），依序派 subagent 執行並審查全部 6 個 Task。
+- Task 4 審查發現兩項計畫層級議題（rough.js 引擎逐字複製、概念圖版面留白過多），與開發者確認後：改為抽出共用檔 `docs/specs/assets-src/rough-engine.js`（並驗證既有章節 PNG 視覺一致，未重新產生），修正版面留白問題。
+- 同時與開發者確認：資訊圖表風格定案為 Excalidraw 手繪風格，後續章節不再逐一詢問，同步更新 `docs/specs/chapter_template_guide.md` 第 5 節並記錄至 Claude 記憶系統。
+- Task 6 瀏覽器實測：因環境未安裝 Playwright/chromium-cli，改用無頭 Microsoft Edge 截圖 + DOM dump 驗證；過程中發現概念圖截圖空白的假性異常，排查後確認是 `--virtual-time-budget` 旗標與圖片延遲載入的工具相容性問題，非程式碼缺陷。
+- 完成最終整體 code review（Opus 執行，Ready to merge with fixes）；審查過程中一度因 API 連線中斷而中止，已重新派工完成。
+- 依開發者指示，僅修正審查發現的型別嚴謹度 Minor 項目（`paradigmLabels` 型別），其餘 3 項外觀類 Minor 留待後續處理。
+
+**完成項目：**
+- 「機器學習介紹」章節完整上線：`curriculum.ts`、schema 條件渲染、`CourseKnowledgeMap.tsx`、Excalidraw 概念關聯圖 PNG、章節內容與註冊、瀏覽器實測全數通過。
+- 共用 rough.js 引擎抽出（`rough-engine.js`），同步套用至既有 `simple-linear-regression-summary.html`。
+- 資訊圖表風格政策定案並記錄（Excalidraw 統一風格，不再逐章詢問）。
+- 全部 20 項測試通過、`astro check` 0 錯誤/0 警告、`build` 成功產出 4 頁面。
+- 最終整體審查通過（0 Critical），1 項 Minor 已修正（型別收緊），3 項 Minor 留待後續。
+
+**遇到的瓶頸：**
+- Task 4 渲染腳本的硬編路徑指向主 checkout 而非 worktree，實作者以「複製到主 checkout 渲染後清除」的可逆方式處理，未污染任何一方的 git 狀態（已由 Agent 獨立驗證主 checkout 乾淨）。
+- Task 6 瀏覽器驗證一度誤判為程式碼缺陷（截圖空白），依 CLAUDE.md 錯誤處理規則先排查根因（DOM dump + 直接請求圖片端點）才確認是工具旗標問題，未貿然修改程式碼。
+- 最終審查 subagent 因 API 連線中斷而未完成，以 SendMessage 恢復後續完成。
+
+**開發者交代備忘事項（下階段工作項目）：**
+1. 留待後續處理的 3 項外觀類 Minor（詳見 handover.md「下一步行動」）。
+2. 交接文件中原第 10 階段記錄的 `simple-linear-regression` 互動內容調整，仍待安排。
+3. 下一個章節規劃（CRISP-DM 或階段二主題），開工時需重新走 `brainstorming` 流程確認，不可預設沿用本章節範本。
+
+**本機測試用 server：** 本階段 Task 6 自行啟動一個 Astro dev server 進行瀏覽器驗證，驗證完成後已以 `npx astro dev stop` 關閉並以 `astro dev status` 確認無運行中的伺服器。
