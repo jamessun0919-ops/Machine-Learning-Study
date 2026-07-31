@@ -18,7 +18,7 @@ export const curriculum: CurriculumStage[] = [
     paradigm: 'foundational',
     topics: [
       { name: '機器學習介紹（含全課程知識地圖）', slug: 'machine-learning-introduction' },
-      { name: 'CRISP-DM 資料分析方法' },
+      { name: 'CRISP-DM 資料分析方法', slug: 'crisp-dm' },
     ],
   },
   {
