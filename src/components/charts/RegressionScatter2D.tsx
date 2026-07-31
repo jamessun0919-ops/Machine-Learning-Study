@@ -122,7 +122,14 @@ export default function RegressionScatter2D() {
               bordercolor: '#262a35',
               font: { color: '#e4e6eb' },
             },
-            legend: { bgcolor: 'rgba(0,0,0,0)', x: 0.02, y: 0.98 },
+            dragmode: false,
+            legend: {
+              bgcolor: 'rgba(0,0,0,0)',
+              x: 0.02,
+              y: 0.98,
+              itemclick: false,
+              itemdoubleclick: false,
+            },
             xaxis: {
               title: fieldLabels[preset.xKey],
               range: [fixedRanges[preset.xKey].min * 0.9, fixedRanges[preset.xKey].max * 1.1],
@@ -140,6 +147,16 @@ export default function RegressionScatter2D() {
           config={{ displaylogo: false, displayModeBar: false }}
         />
       </div>
+      <ul className="regression-chart__axis-legend">
+        <li>
+          <span className="regression-chart__axis-badge" data-axis="x">X</span>
+          {fieldLabels[preset.xKey]}
+        </li>
+        <li>
+          <span className="regression-chart__axis-badge" data-axis="y">Y</span>
+          {fieldLabels[preset.targetKey]}
+        </li>
+      </ul>
       <dl className="regression-chart__stats">
         <div>
           <dt>決定係數 R²</dt>
