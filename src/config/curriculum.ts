@@ -25,7 +25,7 @@ export const curriculum: CurriculumStage[] = [
     stage: '階段二：方法論基礎',
     paradigm: 'foundational',
     topics: [
-      { name: '特徵工程與標準化' },
+      { name: '特徵工程與標準化', slug: 'feature-engineering-standardization' },
       { name: '訓練/測試切分與交叉驗證' },
       { name: '過擬合/欠擬合與偏差-變異數權衡' },
     ],

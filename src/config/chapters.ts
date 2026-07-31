@@ -15,12 +15,18 @@ export const chapterOrder: ChapterMeta[] = [
     slug: 'crisp-dm',
     stage: '課程導覽',
     prerequisiteSlug: 'machine-learning-introduction',
+    nextSlug: 'feature-engineering-standardization',
+  },
+  {
+    slug: 'feature-engineering-standardization',
+    stage: '方法論基礎',
+    prerequisiteSlug: 'crisp-dm',
     nextSlug: 'simple-linear-regression',
   },
   {
     slug: 'simple-linear-regression',
     stage: '監督式學習－迴歸',
-    prerequisiteSlug: 'crisp-dm',
+    prerequisiteSlug: 'feature-engineering-standardization',
     nextSlug: 'multiple-linear-regression',
   },
   {
