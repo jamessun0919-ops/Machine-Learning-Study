@@ -1,6 +1,6 @@
-import { curriculum, findTopicByName, type CurriculumTopic } from '../config/curriculum';
+import { curriculum, findTopicByName, type CurriculumParadigm, type CurriculumTopic } from '../config/curriculum';
 
-const paradigmLabels: Record<string, string> = {
+const paradigmLabels: Record<CurriculumParadigm, string> = {
   foundational: '基礎',
   supervised: '監督式',
   unsupervised: '非監督式',
