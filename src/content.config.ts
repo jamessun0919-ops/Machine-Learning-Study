@@ -9,7 +9,6 @@ const chapters = defineCollection({
       stage: z.string(),
       category: z.array(z.string()),
       interactiveComponent: z.string().optional(),
-      conceptMapImage: image().optional(),
       summary: z
         .object({
           formulas: z.array(z.string()),

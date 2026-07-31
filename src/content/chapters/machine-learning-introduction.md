@@ -4,7 +4,6 @@ stage: 課程導覽
 category:
   - 課程導覽
 interactiveComponent: course-knowledge-map
-conceptMapImage: ../../assets/chapters/ml-curriculum-concept-map.png
 ---
 
 ## 簡介
@@ -39,4 +38,4 @@ conceptMapImage: ../../assets/chapters/ml-curriculum-concept-map.png
 
 ## 全課程知識地圖
 
-下圖整理了本站涵蓋的演算法之間的核心概念關聯；下方清單則依規劃的八個學習階段，列出完整課程主題——已完成的章節可以直接點擊前往，尚未建置的章節會標示「即將推出」。
+下方清單依規劃的八個學習階段，列出完整課程主題——已完成的章節可以直接點擊前往，尚未建置的章節會標示「即將推出」；主題旁若標示「相關」，代表與其他主題間的核心概念關聯，同樣可以點擊查看。
