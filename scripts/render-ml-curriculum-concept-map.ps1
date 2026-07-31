@@ -27,7 +27,7 @@ Write-Host "Source: $htmlPath"
 Write-Host "Output: $outputPath"
 
 # Run screenshot
-& $edgePath --headless --disable-gpu --screenshot="$outputPath" --window-size=794,1810 --force-device-scale-factor=3 "file:///$htmlPath"
+& $edgePath --headless --disable-gpu --screenshot="$outputPath" --window-size=794,925 --force-device-scale-factor=3 "file:///$htmlPath"
 
 if (Test-Path $outputPath) {
     Write-Host "Rendering completed successfully!"
