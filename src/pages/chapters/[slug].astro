@@ -27,16 +27,18 @@ const { Content } = await render(chapter);
     <div class="chapter__header">
       <h1>{chapter.data.title}</h1>
       <nav class="chapter__jump-nav" aria-label="章節內快速跳轉">
-        <a href="#summary">資訊圖表</a>
+        {chapter.data.summary && <a href="#summary">資訊圖表</a>}
         {chapter.data.interactiveComponent && <a href="#interactive">互動操作</a>}
       </nav>
     </div>
     <Content />
-    <ChapterSummaryCard
-      formulas={chapter.data.summary.formulas}
-      keyStats={chapter.data.summary.keyStats}
-      image={chapter.data.summary.image}
-    />
+    {chapter.data.summary && (
+      <ChapterSummaryCard
+        formulas={chapter.data.summary.formulas}
+        keyStats={chapter.data.summary.keyStats}
+        image={chapter.data.summary.image}
+      />
+    )}
     {chapter.data.interactiveComponent === 'regression-scatter-3d' && (
       <section class="chapter__interactive" id="interactive">
         <h2>互動式操作與演示</h2>
