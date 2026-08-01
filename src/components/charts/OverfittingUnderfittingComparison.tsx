@@ -44,7 +44,7 @@ export default function OverfittingUnderfittingComparison() {
       </div>
       <div
         className="regression-chart__frame"
-        style={{ cursor: 'default', touchAction: 'auto' }}
+        style={{ cursor: 'default', touchAction: 'auto', marginBottom: '16px' }}
       >
         <Plot
           data={[
