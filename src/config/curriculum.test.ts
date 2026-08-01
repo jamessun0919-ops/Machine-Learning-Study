@@ -23,12 +23,13 @@ describe('curriculum', () => {
     });
   });
 
-  it('marks exactly the five currently-built chapters as having a slug', () => {
+  it('marks exactly the six currently-built chapters as having a slug', () => {
     const builtNames = allTopics.filter((t) => t.slug).map((t) => t.name);
     expect(builtNames).toEqual([
       '機器學習介紹（含全課程知識地圖）',
       'CRISP-DM 資料分析方法',
       '特徵工程與標準化',
+      '訓練/測試切分與交叉驗證',
       'Simple Linear Regression（簡單線性回歸）',
       'Multiple Linear Regression（多元線性回歸）',
     ]);

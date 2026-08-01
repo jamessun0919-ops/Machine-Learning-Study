@@ -21,12 +21,18 @@ export const chapterOrder: ChapterMeta[] = [
     slug: 'feature-engineering-standardization',
     stage: '方法論基礎',
     prerequisiteSlug: 'crisp-dm',
+    nextSlug: 'train-test-split-cross-validation',
+  },
+  {
+    slug: 'train-test-split-cross-validation',
+    stage: '方法論基礎',
+    prerequisiteSlug: 'feature-engineering-standardization',
     nextSlug: 'simple-linear-regression',
   },
   {
     slug: 'simple-linear-regression',
     stage: '監督式學習－迴歸',
-    prerequisiteSlug: 'feature-engineering-standardization',
+    prerequisiteSlug: 'train-test-split-cross-validation',
     nextSlug: 'multiple-linear-regression',
   },
   {
