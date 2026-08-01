@@ -1098,3 +1098,58 @@ Agent 提出兩種修法（保守修正十萬/數十萬字級 vs 相對描述三
 開發者：「本機 Merge 回 main（推薦）」。Agent merge（fast-forward）、於 main 重新驗證測試/astro check/build 全數通過（測試一度顯示 50 個為已知 worktree 重複計算現象），清理 worktree 與已合併分支後測試恢復 25/25 正常。
 
 Agent 依 CLAUDE.md 規則詢問是否推送。開發者：「是，推送（推薦）」。`git push origin main` 成功，觸發 GitHub Pages 部署，「特徵工程與標準化」章節正式上線。
+
+## 2026-08-01（第 18 個工作階段）
+
+### 段落一：規劃「訓練/測試切分與交叉驗證」章節
+
+開發者：「請進下一章節規劃」。Agent 呼叫 `brainstorming` 技能，依 `curriculum.ts` 順序列出階段二剩餘 2 個候選主題，詢問優先順序。
+
+開發者：「訓練/測試切分與交叉驗證（推薦）」。Agent 詢問範本方向（本站現有導覽類／九區塊演算法類／CRISP-DM 方法論流程類／特徵工程技巧技術類）。
+
+開發者：「沿用第四種（技巧/技術類，推薦）」。Agent 詢問章節範圍（交叉驗證本身有 k-fold、Leave-One-Out、Stratified 等變體）。
+
+開發者：「只講 Train/Test Split + 基本 k-fold CV（推薦）」（不含 Leave-One-Out、Stratified）。
+
+Agent 草擬四個文字區塊完整內容，開發者：「確認，內容正確（推薦）」。
+
+### 段落二：互動元件與資訊圖表設計
+
+Agent 提案互動元件設計（50 個資料點橫向點狀圖，兩層模式切換：Split 比例按鈕 + k-fold 五折按鈕），開發者：「可以，依此設計（推薦）」。Agent 詢問圖表形式（橫向點狀圖 vs 盒鬚圖），開發者：「橫向點狀圖/條狀圖（推薦）」。
+
+Agent 詢問學習摘要資訊圖表「常見方法」卡主視覺（5 格橫條圖 k-fold 旋轉示意 vs 簡化版只畫比例條狀圖），開發者：「5 格橫條圖（k-fold旋轉示意，推薦）」。
+
+### 段落三：技術規劃確認與計畫撰寫
+
+Agent 彙整技術規劃（slug 命名、`chapterOrder` 插入位置——接在特徵工程之後、簡單線性回歸之前、本次不需修改 `chapter_template_guide.md`——互動元件設計、資訊圖表區塊），開發者：「確認，撰寫設計文件（推薦）」。
+
+Agent 撰寫設計文件並提交，自我審查通過（無需修改）。開發者：「請產出實作計畫」。Agent 呼叫 `writing-plans` 技能撰寫 5 個 Task 的計畫，過程中手算一組固定洗牌排列陣列（affine 排列 `i*17+7 mod 50`），並用 Node 程式獨立驗證陣列正確性（50 個唯一值、符合公式）後才寫入計畫，避免計畫本身帶有計算錯誤。自我審查後詢問執行方式。
+
+開發者：「１」（Subagent-Driven）。
+
+### 段落四：Subagent-Driven Development 執行
+
+Agent 提交計畫檔案。吸取第 17 階段「worktree 從落後的 origin/main 分出」的教訓，這次先 `git push origin main` 確保本機與 origin 同步，再建立獨立 worktree（`.claude/worktrees/train-test-split-cv`），順利避開同一問題重演，baseline 測試一次通過。
+
+依序派 subagent 執行並審查全部 5 個 Task，過程順利：
+- Task 1（`dataSplit.ts` 資料切分函式庫，TDD）：審查者獨立重算排列陣列驗證正確性，Approved，僅記錄「`kFoldSplit` 對超出範圍輸入未做防禦」的 Minor（計畫明文排除範圍外）。
+- Task 2（互動元件 `TrainTestSplitComparison.tsx` 與 `[slug].astro` 掛載）：審查確認狀態切換邏輯正確（無 stale state 問題）、CSS/JSX 分支模式一致，Approved，無任何問題。
+- Task 3（章節內文、`curriculum.ts`/`chapters.ts`/`curriculum.test.ts` 串接）：implementer 用 CDP 點擊驅動完成互動驗證，Agent 額外獨立開一次 preview 確認畫面與報告一致。審查 Approved，無任何問題。
+- Task 4（Excalidraw 資訊圖表，含 5 格橫條圖新視覺）：DOM 量測法在本次環境完全無回應（非僅矛盾，是完全空白輸出），implementer 依規則直接改用像素分析法，未在該方法上反覆嘗試。Agent 親自檢視渲染結果確認 5 格方塊等寬、第 3 折清楚標示、弧形箭頭不與方塊重疊。審查 Approved，無任何問題。
+- Task 5（全站最終驗證，無程式碼變更）：implementer 發現導覽列是可捲動軌道、截圖會視覺裁切，改用 HTML 原始碼 `aria-current` 核對鏈序，方法論嚴謹。全數通過，略過正式任務審查（無 diff）。
+
+### 段落五：最終整體審查與修正
+
+最終整體審查（Opus）第一次派工因 API 使用額度超限中斷（非程式碼問題，訊息顯示台北時間下午 2:50 重置）。Agent 向開發者說明後直接重新派工（開發者：「請繼續執行工作」），第二次執行完整完成。
+
+審查結果：Ready to merge: with fixes。發現 2 項 Important：(1) 互動圖表兩條資料序列共用同一 y 類別「樣本」且圖例被關閉，導致無法從畫面分辨顏色代表訓練集或測試集——Agent 判斷這是自己撰寫實作計畫時直接複製姊妹元件的 `showlegend: false` 程式碼、未注意到本元件的兩條序列資料形狀不同（姊妹元件用不同 y 類別當圖例，本元件兩條序列共用同一類別）所致，屬計畫撰寫疏漏而非開發者設計意圖的模糊地帶，因此不需要另外詢問開發者，直接當作程式錯誤修正（改為兩條序列各自使用不同 y 類別標籤）；(2) 資訊圖表標題底線寫死 320px，套用到本章 12 字標題時只蓋住中段 68%、視覺上呈現「刪除線」效果（審查者用像素量測驗證），加寬至 500px 並重新渲染。
+
+Agent 派一次性修正 subagent 處理兩項 Important（含順手修正 x 軸標題文字的 Minor），親自檢視修正後的圖表確認底線正確涵蓋全標題，複審通過（兩項皆 Addressed，無新增問題）。
+
+### 段落六：收尾
+
+刪除 SDD workspace，呼叫 `finishing-a-development-branch` 技能，main 測試 33/33 通過，詢問整合方式。
+
+開發者：「本機 Merge 回 main（推薦）」。Agent merge（fast-forward）、於 main 重新驗證測試/astro check/build 全數通過（測試一度顯示 66 個為已知 worktree 重複計算現象），清理 worktree 與已合併分支後測試恢復 33/33 正常。
+
+Agent 詢問是否推送。開發者：「是，推送（推薦）」。`git push origin main` 成功，觸發 GitHub Pages 部署，「訓練/測試切分與交叉驗證」章節正式上線。
