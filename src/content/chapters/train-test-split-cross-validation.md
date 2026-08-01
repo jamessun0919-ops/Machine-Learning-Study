@@ -4,6 +4,10 @@ stage: 方法論基礎
 category:
   - 方法論基礎
 interactiveComponent: train-test-split-comparison
+summary:
+  formulas: []
+  keyStats: []
+  image: ../../assets/chapters/train-test-split-cross-validation-summary.png
 ---
 
 ## 簡介

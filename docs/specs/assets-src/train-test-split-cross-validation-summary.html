@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>訓練/測試切分與交叉驗證 資訊圖表（Excalidraw 風格）</title>
+  <style>
+    :root {
+      --paper: #f3efe2;
+      --ink: #2b2a33;
+      --ink-soft: #4a4854;
+      --intro: #5b5f97;
+      --intro-fill: #e4e5f3;
+      --formula: #2f8f7a;
+      --formula-fill: #dcf0ec;
+      --scope: #c07f2e;
+      --scope-fill: #f7e9d2;
+      --pitfall: #b5533c;
+      --pitfall-fill: #f6e0d8;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #d8d2bd;
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      padding: 0;
+      background: #f3efe2;
+    }
+
+    .page {
+      position: relative;
+      width: 210mm;
+      background: var(--paper);
+      box-shadow: none;
+      padding: 14mm 14mm 12mm;
+      color: var(--ink);
+      font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+    }
+
+    header.title-block {
+      position: relative;
+      text-align: center;
+      padding: 4px 0 18px;
+      margin-bottom: 14px;
+    }
+
+    h1.main-title {
+      font-size: 40px;
+      margin: 0 0 2px;
+      color: var(--ink);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      font-family: "Segoe UI", sans-serif;
+      font-size: 14px;
+      color: var(--ink-soft);
+      letter-spacing: 0.5px;
+    }
+
+    .doodle {
+      position: absolute;
+      top: 2px;
+      right: 6px;
+      width: 92px;
+      height: 72px;
+    }
+
+    .title-underline {
+      position: absolute;
+      left: 50%;
+      top: 52px;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 20px;
+    }
+
+    section.card {
+      position: relative;
+      margin: 0 0 16px;
+      padding: 16px 20px 18px;
+    }
+
+    .sketch-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .card-head .num {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .card-head h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: normal;
+    }
+
+    .card-body {
+      font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+      font-size: 14.5px;
+      line-height: 1.65;
+      color: var(--ink);
+    }
+
+    .card.intro .card-head { color: var(--intro); }
+    .card.formula .card-head { color: var(--formula); }
+    .card.scope .card-head { color: var(--scope); }
+    .card.pitfall .card-head { color: var(--pitfall); }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-family: "Segoe Print", cursive;
+      font-size: 13px;
+      padding: 3px 12px 5px;
+      color: var(--intro);
+      position: relative;
+    }
+    .tag .sketch-bg { z-index: 0; }
+    .tag span { position: relative; z-index: 1; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .two-col h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-family: "Segoe Print", cursive;
+    }
+    .two-col.scope-cols h3.good { color: #3f7a3f; }
+    .two-col.scope-cols h3.neutral { color: var(--ink-soft); }
+
+    .card-body ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .card-body li { margin-bottom: 6px; }
+    .card-body li:last-child { margin-bottom: 0; }
+
+    /* ---- k-fold 5 格橫向摺疊示意 ---- */
+    .fold-caption {
+      font-family: "Segoe UI", sans-serif;
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin: 0 0 4px;
+    }
+    .fold-strip {
+      position: relative;
+      display: flex;
+      gap: 10px;
+      margin: 24px 0 10px;
+      padding-top: 22px;
+    }
+    .fold-strip__canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .fold-box {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      text-align: center;
+      padding: 12px 6px;
+      border: 2px solid var(--formula);
+      border-radius: 8px;
+      background: var(--formula-fill);
+      font-family: "Segoe UI", sans-serif;
+      font-size: 13px;
+      color: var(--ink);
+    }
+    .fold-box.is-current {
+      border-color: var(--scope);
+      background: var(--scope-fill);
+    }
+    .fold-box__tag {
+      display: block;
+      margin-top: 4px;
+      font-family: "Segoe Print", cursive;
+      font-size: 12px;
+      color: var(--scope);
+    }
+    .fold-note {
+      font-family: "Segoe UI", sans-serif;
+      font-size: 13.5px;
+      color: var(--ink);
+      margin: 4px 0 0;
+    }
+
+    @media print {
+      body { background: none; padding: 0; }
+      .page { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page" id="page">
+  <header class="title-block">
+    <canvas class="doodle" id="doodle"></canvas>
+    <h1 class="main-title">訓練/測試切分與交叉驗證</h1>
+    <div class="subtitle">Train/Test Split &amp; Cross-Validation · 方法論基礎</div>
+    <canvas class="title-underline" id="title-underline"></canvas>
+  </header>
+
+  <section class="card intro" data-sketch="intro">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">①</span><h2>簡介</h2></div>
+      <div class="card-body">
+        拿訓練模型時用過的同一批資料來評估表現，得到的分數會過度樂觀。必須先把資料切出「留到最後才用」的測試集，只用剩下的訓練集配適模型；資料量較小時，交叉驗證能提供更穩定可靠的評估方式。
+        <div class="tag-row">
+          <span class="tag" data-sketch="tag1"><canvas class="sketch-bg"></canvas><span>模型評估</span></span>
+          <span class="tag" data-sketch="tag2"><canvas class="sketch-bg"></canvas><span>訓練/測試切分</span></span>
+          <span class="tag" data-sketch="tag3"><canvas class="sketch-bg"></canvas><span>k-fold 交叉驗證</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card formula" data-sketch="formula">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">②</span><h2>常見方法</h2></div>
+      <div class="card-body">
+        <p class="fold-caption">k-fold 交叉驗證（k=5）：依序輪流讓其中一折當驗證集，其餘當訓練集</p>
+        <div class="fold-strip" id="fold-strip">
+          <canvas class="fold-strip__canvas" id="fold-canvas"></canvas>
+          <div class="fold-box">第 1 折</div>
+          <div class="fold-box">第 2 折</div>
+          <div class="fold-box is-current">第 3 折<span class="fold-box__tag">目前驗證</span></div>
+          <div class="fold-box">第 4 折</div>
+          <div class="fold-box">第 5 折</div>
+        </div>
+        <p class="fold-note">Train/Test Split：把資料切成兩份不重疊子集，分別作為訓練集與測試集，只評估一次。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card scope" data-sketch="scope">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">③</span><h2>適用情境</h2></div>
+      <div class="card-body two-col scope-cols">
+        <div>
+          <h3 class="good">✓ Train/Test Split</h3>
+          <ul>
+            <li>資料量夠大、追求快速實驗</li>
+            <li>運算資源有限，只需訓練一次</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="neutral">○ k-fold 交叉驗證</h3>
+          <ul>
+            <li>資料量較小，單次切分結果不穩定</li>
+            <li>能負擔多次訓練運算成本</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card pitfall" data-sketch="pitfall">
+    <canvas class="sketch-bg"></canvas>
+    <div class="card-inner">
+      <div class="card-head"><span class="num">④</span><h2>常見誤區</h2></div>
+      <div class="card-body">
+        <ul>
+          <li><b>用測試集反覆調整模型參數</b>——等於間接把測試集資訊洩漏進模型選擇過程，應改用驗證集或交叉驗證來調參。</li>
+          <li><b>切分前忘記隨機打亂資料</b>——容易讓訓練集與測試集的資料分佈不一致。</li>
+          <li><b>資料量太小卻只做一次切分</b>——評估結果可能因切法運氣而不穩定，應改用交叉驗證。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="rough-engine.js"></script>
+<script>
+(function () {
+  function seedFor(el, fallback) {
+    var s = el.getAttribute('data-sketch') || fallback || 'x';
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h % 2147483647 || 1;
+  }
+
+  function drawFrame(el, opts) {
+    var canvas = el.querySelector(':scope > canvas.sketch-bg') || el.querySelector('canvas.sketch-bg');
+    if (!canvas) return;
+    var rect = el.getBoundingClientRect();
+    var w = Math.max(1, Math.round(rect.width));
+    var h = Math.max(1, Math.round(rect.height));
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var rc = rough.canvas(canvas, { options: {} });
+    var seed = seedFor(el);
+    var margin = opts.margin || 6;
+    rc.rectangle(margin, margin, w - margin * 2, h - margin * 2, {
+      seed: seed,
+      roughness: opts.roughness || 1.6,
+      bowing: opts.bowing || 1.8,
+      stroke: opts.stroke,
+      strokeWidth: opts.strokeWidth || 2.4,
+      fill: opts.fill,
+      fillStyle: opts.fillStyle || 'hachure',
+      fillWeight: opts.fillWeight || 1.4,
+      hachureGap: opts.hachureGap || 5,
+      curveFitting: 1,
+    });
+  }
+
+  function drawFoldArrow() {
+    var canvas = document.getElementById('fold-canvas');
+    var container = document.getElementById('fold-strip');
+    if (!canvas || !container) return;
+    var rect = container.getBoundingClientRect();
+    var w = Math.max(1, Math.round(rect.width));
+    var h = Math.max(1, Math.round(rect.height));
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var rc = rough.canvas(canvas, {});
+    var y = 14;
+    var x1 = w * 0.08;
+    var x2 = w * 0.92;
+    var midY = y - 10;
+    rc.curve([[x1, y], [w * 0.5, midY], [x2, y]], {
+      roughness: 1.6,
+      bowing: 1.4,
+      stroke: '#2f8f7a',
+      strokeWidth: 2.4,
+    });
+    var angle = Math.atan2(y - midY, x2 - w * 0.5);
+    var headLen = 12;
+    var a1 = angle + Math.PI - 0.4;
+    var a2 = angle + Math.PI + 0.4;
+    rc.line(x2, y, x2 + headLen * Math.cos(a1), y + headLen * Math.sin(a1), {
+      roughness: 1.6, stroke: '#2f8f7a', strokeWidth: 2.4,
+    });
+    rc.line(x2, y, x2 + headLen * Math.cos(a2), y + headLen * Math.sin(a2), {
+      roughness: 1.6, stroke: '#2f8f7a', strokeWidth: 2.4,
+    });
+  }
+
+  var palette = {
+    intro:   { stroke: '#5b5f97', fill: '#e4e5f3' },
+    formula: { stroke: '#2f8f7a', fill: '#dcf0ec' },
+    scope:   { stroke: '#c07f2e', fill: '#f7e9d2' },
+    pitfall: { stroke: '#b5533c', fill: '#f6e0d8' },
+    tag1:    { stroke: '#5b5f97', fill: 'none' },
+    tag2:    { stroke: '#5b5f97', fill: 'none' },
+    tag3:    { stroke: '#5b5f97', fill: 'none' },
+  };
+
+  function paintAll() {
+    document.querySelectorAll('[data-sketch]').forEach(function (el) {
+      var key = el.getAttribute('data-sketch');
+      var p = palette[key] || { stroke: '#2b2a33', fill: 'none' };
+      var isTag = key.indexOf('tag') === 0;
+      drawFrame(el, {
+        stroke: p.stroke,
+        fill: p.fill === 'none' ? undefined : p.fill,
+        fillStyle: 'hachure',
+        roughness: isTag ? 2.2 : 1.5,
+        bowing: isTag ? 2.5 : 1.6,
+        strokeWidth: isTag ? 1.8 : 2.6,
+        margin: isTag ? 3 : 6,
+      });
+    });
+
+    drawFoldArrow();
+
+    var ul = document.getElementById('title-underline');
+    if (ul) {
+      var r = ul.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      ul.width = r.width * dpr;
+      ul.height = r.height * dpr;
+      var ctx = ul.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var rc = rough.canvas(ul, {});
+      rc.line(4, 10, r.width - 4, 10, { roughness: 1.8, bowing: 3, stroke: '#2b2a33', strokeWidth: 3 });
+      rc.line(30, 15, r.width - 30, 15, { roughness: 2.4, bowing: 4, stroke: '#5b5f97', strokeWidth: 2 });
+    }
+
+    var dd = document.getElementById('doodle');
+    if (dd) {
+      var dr = dd.getBoundingClientRect();
+      var dpr2 = window.devicePixelRatio || 1;
+      dd.width = dr.width * dpr2;
+      dd.height = dr.height * dpr2;
+      var dctx = dd.getContext('2d');
+      dctx.setTransform(dpr2, 0, 0, dpr2, 0, 0);
+      var rc2 = rough.canvas(dd, {});
+      rc2.line(8, 62, 84, 62, { roughness: 1.4, stroke: '#8a8570', strokeWidth: 1.5 });
+      rc2.line(8, 62, 8, 8, { roughness: 1.4, stroke: '#8a8570', strokeWidth: 1.5 });
+      var pts = [[16,50],[28,44],[34,50],[44,34],[52,38],[60,24],[70,20],[76,14]];
+      pts.forEach(function (pt) {
+        rc2.circle(pt[0], pt[1], 5, { roughness: 2, fill: '#5b5f97', fillStyle: 'solid', stroke: '#2b2a33', strokeWidth: 1 });
+      });
+      rc2.line(14, 54, 80, 12, { roughness: 1.6, bowing: 2, stroke: '#2f8f7a', strokeWidth: 2.5 });
+    }
+  }
+
+  if (document.readyState === 'complete') {
+    setTimeout(paintAll, 30);
+  } else {
+    window.addEventListener('load', function () { setTimeout(paintAll, 30); });
+  }
+  window.addEventListener('resize', function () {
+    clearTimeout(window.__rsz);
+    window.__rsz = setTimeout(paintAll, 150);
+  });
+})();
+</script>
+</body>
+</html>
