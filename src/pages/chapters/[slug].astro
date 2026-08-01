@@ -7,6 +7,7 @@ import RegressionScatter3D from '../../components/charts/RegressionScatter3D';
 import RegressionScatter2D from '../../components/charts/RegressionScatter2D';
 import CourseKnowledgeMap from '../../components/CourseKnowledgeMap';
 import FeatureScalingComparison from '../../components/charts/FeatureScalingComparison';
+import TrainTestSplitComparison from '../../components/charts/TrainTestSplitComparison';
 
 export async function getStaticPaths() {
   const chapters = await getCollection('chapters');
@@ -71,6 +72,14 @@ const { Content } = await render(chapter);
         <FeatureScalingComparison client:only="react">
           <div slot="fallback" class="regression-chart__skeleton">互動圖表載入中……</div>
         </FeatureScalingComparison>
+      </section>
+    )}
+    {chapter.data.interactiveComponent === 'train-test-split-comparison' && (
+      <section class="chapter__interactive" id="interactive">
+        <h2>互動式操作與演示</h2>
+        <TrainTestSplitComparison client:only="react">
+          <div slot="fallback" class="regression-chart__skeleton">互動圖表載入中……</div>
+        </TrainTestSplitComparison>
       </section>
     )}
   </main>
