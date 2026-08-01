@@ -27,12 +27,18 @@ export const chapterOrder: ChapterMeta[] = [
     slug: 'train-test-split-cross-validation',
     stage: '方法論基礎',
     prerequisiteSlug: 'feature-engineering-standardization',
+    nextSlug: 'overfitting-underfitting-bias-variance',
+  },
+  {
+    slug: 'overfitting-underfitting-bias-variance',
+    stage: '方法論基礎',
+    prerequisiteSlug: 'train-test-split-cross-validation',
     nextSlug: 'simple-linear-regression',
   },
   {
     slug: 'simple-linear-regression',
     stage: '監督式學習－迴歸',
-    prerequisiteSlug: 'train-test-split-cross-validation',
+    prerequisiteSlug: 'overfitting-underfitting-bias-variance',
     nextSlug: 'multiple-linear-regression',
   },
   {

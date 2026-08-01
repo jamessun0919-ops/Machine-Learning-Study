@@ -27,7 +27,7 @@ export const curriculum: CurriculumStage[] = [
     topics: [
       { name: '特徵工程與標準化', slug: 'feature-engineering-standardization' },
       { name: '訓練/測試切分與交叉驗證', slug: 'train-test-split-cross-validation' },
-      { name: '過擬合/欠擬合與偏差-變異數權衡' },
+      { name: '過擬合/欠擬合與偏差-變異數權衡', slug: 'overfitting-underfitting-bias-variance' },
     ],
   },
   {
