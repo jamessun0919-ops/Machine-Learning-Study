@@ -432,3 +432,35 @@
 - 最終審查提出一項未在本次範圍內處理的建議：`docs/specs/chapter_template_guide.md` 尚未新增「方法論／流程類」章節範本的說明章節（目前僅設計文件記錄此範本），建議排入下階段待辦。
 
 **本機測試用 server：** 本階段由 subagent 啟動的預覽伺服器多次於各任務結束後正常關閉；清理 worktree 前額外發現並關閉 1 個本次 session 遺留的殘留 `astro preview` 伺服器（PID 23456, port 4322，詳見「遇到的瓶頸」）。收工前 `netstat` 確認 4321-4324 埠皆無 LISTENING 項目。其餘 `chrome-devtools-mcp` 相關行程確認與本專案無關，未處理。
+
+## 2026-08-01（第 17 個工作階段）
+
+**當日工作內容：**
+- 開工閱讀交接文件，確認依第 16 階段開發者選擇，先處理待辦第 1 項：補 `chapter_template_guide.md` 的「方法論／流程類」範本說明章節；接著補上待辦第 2 項：`curriculum.ts` 的 MLR↔Logistic Regression `relatedTo` 雙向標註，並實測知識地圖確認雙向連結正確顯示。
+- 兩項小型待辦完成後，依開發者指示規劃下一章節：依 `curriculum.ts` 順序，於階段二（方法論基礎）3 個候選主題中，開發者選定「特徵工程與標準化」。
+- 呼叫 `brainstorming` 技能逐項確認：範本方向（新建第四種「技巧/技術類」範本，非既有三種）、章節範圍（僅涵蓋標準化/縮放＋類別變數編碼，不含特徵創造/對數轉換）、6 大區塊架構、內容細節（簡介／常見方法／適用情境與限制／常見誤區）、互動元件設計（橫向點狀圖比較 R&D Spend／Marketing Spend 縮放前後分佈，聚焦標準化不含編碼展示）、資訊圖表 4 視覺區塊（純概念不列實際數字）。撰寫設計文件，開發者確認後用 `writing-plans` 技能產出 5 個 Task 的實作計畫。
+- 開發者選擇 Subagent-Driven Development，建立獨立 worktree（`.claude/worktrees/feature-engineering-standardization`，分支 `worktree-feature-engineering-standardization`），依序派 subagent 執行並審查全部 5 個 Task。
+- 最終整體審查（Opus）發現 1 項 Important，派修正 subagent 處理，複審時發現遺漏第二處，追加一輪修正後複審通過。
+- 依 `finishing-a-development-branch` 技能本機 merge 回 main、清理 worktree 與分支、push 至 origin，觸發 GitHub Pages 部署。
+
+**完成項目：**
+- `chapter_template_guide.md` 新增 1.2 節（CRISP-DM 方法論／流程類範本，補記上階段缺口）與第 5 節對應資訊圖表版面說明；`curriculum.ts` 補上 MLR→Logistic Regression 的 `relatedTo` 反向標註，知識地圖雙向連結實測正確。
+- 「特徵工程與標準化」章節完整上線，確立本站第四種章節範本（技巧/技術類：簡介／常見方法／適用情境與限制／常見誤區／學習摘要資訊圖表／互動式操作與演示）：
+  1. 新增 `src/lib/scaling.ts`（TDD，含母體標準差／Z-score／Min-Max 三個純函式）。
+  2. 新增互動元件 `FeatureScalingComparison.tsx`：橫向點狀圖比較 R&D Spend／Marketing Spend 在原始值/Z-score/Min-Max 三種模式下的分佈，即時顯示統計量。
+  3. 章節內文與課程資料串接，`chapterOrder` 插入 CRISP-DM 與 Simple Linear Regression 之間（中段插入，兩側鏈結皆已改寫），`chapter_template_guide.md` 同步新增 1.3 節與第 5 節說明（本次直接排入計畫同步完成，不留待下階段）。
+  4. Excalidraw 風格學習摘要資訊圖表（簡介卡／縮放方法卡／適用情境卡／常見誤區卡，純概念不列數字）。
+  5. 全站最終驗證：測試 25/25、`astro check` 0 錯誤/0 警告、`build` 6 頁成功、互動元件三模式切換與知識地圖連結、prerequisite 鏈重排（simple-linear-regression 前一步正確變更為新章節）皆實測通過。
+- 最終整體審查（Ready to merge: with fixes）發現的 1 項 Important 已修正並複審確認：章節簡介文字誇大了資料集數量級（「研發支出數十萬美元級／行銷支出數百萬美元級」，實際最大值僅 16.5 萬／47.2 萬），且被同頁互動元件即時印出的真實數字當場拆穿；修正為「十萬美元級／數十萬美元級」，並同步修正設計文件兩處相同錯誤（含複審時發現的漏改處）。
+- Main 分支已 merge、worktree 與分支已清理、`git push origin main` 成功，觸發 GitHub Pages 部署。
+
+**遇到的瓶頸：**
+- 建立 worktree 時發現分支於 `origin/main`（落後本機 main 4 個 commit）分出，導致計畫檔案不在 worktree 內；用 `git merge main --ff-only` 補上，未觸及 origin。
+- 最終審查第一輪修正只改了設計文件「簡介」段落的錯誤數量級描述，複審時發現「互動元件規劃」段落還有第二處相同錯誤未改，導致文件內部前後矛盾；追加一輪修正解決，複審確認乾淨。
+- 合併回 main 後 `npm run test` 一度顯示 50 個測試（應為 25 個），為已知的 worktree 殘留重複計算問題（第 5、16 階段已記錄同一根因），清除 worktree 後測試數量恢復正常。
+
+**開發者交代備忘事項：**
+- 無新增交代事項；交接文件既有下一步行動清單（其餘 4 組跨章節關聯待對應章節建置時處理、下一個章節規劃）維持不變。
+- 最終審查記錄數項延後處理的 Minor（資訊圖表「本站」應為「本章」的措辭、`scaling.ts` 除以零邊界情況——皆判定為明確排除在範圍外或成本大於效益，留待下次觸及對應檔案時順手處理）。
+
+**本機測試用 server：** 本階段由 subagent 啟動的預覽伺服器（含 Task 3 一次背景驗證、Task 5 一次全站驗證，以及 Agent 本人的一次獨立確認）皆於使用後正常關閉並經 `netstat` 確認無殘留。收工前確認 4321-4324 埠皆無 LISTENING 項目。

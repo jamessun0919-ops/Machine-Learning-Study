@@ -1031,3 +1031,70 @@ Agent 依技能規則將 2 項 Important 與可順手處理的留白 Minor 打�
 開發者：「本機 Merge 回 main（推薦）」。Agent merge（fast-forward）、於 main 重新驗證測試/astro check/build 全數通過。清理 worktree 時發現一個殘留的 `astro preview` 伺服器（PID 23456，port 4322，鎖住 worktree 檔案導致刪除失敗），判斷為本次 session 內某 subagent 收工前忘記關閉，確認關閉後成功清除 worktree 目錄與已合併分支（`git branch -d`，安全刪除確認已完全合併）。合併後 `npm run test` 一度顯示 40 個測試而非 20 個，Agent 依第 5 階段已記錄的已知原因（worktree 殘留導致 vitest 重複計算）判斷、待 worktree 清除後重新驗證恢復正常，未誤判為新缺陷。
 
 Agent 依 CLAUDE.md 規則詢問是否推送至程式碼倉庫。開發者：「是，推送（推薦）」。`git push origin main` 成功，觸發 GitHub Pages 部署，CRISP-DM 章節正式上線。
+
+## 2026-08-01（第 17 個工作階段）
+
+### 段落一：開工，處理交接文件遺留待辦
+
+開發者：「早安，請閱讀交接文檔及工作規則後與我討論，開始本階段工作」。Agent 自報模型（Sonnet 5），讀取 `handover.md` 確認上階段結束狀態（CRISP-DM 章節已上線，下一步行動清單有 4 項待辦），詢問本階段優先處理哪一項。
+
+開發者：「補 chapter_template_guide.md 範本說明」。Agent 提出具體修改方案（新增 1.2 節方法論／流程類範本說明、調整第 5 節資訊圖表版面說明），開發者：「確認，依此方案執行（推薦）」。Agent 完成兩處文件修改（純文件變更，不需 build/test），詢問下一步。
+
+開發者：「繼續規劃下一個章節」（先前一輪問答中選擇繼續規劃而非先收工）。Agent 隨後又詢問是否要處理 `relatedTo` 雙向標註，開發者：「補 relatedTo 雙向標註（推薦）」。Agent 在 `curriculum.ts` 為 Multiple Linear Regression 補上 `relatedTo: ['Logistic Regression（邏輯斯迴歸）']`，測試/astro check/build 皆通過，並啟動本機 preview 用無頭 Edge 截圖確認知識地圖雙向連結皆正確顯示（MLR 側「相關：Logistic Regression」、Logistic Regression 側「相關：Multiple Linear Regression」可點擊），關閉伺服器後 commit。
+
+### 段落二：規劃「特徵工程與標準化」章節 — 範本方向
+
+開發者選擇繼續規劃下一章節。Agent 呼叫 `brainstorming` 技能，依 `curriculum.ts` 順序列出階段二（方法論基礎）3 個候選主題，詢問優先順序。
+
+開發者：「特徵工程與標準化（推薦）」。Agent 詢問範本方向：本站既有三種範本（導覽類／演算法類九大區塊／CRISP-DM 方法論流程類四大區塊）皆不適合此主題（本質是「技巧/技術」而非流程或需配適評估的演算法），提供三個選項。
+
+開發者：「新範本：技巧/技術類（建議）」。Agent 詢問章節範圍（特徵工程本身可以很廣，涵蓋類別編碼、特徵創造、對數轉換等）。
+
+開發者：「涵蓋標準化+類別變數編碼」（不含特徵創造/對數轉換）。
+
+### 段落三：互動元件與資訊圖表設計
+
+Agent 詢問是否需要互動元件（展示標準化前後分佈對比）。開發者：「需要互動元件（推薦）」。Agent 詢問互動內容範圍（縮放/標準化 vs 類別編碼）。
+
+開發者：「只聚焦標準化/縮放（推薦）」（類別編碼改用靜態範例說明）。Agent 詢問展示方式（單一尺度懸殊特徵對比 vs 雙特徵對比）。
+
+開發者：「同時展示兩個尺度相差懸殊的特徵（推薦）」。Agent 詢問圖表形式（橫向點狀圖 vs 盒鬚圖）。
+
+開發者：「橫向點狀圖/條狀圖（推薦）」。Agent 提出 6 大區塊架構提案（簡介／常見方法／適用情境與限制／常見誤區／學習摘要資訊圖表／互動式操作與演示），開發者：「同意，依此結構繼續（推薦）」。
+
+Agent 草擬四個文字區塊完整內容（簡介、常見方法含 Z-score/Min-Max 公式與 One-Hot/Label Encoding 說明、適用情境與限制、常見誤區），開發者：「確認，內容正確（推薦）」。
+
+Agent 詢問學習摘要資訊圖表內容規劃（列實際數值 vs 純概念）。開發者：「純概念，不列實際數字（推薦）」（與 CRISP-DM 規則一致，實際數值交給互動元件展示）。
+
+### 段落四：技術規劃確認與計畫撰寫
+
+Agent 彙整技術規劃（slug 命名與 `chapterOrder` 插入位置——依 CRISP-DM 先例插在 CRISP-DM 與 Simple Linear Regression 之間而非接在最後；互動元件與函式庫設計；資訊圖表 4 視覺區塊；本次直接同步 `chapter_template_guide.md` 避免重蹈 CRISP-DM 缺口），開發者：「確認，撰寫設計文件（推薦）」。
+
+Agent 撰寫設計文件並提交（`docs/superpowers/specs/2026-08-01-feature-engineering-standardization-chapter-design.md`），自我審查後發現一處遺漏（frontmatter schema 必填欄位處理方式未說明）並補上。開發者：「請實作」。Agent 說明依流程先用 `writing-plans` 產出實作計畫，撰寫 5 個 Task 的計畫（縮放函式庫 TDD／互動元件與頁面掛載／章節內文與課程資料串接含範本文件同步／資訊圖表／全站最終驗證），自我審查（規格覆蓋、無佔位符、跨任務型別/命名一致性）後詢問執行方式。
+
+開發者：「1.」（Subagent-Driven，推薦選項）。
+
+### 段落五：Subagent-Driven Development 執行
+
+Agent 提交計畫檔案，建立獨立 worktree（`.claude/worktrees/feature-engineering-standardization`）。過程中發現該 worktree 是從 `origin/main`（落後本機 main 4 個 commit）分出，導致計畫檔案不在 worktree 內；Agent 用 `git merge main --ff-only` 補上，未動 origin，確認 baseline 測試通過後開始執行。
+
+依序派 subagent 執行並審查全部 5 個 Task，過程順利：
+- Task 1（`scaling.ts` 縮放函式庫，TDD）：審查者親自手算驗證數學正確性，Approved，僅記錄「計畫文字寫 7 個測試但實際 5 個」的計畫筆誤（非實作錯誤）。
+- Task 2（互動元件 `FeatureScalingComparison.tsx` 與 `[slug].astro` 掛載）：審查確認正確重用既有 CSS 類別、字面 JSX 分支模式一致，Approved。
+- Task 3（章節內文、`curriculum.ts`/`chapters.ts`/`curriculum.test.ts`/`chapter_template_guide.md` 串接）：implementer 用 CDP（Chrome DevTools Protocol）直接點擊驅動瀏覽器完成三種模式的完整互動驗證（因單純截圖無法證明按鈕點擊有效），Agent 額外獨立開一次 preview 確認畫面與報告一致。審查 Approved，無任何問題。
+- Task 4（Excalidraw 資訊圖表）：DOM 量測法再次出現內部矛盾（與第 16 階段相同的已知模式），implementer 依規則改用像素分析法定案視窗高度，Agent 親自檢視渲染結果確認乾淨。審查 Approved，這次沒有重演上次的「未使用 CSS 變數」問題。
+- Task 5（全站最終驗證，無程式碼變更）：全數通過，額外驗證了 prerequisite 鏈重排（simple-linear-regression 前一步正確變為新章節而非仍是 CRISP-DM），略過正式任務審查（無 diff）。
+
+### 段落六：最終整體審查與修正
+
+最終整體審查（Opus）：Ready to merge: with fixes。發現 1 項 Important——章節簡介文字「研發支出（數十萬美元級）與行銷支出（數百萬美元級）」與資料集實際數字不符（實際最大值僅 16.5 萬／47.2 萬），且被同頁互動元件即時印出的真實數字當場拆穿；此文字逐字出自 Agent 先前草擬、開發者已核准的設計文件，屬於設計文件缺陷而非實作偏離。
+
+Agent 提出兩種修法（保守修正十萬/數十萬字級 vs 相對描述三倍差距），詢問開發者。開發者：「保守修正：十萬/數十萬（推薦）」。Agent 派修正 subagent（含同步更正設計文件避免未來章節誤用、順手補上 `scaling.ts` 母體標準差慣例註解），複審時發現設計文件「互動元件規劃」段落還有第二處相同錯誤未改（造成文件內部前後矛盾），Agent 恢復同一 implementer 追加一輪修正，複審確認全部解決、無新增問題。
+
+### 段落七：收尾
+
+刪除 SDD workspace，呼叫 `finishing-a-development-branch` 技能，main 測試 25/25 通過，環境偵測為獨立 worktree（named branch），詢問整合方式。
+
+開發者：「本機 Merge 回 main（推薦）」。Agent merge（fast-forward）、於 main 重新驗證測試/astro check/build 全數通過（測試一度顯示 50 個為已知 worktree 重複計算現象），清理 worktree 與已合併分支後測試恢復 25/25 正常。
+
+Agent 依 CLAUDE.md 規則詢問是否推送。開發者：「是，推送（推薦）」。`git push origin main` 成功，觸發 GitHub Pages 部署，「特徵工程與標準化」章節正式上線。
