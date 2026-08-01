@@ -55,7 +55,7 @@
 
 新元件 `FeatureScalingComparison.tsx`：
 
-- **資料**：沿用 `src/data/50-startups.json`，取 `rdSpend`（數十萬級）與 `marketingSpend`（數百萬級）兩欄，尺度差異懸殊，最適合展示標準化前後的對比。
+- **資料**：沿用 `src/data/50-startups.json`，取 `rdSpend`（十萬級）與 `marketingSpend`（數十萬級）兩欄，尺度差異懸殊，最適合展示標準化前後的對比。
 - **視覺形式**：橫向點狀圖（Plotly `scatter`，`y` 為類別軸「R&D Spend」/「Marketing Spend」，`x` 為數值），50 筆資料點各自畫在對應的水平軸線上。
 - **切換模式**：三個按鈕「原始值／Z-score 標準化／Min-Max 縮放」，切換時重新計算並重繪兩條軸線的資料點位置。
 - **統計量顯示**：圖表下方顯示當前模式下兩個特徵各自的 mean/std/min/max（比照既有圖表的軸說明樣式，例如 `RegressionScatter3D.tsx` 的 `regression-chart__axis-legend`）。
