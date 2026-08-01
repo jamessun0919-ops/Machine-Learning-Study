@@ -5,6 +5,7 @@ export interface ScalingStats {
   max: number;
 }
 
+// Uses population standard deviation (divide by n, not n-1), matching sklearn's StandardScaler.
 export function computeStats(values: number[]): ScalingStats {
   const n = values.length;
   const mean = values.reduce((sum, v) => sum + v, 0) / n;
