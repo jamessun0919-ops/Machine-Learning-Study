@@ -23,7 +23,7 @@ describe('curriculum', () => {
     });
   });
 
-  it('marks exactly the seven currently-built chapters as having a slug', () => {
+  it('marks exactly the eight currently-built chapters as having a slug', () => {
     const builtNames = allTopics.filter((t) => t.slug).map((t) => t.name);
     expect(builtNames).toEqual([
       '機器學習介紹（含全課程知識地圖）',
@@ -33,6 +33,7 @@ describe('curriculum', () => {
       '過擬合/欠擬合與偏差-變異數權衡',
       'Simple Linear Regression（簡單線性回歸）',
       'Multiple Linear Regression（多元線性回歸）',
+      'Polynomial Regression（多項式回歸）',
     ]);
   });
 

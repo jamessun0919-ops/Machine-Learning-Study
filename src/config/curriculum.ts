@@ -40,7 +40,11 @@ export const curriculum: CurriculumStage[] = [
         slug: 'multiple-linear-regression',
         relatedTo: ['Logistic Regression（邏輯斯迴歸）'],
       },
-      { name: 'Polynomial Regression（多項式回歸）' },
+      {
+        name: 'Polynomial Regression（多項式回歸）',
+        slug: 'polynomial-regression',
+        relatedTo: ['過擬合/欠擬合與偏差-變異數權衡'],
+      },
       { name: 'Ridge Regression（Ridge 迴歸，正則化）' },
       { name: 'Lasso Regression（Lasso 迴歸，正則化）' },
       {
