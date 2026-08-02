@@ -5,6 +5,18 @@ category:
   - 監督式學習
   - 迴歸
 interactiveComponent: polynomial-regression-fit
+summary:
+  formulas:
+    - "y = \\beta_0 + \\beta_1 x + \\beta_2 x^2 + \\cdots + \\beta_d x^d + \\varepsilon"
+    - "\\hat{\\beta} = (X^\\top X)^{-1} X^\\top y"
+  keyStats:
+    - label: 適用資料型態
+      value: 單一特徵、非線性關係
+    - label: 常用評估指標
+      value: R², RMSE
+    - label: 訓練方式
+      value: 最小平方法（多項式特徵＋常態方程式）
+  image: ../../assets/chapters/polynomial-regression-summary.png
 ---
 
 ## 簡介
