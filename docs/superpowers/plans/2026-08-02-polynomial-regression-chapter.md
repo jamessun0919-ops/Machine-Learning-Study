@@ -610,6 +610,8 @@ EOF
 
 完整內容（直接複製既有 `docs/specs/assets-src/multiple-linear-regression-summary.html` 的 CSS 變數、`.page`/`.card`/`sketch-bg`/`.board` 基礎樣式、標題區 `.doodle`/`.title-underline` 尺寸座標、繪製腳本 `<script>` 區塊**逐字不變**，僅替換以下內容區塊）：
 
+**注意：此 HTML 資產沒有載入 KaTeX，不會渲染 `$...$` 語法**——所有卡片內文須用純文字/Unicode 表示數學符號（比照下方②卡 `.eq` 區塊已經使用的 `β₀`／`⋯`／`ᵈ` 寫法），不可比照 `polynomial-regression.md`（該檔案由 Astro+KaTeX 渲染，`$...$` 才有效）直接複製 LaTeX 語法過來，否則畫面會顯示出原始的 `$`、`\ldots`、`\beta` 字元。
+
 ```html
 <!-- <head><title> 修改 -->
   <title>多項式回歸 資訊圖表（Excalidraw 風格）</title>
@@ -628,7 +630,7 @@ EOF
     <div class="card-inner">
       <div class="card-head"><span class="num">①</span><h2>簡介</h2></div>
       <div class="card-body">
-        多項式回歸是線性回歸的延伸：把特徵轉換為 $x, x^2, \ldots, x^d$ 等高次項，讓模型能配適曲線關係而非僅限直線。雖然預測值是 $x$ 的非線性函數，但對係數 $\beta$ 而言仍是線性組合，因此仍能用最小平方法求解。
+        多項式回歸是線性回歸的延伸：把特徵轉換為 x, x², …, xᵈ 等高次項，讓模型能配適曲線關係而非僅限直線。雖然預測值是 x 的非線性函數，但對係數 β 而言仍是線性組合，因此仍能用最小平方法求解。
         <div class="tag-row">
           <span class="tag" data-sketch="tag1"><canvas class="sketch-bg"></canvas><span>監督式學習</span></span>
           <span class="tag" data-sketch="tag2"><canvas class="sketch-bg"></canvas><span>迴歸任務</span></span>
@@ -648,7 +650,7 @@ EOF
           <div class="eq">y &nbsp;=&nbsp; β₀ + β₁x + β₂x² + ⋯ + βdxᵈ + ε</div>
           <div class="eq">β̂ &nbsp;=&nbsp; (Xᵀ X)⁻¹ Xᵀ y</div>
         </div>
-        對 $x$ 而言是非線性曲線，但對係數 $\beta_0 \ldots \beta_d$ 而言仍是線性組合——所以能直接沿用多元線性回歸的常態方程式求解，把 $x^2 \ldots x^d$ 當成新特徵欄位即可。
+        對 x 而言是非線性曲線，但對係數 β₀ … βᵈ 而言仍是線性組合——所以能直接沿用多元線性回歸的常態方程式求解，把 x² … xᵈ 當成新特徵欄位即可。
       </div>
     </div>
   </section>
