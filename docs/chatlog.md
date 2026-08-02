@@ -1153,3 +1153,45 @@ Agent 派一次性修正 subagent 處理兩項 Important（含順手修正 x 軸
 開發者：「本機 Merge 回 main（推薦）」。Agent merge（fast-forward）、於 main 重新驗證測試/astro check/build 全數通過（測試一度顯示 66 個為已知 worktree 重複計算現象），清理 worktree 與已合併分支後測試恢復 33/33 正常。
 
 Agent 詢問是否推送。開發者：「是，推送（推薦）」。`git push origin main` 成功，觸發 GitHub Pages 部署，「訓練/測試切分與交叉驗證」章節正式上線。
+
+## 2026-08-02（第 19 個工作階段）
+
+### 段落一：開工核對進度（發現前段 session 未收尾）
+
+開發者：「早安，請閱讀交接文檔及工作規則後與我討論，開始本階段工作」。Agent 讀取 `docs/handover.md`，內容停在第 18 階段結束（2026-08-01）。但 Agent 發現本機存在一個 locked 的 worktree `overfitting-underfitting-bias-variance`，比對其 git log 後確認：前一段 session 已完成設計規格、實作計畫、Task 1-3（多項式擬合函式庫、互動元件、章節內文與課程串接），但因額度中斷未及寫入 worklog/chatlog/handover。Agent 進一步比對 SDD ledger（`.superpowers/sdd/.../progress.md`）確認 Task 1、2 已審查完成，Task 3 的 review package 已生成但尚未派工審查。
+
+Agent 向開發者回報現況（含 Task 4/5 未開始、無殘留伺服器），詢問是否延續前次核准的設計/計畫。
+
+開發者：「前階段已經核准，任務因額度不足臨時中斷，檢查後接續前次任務中斷處開始執行」。
+
+### 段落二：接續 SDD 流程（Task 3 補審 → Task 4 → Task 5）
+
+Agent 呼叫 `subagent-driven-development` 技能，讀取 ledger 確認接續點。先補派 Task 3 的任務審查（review package 已存在），審查 Approved（僅 1 項 Minor：圖表間距修正硬編碼 16px 而非設計 token，判定延後不影響）；Agent 另行獨立重跑 `astro check`／`npm run test` 核對與報告一致，記錄 Task 3 完成。
+
+派工 Task 4（Excalidraw 資訊圖表）implementer，過程中因網路連線暫斷（API Error: ENOTFOUND）中止。Agent 用 `SendMessage` 恢復同一 agent 的 transcript 接續完成視覺確認與收尾。
+
+開發者（背景通知後）：「請繼續完成工作」。implementer 回報 DONE_WITH_CONCERNS（皆為觀察性備註：渲染腳本已知的 Test-Path race 誤報、視窗高度校正曲折但最終有重新驗證乾淨、與本 session 無關的殘留 node 行程提醒），Agent 判斷這些屬觀察而非正確性疑慮，逕行進入任務審查。審查 Approved，唯一「⚠️ 無法從 diff 驗證」項目（PNG 實際渲染畫面）由 Agent 親自檢視圖片確認：標題底線完整覆蓋、三格診斷圖正確、無捲軸或明顯留白，記錄 Task 4 完成。
+
+Task 5（全站最終驗證，無程式碼變更）implementer 完整跑完 8 個驗證步驟全數通過，Agent 獨立重跑測試與 `git status` 核對一致，記錄 Task 5 完成。
+
+### 段落三：最終整體審查（額度中斷 → 恢復）→ 塗鴉重疊修正
+
+Agent 派最終全分支審查（Opus，最具能力模型）。審查過程中因 session API 額度限制中斷（訊息顯示台北時間下午 5:20 重置）。
+
+開發者：「目前進度到哪裡？」。Agent 回報目前完成進度與最終審查仍在等待結果。
+
+背景通知審查因額度中斷。Agent 檢查系統時間確認已過重置時間，用 `SendMessage` 恢復同一 agent 接續完成審查（無需開發者介入）。
+
+審查結果：Ready to merge: Yes。0 項 Critical，1 項 Important（資訊圖表右上角手繪塗鴉裝飾因本章標題較長（16 字，歷來最長）而與標題最後一字「衡」重疊約 24px；`.title-underline` 已跟著等比例加寬但 `.doodle` 裝飾沿用舊章節寫死座標未同步調整），5 項 Minor（逐一複核先前各 Task 已記錄的延後項目：Task 2/3 的圖表間距項判定已解決，建議合併關閉紀錄；其餘維持延後不影響合併）。Agent 親自檢視圖片確認重疊確實存在，向開發者說明現況與修法選項。
+
+開發者：「現在修正（建議）」（AskUserQuestion 選項：現在修正 vs 先合併之後再處理）。Agent 派一次性修正 subagent（縮小並重新定位 `.doodle`、等比例縮放手繪座標、重新渲染、確認 `.title-underline` 與 `rough-engine.js` 未受影響），Agent 親自檢視修正後圖片確認塗鴉不再與「衡」字重疊、標題底線仍完整覆蓋。派範圍限定複審，結果：全數 Addressed，無新增問題。
+
+### 段落四：收尾
+
+刪除 SDD workspace。呼叫 `finishing-a-development-branch` 技能，worktree 測試 42/42 通過，偵測為具名分支 worktree，詢問整合方式。
+
+開發者：「本機合併回 main（建議）」（AskUserQuestion 選項：本機合併 vs 推送建 PR vs 先保留現狀）。Agent `merge --ff-only` 回 main、合併後測試複驗（一度顯示 84/14，為已知 worktree 殘留重複計算問題）、清理 worktree 與分支後測試恢復 42/7 正常，依專案慣例（未另外詢問既有慣用倉庫）直接 `git push origin main` 成功，觸發 GitHub Pages 部署，「過擬合/欠擬合與偏差-變異數權衡」章節正式上線，階段二（方法論基礎）三個章節全數完成。
+
+收工前檢查殘留伺服器，偵測到 4 個與本次 session 無關的背景 node.exe 行程（未監聽任何連接埠、非本次啟動）。Agent 列出詢問是否處理。
+
+開發者：「不用管（建議）」（AskUserQuestion 選項：不用管 vs 進一步查看詳細資訊）。維持現狀，未處理。

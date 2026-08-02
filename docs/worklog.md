@@ -496,3 +496,35 @@
 - 最終審查記錄延後處理的 Minor（`kFoldSplit` 邊界檢查、繼承自範本的未使用 CSS 變數——皆判定為明確排除在範圍外，留待下次觸及對應檔案時順手處理）。
 
 **本機測試用 server：** 本階段由 subagent 啟動的預覽伺服器（Task 3 一次背景驗證，以及 Agent 本人的一次獨立確認）皆於使用後正常關閉並經 `netstat` 確認無殘留。收工前確認 4321-4324 埠皆無 LISTENING 項目。
+
+## 2026-08-02（第 19 個工作階段）
+
+**當日工作內容：**
+- 本階段實為兩段 session 接續同一工作：前一段 session（2026-08-01 當晚）已完成設計規格確認、`writing-plans` 產出 5-Task 實作計畫、並以 Subagent-Driven Development 執行完 Task 1-3（多項式擬合函式庫、互動元件、章節內文與課程串接），但因 API 額度中斷，未及寫入 worklog/chatlog/handover 便結束。本階段（新 session）開工時先讀取 handover 發現記錄停在第 18 階段，經比對 worktree 分支 git log 才確認實際已推進到 Task 3，Task 3 的 review package 已生成但尚未派審。
+- 依 SDD 流程補派 Task 3 審查（review clean），Agent 本人另行獨立重跑 `astro check`／`npm run test` 覆核與報告一致。接續派工 Task 4（Excalidraw 資訊圖表）：implementer 於視覺確認階段因網路暫斷（ENOTFOUND）中止，以 `SendMessage` 恢復同一 agent 接續完成，回報 DONE_WITH_CONCERNS（皆為觀察性備註，非正確性疑慮），任務審查通過。Agent 本人另行檢視渲染輸出 PNG，確認標題底線覆蓋、三格診斷圖、無捲軸/留白等視覺項目皆正確。
+- Task 5（全站最終驗證，純驗證無程式變更）：implementer 完整跑完測試/型別檢查/建置/瀏覽器實測（含知識地圖與既有 5 章節迴歸檢查），Agent 本人獨立重跑測試與 `git status` 核對一致。
+- 最終整體全分支審查（Opus）第一次因 session 額度限制中斷（重置時間 17:20 台北時間），額度重置後以 `SendMessage` 恢復同一 agent 完成：結論 Ready to merge: Yes，發現 1 項 Important（資訊圖表右上角手繪塗鴉裝飾因本章標題較長（16 字）而與標題最後一字「衡」重疊，底線寬度雖已跟著加寬但塗鴉未同步調整）、5 項 Minor（4 項為先前各 Task 已記錄的延後項目，審查者逐一複核判定：Task 2/3 的圖表間距項判定已解決應合併關閉紀錄，其餘維持延後）。與開發者確認後選擇合併前先修正塗鴉重疊，派修正 subagent 處理（縮小並重新定位塗鴉、重新渲染、確認標題底線與 `rough-engine.js` 未受影響），複審通過（all findings addressed, no new breakage）。
+- 依 `finishing-a-development-branch` 技能：worktree 測試 42/42 通過，與開發者確認分支處理方式後選擇本機合併，`merge --ff-only` 回 main、合併後測試複驗（一度顯示 84/14，為已知 worktree 殘留重複計算問題）、清理 worktree 與分支後測試恢復 42/7 正常、`git push origin main` 成功觸發部署。
+
+**完成項目：**
+- 「過擬合/欠擬合與偏差-變異數權衡」章節完整上線，為階段二（方法論基礎）最後一個章節，沿用第四種「技巧/技術類」範本：
+  1. `src/lib/polynomialFit.ts`（TDD）：合成 1D 資料集＋多項式擬合＋train/test RMSE 計算，最大化重用既有 `regression.ts`／`dataSplit.ts`，未重寫矩陣運算或洗牌邏輯。
+  2. 互動元件 `OverfittingUnderfittingComparison.tsx`：雙圖（擬合曲線圖＋誤差曲線圖）＋次數白名單按鈕（1／2／3／5／9／15），關閉拖曳縮放與可點擊圖例。
+  3. 章節內文與課程資料串接，`chapterOrder` 插入「訓練/測試切分與交叉驗證」與「簡單線性回歸」之間。
+  4. Excalidraw 風格學習摘要資訊圖表：4 卡片版面，「診斷與應對」卡主視覺為三格欠擬合／很適合／過擬合手繪對比圖＋Bias-Variance 分解公式。
+  5. 全站最終驗證：測試 42/42、`astro check` 0 錯誤/0 警告、`build` 8 頁成功、互動元件雙圖與按鈕、知識地圖連結、既有 5 章節無迴歸、導覽鏈順序（HTML 原始碼 `aria-current` 核對，非截圖）皆實測通過。
+- 最終整體審查發現的 1 項 Important（資訊圖表塗鴉與標題重疊）已修正並複審確認：`.doodle` 由 92×72px 縮小至 50×39px 並重新定位，等比例縮放所有手繪座標，重新渲染確認塗鴉不再與「衡」字重疊，標題底線寬度（660px）與共用檔 `rough-engine.js` 皆未受影響。
+- Main 分支已 merge（ff-only）、worktree 與分支已清理、`git push origin main` 成功，觸發 GitHub Pages 部署。
+- 階段二（方法論基礎）三個章節（特徵工程與標準化／訓練測試切分與交叉驗證／過擬合欠擬合與偏差-變異數權衡）至此全數上線完成。
+
+**遇到的瓶頸：**
+- 本階段開工時發現前一段 session 因額度中斷、未依規則即時寫入 worklog/chatlog/handover 便結束，需靠比對 worktree git log 與既有 SDD ledger（`progress.md`）重建實際進度，才確認正確的接續點（Task 3 review 尚未派工，而非從 Task 4 開始）。
+- Task 4 implementer 與最終審查 subagent 皆各中止一次：前者為網路連線暫斷（ENOTFOUND，非額度問題），後者為 session API 額度限制（訊息顯示重置時間 17:20），兩者皆以 `SendMessage` 恢復同一 agent 的 transcript 接續完成，未重新從頭派工。
+- 最終審查抓到的塗鴉重疊問題，根因是本章標題（16 字）為目前所有章節中最長，`.title-underline` 有依比例加寬（500px→660px）但 `.doodle` 裝飾沿用舊章節寫死座標未同步調整——審查者建議補充進 `docs/handover.md` 既有的 Excalidraw 校正檢查清單（目前僅涵蓋底線寬度／捲軸／留白，未涵蓋水平方向的裝飾碰撞），已記錄於下方交接文件。
+- 合併回 main 後 `npm run test` 一度顯示 84 個測試（應為 42 個），為已知的 worktree 殘留重複計算問題（第 5、16、17、18 階段已記錄同一根因），清除 worktree 後測試數量恢復正常。
+
+**開發者交代備忘事項：**
+- 系統上偵測到 4 個與本次 session 無關的背景 node.exe 行程（未監聽任何連接埠），開發者確認不用處理，維持現狀。
+- 最終審查記錄延後處理的 Minor（詳見下方交接文件）留待下次觸及對應檔案時順手處理，非阻塞。
+
+**本機測試用 server：** 本階段由多個 subagent 各自啟動的預覽伺服器與 CDP 除錯用無頭 Edge 行程，皆於各自任務完成後經 `netstat`／`tasklist` 確認正常關閉無殘留。Agent 本人收工前再次確認 4321-4324、9333-9334 埠皆無 LISTENING 項目。
