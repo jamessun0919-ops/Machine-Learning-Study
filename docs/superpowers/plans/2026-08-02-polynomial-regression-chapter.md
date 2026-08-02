@@ -296,7 +296,7 @@ Run: `npx astro check`
 Expected: 0 錯誤 / 0 警告
 
 Run: `npm run build`
-Expected: 建置成功，**9 個頁面**正常產出（本任務尚未新增章節內容，頁面數不變）
+Expected: 建置成功，**8 個頁面**正常產出（本任務尚未新增章節內容，頁面數不變）
 
 Run: `npm run test`
 Expected: 全數測試通過（含 Task 1 新增的 `positionSalaryData.test.ts`）
