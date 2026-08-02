@@ -1195,3 +1195,71 @@ Agent 派最終全分支審查（Opus，最具能力模型）。審查過程中�
 收工前檢查殘留伺服器，偵測到 4 個與本次 session 無關的背景 node.exe 行程（未監聽任何連接埠、非本次啟動）。Agent 列出詢問是否處理。
 
 開發者：「不用管（建議）」（AskUserQuestion 選項：不用管 vs 進一步查看詳細資訊）。維持現狀，未處理。
+
+## 2026-08-03（第 20 個工作階段）
+
+### 段落一：開工核對進度與範本評估
+
+開發者：「晚安，請閱讀交接文檔及工作規則後與我討論，請開始本階段工作」。Agent 讀取 `docs/handover.md`（第 19 階段末），回報階段二三章節全數完成上線、無阻塞，詢問下一步方向（階段三其他迴歸主題 或 其他階段主題）。
+
+開發者：「請進行 Polynomial Regression，請評估是依照之前的範本，或是需要建立新範本」。Agent 讀取 `chapter_template_guide.md`、`polynomialFit.ts`、`curriculum.ts` 後回報：沿用既有九大區塊演算法類範本（同 Simple/Multiple Linear Regression），不需新範本；但指出互動元件不能直接沿用第 19 階段 `OverfittingUnderfittingComparison.tsx`（該元件用合成 sin 曲線資料展示過擬合現象，非真實案例，不符合九大區塊範本第 5 節「案例分析」須用真實資料集的要求），需要新建聚焦 Polynomial Regression 本身的互動元件。
+
+### 段落二：Brainstorming 需求確認
+
+開發者：「請進行需求確認」。Agent 呼叫 `brainstorming` 技能。
+
+Agent 詢問案例資料集選擇（職等-薪資經典資料集 vs 沿用 50 Startups 挑一特徵重新檢視 vs 其他真實資料集），開發者：「職等-薪資資料集（Position Level vs Salary）」。
+
+Agent 詢問是否新增 `curriculum.ts` 的 `relatedTo` 跨章節關聯（Polynomial Regression ↔ 過擬合/欠擬合章節），開發者：「新增 relatedTo：Polynomial Regression ↔ 過擬合/欠擬合章節（推薦）」。
+
+Agent 詢問互動元件次數白名單選項（1/2/3/4/5 vs 1/2/3/4/6 拉大極端範例），開發者：「1、2、3、4、5（推薦）」。
+
+Agent 分四段呈現設計（範本與檔案結構／資料集與互動元件／課程鏈結與跨章節關聯／資訊圖表），開發者逐段確認：「可以，繼續下一段」×3，最後一段：「可以，寫成設計文件」。Agent 撰寫設計文件並提交、自我審查通過。
+
+### 段落三：實作計畫撰寫
+
+開發者：「請完成實作計畫」。Agent 呼叫 `writing-plans` 技能，讀取既有姊妹章節（Multiple Linear Regression 內文與資訊圖表 HTML、`RegressionScatter2D.tsx`、渲染腳本）作為範本基礎，並用 Node 腳本預先驗證職等-薪資資料集在次數 1-5 下的常態方程式求解結果（R²/RMSE/係數），確認求解穩定、無矩陣病態，再把精確數值寫入計畫。撰寫 5-Task 實作計畫，自我審查後提交。
+
+開發者：「１」（Subagent-Driven）。
+
+### 段落四：Subagent-Driven Development 執行前置
+
+Agent 提交計畫檔案並 push 至 origin，用 `EnterWorktree` 建立獨立 worktree（`polynomial-regression`，分支 `worktree-polynomial-regression`）。呼叫 `subagent-driven-development` 技能，執行前依規定做衝突掃描，發現計畫明文要求 `polynomialFeatures()` 複寫（不與已上線的 `polynomialFit.ts` 共用）會被審查標準視為 DRY 違規，向開發者確認裁定方向（以計畫文字為準維持複寫 vs 改成抽共用函式）。
+
+開發者：「以計畫文字為準：維持複寫（推薦）」。Agent 記錄於 SDD ledger 供後續審查裁定參考，開始派工。
+
+### 段落五：Task 1-3 執行
+
+Task 1（`positionSalaryData.ts` 資料集函式庫，TDD，haiku 模型）：implementer 完成，審查（sonnet）Approved，無任何問題。
+
+Task 2（`PolynomialRegressionFit.tsx` 互動元件與 `[slug].astro` 掛載，sonnet 模型）：implementer 回報 DONE_WITH_CONCERNS，主動抓到計畫本身一處筆誤——Step 3 驗證步驟寫「9 個頁面」，但本任務尚未新增章節內容，正確應為「8 個頁面」（比對 Task 1 沿用的姊妹章節寫法，Agent 確認是複製貼上時的計算疏漏），implementer 用 `git stash` 測試驗證自己的實作沒問題、純粹是計畫期望值寫錯。Agent 核實後直接修正計畫文件（非程式碼問題），提交修正 commit 後才生成審查用 diff。審查 Approved，僅 1 項 Important 標記為 plan-mandated（`polynomialFeatures()` 複寫）——依先前裁定歸類為 parked，不進入修正迴圈。
+
+Task 3（章節內文＋`curriculum.ts`/`chapters.ts`/`curriculum.test.ts` 串接＋回補過擬合章節關聯段落＋範本指南對照表）：implementer 完成瀏覽器實測（含 KaTeX 渲染、關聯段落顯示）後確認伺服器已關閉。審查 Approved，僅 1 項 Minor（新章節自身的關聯段落用語比範本規則稍簡短，但源自計畫文字本身、非實作偏離），記錄延後。
+
+### 段落六：Task 4 資訊圖表——抓到計畫本身的 LaTeX 語法錯誤
+
+Task 4（Excalidraw 資訊圖表 + 渲染腳本 + PNG + `summary` frontmatter，sonnet 模型）：Agent 特別在派工訊息中詳細說明本專案「worktree 內渲染需複製資產到主 checkout、渲染後複製 PNG 回 worktree、清理主 checkout 暫存檔」的可逆工作流程（handover 記載的既有慣例）。implementer 回報 DONE_WITH_CONCERNS：首次渲染因 Edge 螢幕截圖搶在 rough.js 畫完之前擷取（timing race）產生壞圖，重試後成功，非內容錯誤。審查（sonnet）Approved，僅 1 項 Minor（HTML 檔案換行符為 LF、與姊妹檔案的 CRLF 不一致，純美觀問題）。
+
+Agent 依規則親自開圖檢視渲染輸出（審查者無法檢視二進位檔案），發現審查者未能抓到的真實缺陷：簡介卡與模型公式卡的說明文字顯示出原始的 `$x, x^2, \ldots, x^d$`、`$\beta_0 \ldots \beta_d$` 等字元，未被渲染成數學符號——根因是此靜態 HTML 資產沒有載入 KaTeX 引擎（不同於會被 Astro+KaTeX 渲染的章節內文 `.md` 檔案），計畫撰寫時誤把可用 `$...$` 語法的內文，直接複製進不具備該渲染能力的獨立 HTML 資產。Agent 判斷這是計畫撰寫疏漏、且修正方向明確（比照卡片內已正確的 `.eq` 公式區塊改用純 Unicode 符號），不需要另外詢問開發者，直接修正計畫文件並記錄根因。
+
+Agent 用 `SendMessage` 恢復同一 Task 4 implementer 進行第 1 輪修正（提供精確的修改前/後文字），implementer 重新渲染（同樣的 timing race 又發生一次，第三次嘗試才成功，implementer 於報告中再次提醒此渲染腳本模式可能需要未來補強），親自確認全部 6 個區塊皆無殘留 LaTeX 字元。Agent 用 haiku 模型派範圍限定複審，結果全數 Addressed、無新增問題。Agent 再次親自開圖複核，確認乾淨。
+
+### 段落七：Task 5 與最終整體審查（額度中斷 → 恢復）
+
+Task 5（全站最終驗證，無程式碼變更，sonnet 模型）：implementer 完整跑完 8 個驗證步驟（測試/型別檢查/建置/瀏覽器實測含 CDP 點擊次數按鈕/導覽鏈 curl 核對/伺服器關閉/git status），全數通過，DONE 狀態無疑慮。因無 diff，Agent 判斷略過正式任務審查（純驗證任務性質）。
+
+Agent 派最終全分支審查（opus，最具能力模型），過程中因 session API 使用額度超限中斷（訊息顯示台北時間 00:20 重置）。
+
+開發者：「請繼續執行」。
+
+Agent 檢查系統時間（確認已過 00:20 重置時間，僅過 6 分鐘，判斷安全），用 `SendMessage` 恢復同一 agent 接續完成審查。審查結果：Ready to merge: Yes。審查者獨立重算全部案例分析數值與次數 4 係數，逐位比對確認無誤；獨立評估數值穩定性風險（次數 5 特徵值最高至 10 萬）為低風險；確認所有跨 Task 串接一致（`interactiveComponent` 鍵值、`summary.image` 路徑、`chapterOrder` 鏈結、測試順序）。發現 1 項 Important（`render-polynomial-regression-infographic.ps1` 路徑寫死指向主倉庫 checkout，但審查者主動查證這是全站 6 支既有渲染腳本共同的既有模式、非本分支引入，建議另案處理而非卡在本分支合併）與 3 項 Minor（資訊圖表一處次方符號誤用上標 `βᵈ` 應為下標；互動元件曲線取樣範圍寫死 1-10 常數而非從資料動態推導；圖表未固定 y 軸範圍導致切換次數時畫面重新縮放，審查者明確標註這是可接受的設計取捨而非缺陷；先前 Task 4 記錄的 LF/CRLF 換行符問題經覆核已不重現，判定不需處理）。
+
+Agent 評估 Important 項目屬全站既有模式、審查者本身建議不卡在本分支，故不派修正輪次，直接記錄至 ledger 供交接文件參考。
+
+### 段落八：收尾
+
+刪除 SDD workspace。呼叫 `finishing-a-development-branch` 技能，main 測試 47/47 通過，偵測為具名分支 worktree，詢問整合方式。
+
+開發者：「本機合併回 main（推薦）」（AskUserQuestion 選項：本機合併 vs 推送建 PR vs 先保留現狀）。Agent `git merge`（fast-forward）回 main、合併後測試複驗（一度顯示 94/16，為已知 worktree 殘留重複計算問題）、用 `ExitWorktree` 清理 worktree 與分支（工具因偵測到 7 個未同步確認的 commit 而要求 `discard_changes: true` 二次確認，Agent 核實這些 commit 皆已 fast-forward 併入 main 後放行）後測試恢復 47/8 正常，`git push origin main` 成功，觸發 GitHub Pages 部署，「Polynomial Regression（多項式回歸）」章節正式上線。
+
+收工前檢查殘留伺服器：確認無任何 LISTENING 於 4321-4323 埠的行程；偵測到系統上 4 個背景 node.exe 行程但皆未監聽任何連接埠，判斷非本次 session 啟動的伺服器，維持不動未處理。

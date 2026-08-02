@@ -528,3 +528,35 @@
 - 最終審查記錄延後處理的 Minor（詳見下方交接文件）留待下次觸及對應檔案時順手處理，非阻塞。
 
 **本機測試用 server：** 本階段由多個 subagent 各自啟動的預覽伺服器與 CDP 除錯用無頭 Edge 行程，皆於各自任務完成後經 `netstat`／`tasklist` 確認正常關閉無殘留。Agent 本人收工前再次確認 4321-4324、9333-9334 埠皆無 LISTENING 項目。
+
+## 2026-08-03（第 20 個工作階段）
+
+**當日工作內容：**
+- 開發者列出未完工章節後，指示進行「Polynomial Regression（多項式回歸）」。Agent 先評估範本歸屬：確認沿用九大區塊演算法類範本（同 Simple/Multiple Linear Regression），非新範本；並指出第 19 階段 `OverfittingUnderfittingComparison.tsx` 的合成資料展示與本章需求（真實案例分析）不同，不能直接沿用。
+- 呼叫 `brainstorming` 技能逐項確認：案例資料集（開發者選定經典「職等-薪資」教學資料集，非沿用 50 Startups）、`curriculum.ts` 新增 `relatedTo` 雙向關聯至過擬合/欠擬合章節（開發者確認新增）、互動元件設計（單圖、次數白名單 1/2/3/4/5、比照 `RegressionScatter2D.tsx` 不做 train/test 切分）。撰寫設計文件，開發者確認後用 `writing-plans` 技能產出 5-Task 實作計畫（含用 Node 腳本預先驗證的職等-薪資資料集各次數 R²/RMSE 精確數值）。
+- 開發者選擇 Subagent-Driven Development。執行前依技能規定做衝突掃描，發現計畫明文要求 `polynomialFeatures()` 複寫（不與已上線的 `polynomialFit.ts` 共用）會被審查標準視為 DRY 違規，主動與開發者確認以計畫文字為準（維持複寫），記錄於 ledger 供後續審查裁定參考。
+- 依序派 subagent 執行 5 個 Task：Task 1（資料集函式庫）、Task 2（互動元件）審查皆一次通過（Task 2 的重複函式發現依先前裁定歸類 plan-mandated、不進入修正迴圈）。Task 2 implementer 額外抓到計畫本身一處頁數期望值筆誤（Step 3 誤寫 9 頁，實際應為 8 頁），Agent 本人核實後直接修正計畫文件（非程式碼問題）。Task 3（章節內文＋課程串接＋回補過擬合章節關聯段落）審查通過，僅 1 項 Minor（關聯段落用語與範本格式規則稍有出入，源自計畫文字本身，非實作偏離）。
+- Task 4（Excalidraw 資訊圖表）implementer 完成並通過審查後，Agent 本人親自開圖檢視渲染輸出，發現審查者因無法檢視二進位檔案而漏掉的真實缺陷：簡介卡與模型公式卡的說明文字誤用 LaTeX `$...$` 語法，但此靜態 HTML 資產未載入 KaTeX 引擎，畫面直接顯示原始 `$`、`\ldots`、`\beta` 字元——根因是撰寫計畫時誤將可被 Astro+KaTeX 渲染的章節內文語法，複製進不具備該渲染能力的獨立 HTML 資產。修正計畫文件後，以 `SendMessage` 恢復同一 implementer 進行第 1 輪修正（改用純 Unicode 數學符號，比照該卡片已正確的 `.eq` 公式區塊），重新渲染確認全部 6 個區塊皆無殘留 LaTeX 字元，複審通過。
+- Task 5（全站最終驗證，純驗證無程式變更）：implementer 完整跑完測試/型別檢查/建置/瀏覽器實測（含知識地圖、過擬合章節新增段落、既有 5 章節迴歸檢查、以 CDP 實測次數按鈕點擊），皆通過。
+- 最終整體全分支審查（Opus）第一次因 session 額度限制中斷，額度重置後以 `SendMessage` 恢復同一 agent 完成：結論 Ready to merge: Yes。審查者獨立重算全部案例數值與係數，逐位確認無誤；發現 1 項 Important（`render-polynomial-regression-infographic.ps1` 路徑寫死指向主倉庫 checkout，非本分支獨有問題，而是全站 6 支既有渲染腳本共同的既有模式，審查者本身建議另案處理而非卡在本分支合併）與 3 項 Minor（資訊圖表一處次方符號誤用上標／互動元件曲線取樣範圍寫死常數／圖表未固定 y 軸範圍且明確標註為可接受的設計取捨，非缺陷）。
+- 依 `finishing-a-development-branch` 技能：worktree 測試 47/47 通過，與開發者確認分支處理方式後選擇本機合併，`git merge`（fast-forward）回 main、合併後測試複驗（一度顯示 94/16，為已知 worktree 殘留重複計算問題）、用 `ExitWorktree` 清理 worktree 與分支後測試恢復 47/8 正常、`git push origin main` 成功觸發部署。
+
+**完成項目：**
+- 「Polynomial Regression（多項式回歸）」章節完整上線，為階段三（監督式學習－迴歸）緊接在 Multiple Linear Regression 之後的章節，沿用九大區塊演算法類範本：
+  1. `src/lib/positionSalaryData.ts`（TDD）：經典職等-薪資教學資料集（10 筆固定常數），與既有 50 Startups、過擬合章節合成資料皆不同。
+  2. 互動元件 `PolynomialRegressionFit.tsx`：單一散佈圖＋配適曲線，次數白名單按鈕 1/2/3/4/5（預設 4），全資料配適不做 train/test 切分，重用既有 `regression.ts` 常態方程式求解器。
+  3. 章節內文與課程資料串接，`chapterOrder` 接續在 `multiple-linear-regression` 之後；`curriculum.ts` 新增 `relatedTo` 雙向關聯，回補已上線的過擬合/欠擬合章節簡介段落，範本指南對照表同步更新。
+  4. Excalidraw 風格學習摘要資訊圖表：六卡片版面（簡介／模型公式／適用情境／評估指標／常見誤區／案例分析黑板），案例分析為職等-薪資資料集次數 4 配適（R²=0.9974，RMSE=14503.23）。
+  5. 全站最終驗證：測試 47/47、`astro check` 0 錯誤/0 警告、`build` 9 頁成功、互動元件次數按鈕（含 CDP 點擊實測）、知識地圖連結、既有 7 章節無迴歸、導覽鏈順序（HTML 原始碼 `aria-current` 核對）皆實測通過。
+- 最終整體審查（Ready to merge: Yes）發現的 1 項 Important 經評估屬全站既有模式（非本分支引入），依審查者建議留待日後另案處理，不阻塞本次合併；3 項 Minor 記錄延後。
+- Main 分支已 merge（fast-forward）、worktree 與分支已清理、`git push origin main` 成功，觸發 GitHub Pages 部署。
+
+**遇到的瓶頸：**
+- 最終審查 subagent 因 session API 額度限制中斷一次（訊息顯示重置時間 00:20 台北時間），確認系統時間已過重置後以 `SendMessage` 恢復同一 agent 接續完成，未重新從頭派工。
+- 本階段兩次抓到「計畫文件本身寫錯，而非 subagent 實作偏離」的問題：(1) Task 2 驗證步驟頁數期望值筆誤（9 應為 8）；(2) Task 4 資訊圖表卡片文字誤用 LaTeX 語法但該 HTML 資產不具 KaTeX 渲染能力。後者是 Agent 本人在審查通過、implementer 回報完成之後，親自開圖檢視渲染輸出 PNG 才發現——因為子審查 subagent 明確表示無法檢視二進位圖片檔案，此類缺陷只能靠 Agent 本人或開發者實際看圖才抓得到，已記錄為後續同類任務的檢查提醒。
+- 合併回 main 後 `npm run test` 一度顯示 94 個測試（應為 47 個），為已知的 worktree 殘留重複計算問題（第 5、16、17、18、19 階段已記錄同一根因），用 `ExitWorktree` 清除 worktree 後測試數量恢復正常。
+
+**開發者交代備忘事項：**
+- 最終審查記錄的 1 項 Important（六支渲染腳本皆寫死主倉庫 checkout 路徑，建議改用 `$PSScriptRoot` 相對推導，屬全站既有模式的系統性問題）與 3 項 Minor（詳見下方交接文件）留待下次觸及對應檔案或開發者指示時另案處理，非本階段阻塞項目。
+
+**本機測試用 server：** 本階段由多個 subagent 各自啟動的預覽伺服器，皆於各自任務完成後經 `netstat`／`tasklist` 確認正常關閉無殘留；Task 4 額外確認 CDP 除錯用無頭 Edge 行程亦無殘留。Agent 本人收工前再次確認相關連接埠皆無 LISTENING 項目，且系統上原有、與本專案無關的背景 node.exe 行程維持不動未處理。
