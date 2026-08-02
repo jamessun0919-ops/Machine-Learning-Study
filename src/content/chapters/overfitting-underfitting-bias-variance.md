@@ -4,6 +4,10 @@ stage: 方法論基礎
 category:
   - 方法論基礎
 interactiveComponent: overfitting-underfitting-comparison
+summary:
+  formulas: []
+  keyStats: []
+  image: ../../assets/chapters/overfitting-underfitting-bias-variance-summary.png
 ---
 
 ## 簡介
