@@ -5,6 +5,18 @@ category:
   - 監督式學習
   - 迴歸
 interactiveComponent: ridge-regression-fit
+summary:
+  formulas:
+    - "J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat y_i)^2 + \\lambda \\sum_{j=1}^{p}\\beta_j^2"
+    - "\\hat{\\beta} = (X^\\top X + \\lambda I')^{-1} X^\\top y"
+  keyStats:
+    - label: 適用資料型態
+      value: 多特徵、疑似過擬合或共線性
+    - label: 常用評估指標
+      value: R², RMSE
+    - label: 訓練方式
+      value: 標準化特徵＋L2 正則化常態方程式
+  image: ../../assets/chapters/ridge-regression-summary.png
 ---
 
 ## 簡介
