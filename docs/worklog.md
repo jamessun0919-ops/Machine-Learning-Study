@@ -580,3 +580,36 @@
 - 無新增交代事項；系統上 4 個與本次 session 無關的背景 node.exe 行程，經核對與第 19、20 階段已記錄且開發者確認過的殘留行程數量一致，未重複詢問、維持不動。
 
 **本機測試用 server：** 本階段自行啟動 `npm run preview`（PID 19504）與 CDP 除錯用無頭 Edge（PID 2748，含渲染驗證用的多個一次性無頭 Edge 行程），皆於使用後以 `taskkill` 確認關閉，收工前 `netstat` 確認 4321／9333 埠無 LISTENING 項目、`tasklist` 確認無殘留 msedge.exe 行程。
+
+## 2026-08-04（第 22 個工作階段）
+
+**當日工作內容：**
+- 開工閱讀第 21 階段交接文件，與開發者確認本階段方向：接續階段三，規劃並建置 Ridge Regression（Ridge 迴歸，正則化）章節。
+- 用 `brainstorming` 技能逐項確認設計：教學切入點選定「多項式係數爆炸」（而非多重共線性或新建合成資料）；資料集重用 Overfitting 章節既有的合成 sin 曲線資料與訓練/測試切分；確認 Ridge 懲罰前需先標準化特徵；互動元件採雙區塊設計（曲線圖＋係數條形圖）；relatedTo 選定三組關聯（Polynomial Regression、過擬合/欠擬合、特徵工程與標準化）；訓練/測試雙集顯示評估指標。
+- **設計階段驗證流程抓到一個重要問題**：原訂固定次數 9，但寫 Node 腳本實測後發現次數 9 在此資料集上並未嚴重過擬合，加入正則化只會讓 test RMSE 單調變差，無法展示「正則化改善泛化」的核心論述。與開發者確認後改用次數 15（真正嚴重過擬合案例：λ=0 時 test RMSE=0.8024、最大係數絕對值 1450；λ=0.01 時降至 0.3204／5.76）。同時發現 λ=0 與其餘 λ 的係數幅度相差 200 倍以上，線性固定軸會讓長條圖失真，改用對數座標顯示係數絕對值，此決策也與開發者確認。
+- 設計文件與實作計畫皆已 commit（`0080fdf`、`f57953b`、`ffab101`）。
+- 用 `subagent-driven-development` 技能於獨立 worktree（`worktree-ridge-regression-chapter`）執行 5 個任務：
+  1. `fitRidgeRegression`／`applyZScore`（TDD，含精確驗證過的測試數值）
+  2. `RidgeRegressionFit.tsx` 互動元件
+  3. 章節內文＋路由/設定串接——**implementer 正確發現一個計畫本身的 bug**：計畫原訂 Task 3 就要在 frontmatter 寫入 `summary.image`，但該 PNG 要到 Task 5 才會產生，Astro 的 `image()` schema 驗證器會導致 build 失敗。implementer 依規則停下回報 BLOCKED、不自行修改，查證後確認與 Polynomial Regression 章節的既有實作模式一致（`summary:` 區塊應延後到與 PNG 同一個 commit 才加入），Agent 本人直接修正計畫文件（`133f366`）後 resume 同一個 implementer 完成。
+  4. 三處跨章節關聯段落＋測試/文件更新
+  5. Excalidraw 資訊圖表——implementer 回報 `DONE_WITH_CONCERNS`：渲染腳本的成功/失敗訊號在本次執行中不可靠（誤報失敗但其實部分寫入了壞圖、誤報成功但其實只是偵測到前一次殘留的舊檔案、最終正確檔案是背景 Edge 行程延遲約 1 分鐘才非同步寫入），implementer 未修改腳本、僅用唯讀診斷指令查證，並親自開圖確認最終交付的 PNG 正確。
+  - 每個任務皆經過獨立審查（spec 合規＋程式碼品質），5 個任務審查皆為 Approved／Spec compliant，2 個任務有 Minor 延後事項（皆為計畫本身既定、非 implementer 偏離）。
+- 最終全分支審查（opus model）：獨立重新執行 `npm run test`／`astro check`／`npm run build` 三道驗證關卡皆通過；另外寫獨立腳本重新複算所有數值，逐位確認與計畫、設計文件、資訊圖表、程式碼四方一致；確認 Task 3 的計畫修正在最終狀態下前後一致無遺漏；7 項 Minor 發現逐一實測後皆判定不影響合併（例如曲線圖未鎖 Y 軸範圍——實測 5 個 λ 的曲線 y 範圍差異極小、視覺上不會跳動）；1 項建議（渲染腳本的 `Test-Path` 成功判定過於薄弱）經比對後確認是全站既有腳本模式（`render-polynomial-regression-infographic.ps1` 也是同樣寫法），非本分支引入的問題，記錄為未來可另案處理的建議，不阻塞本次合併。**Ready to merge: Yes**。
+- 已本機 `merge`（fast-forward）回 `main`、合併後測試 106 個（worktree 殘留造成的已知現象）、用 `ExitWorktree` 清理後測試數量恢復正常 53/53、`git push origin main` 成功，觸發 GitHub Pages 部署，「Ridge Regression」章節正式上線。
+
+**完成項目：**
+- Ridge Regression 章節完整上線，接續在 Polynomial Regression 之後（`chapterOrder` 新的鏈尾）。
+- 全站驗證：測試 53/53、`astro check` 0 錯誤/0 警告、`build` 10 頁成功。
+- 三組跨章節關聯（Polynomial Regression、過擬合/欠擬合、特徵工程與標準化）雙側段落皆已補齊。
+
+**遇到的瓶頸：**
+- 設計驗證階段兩次抓到「原始假設與實測數據不符」的問題（次數選擇、條形圖座標尺度），皆先停下用腳本驗證、與開發者確認方向後才調整設計，未憑感覺直接修改。
+- 實作階段抓到一次真正的計畫文件 bug（Task 3/Task 5 之間的 `summary:` 欄位順序），依規則由 Agent 本人核實後直接修正（修正方向唯一明確，未涉及架構決策，不需詢問開發者）。
+- Task 5 渲染腳本的成功訊號不可靠，implementer 正確地沒有自行修改腳本或加延遲，僅用唯讀診斷判斷後親自開圖驗證交付物；此問題經最終審查確認為全站既有腳本的既有模式，非本分支新增問題，留待未來另案討論是否修正（例如刪除舊檔案後再輪詢檔案穩定性，而非單純 `Test-Path`）。
+- 最終審查用的 subagent 因 session API 額度限制中斷一次，確認系統時間已過重置時間（過了約 6 小時，遠超安全邊界）後用 `SendMessage` 恢復完成。
+
+**開發者交代備忘事項：**
+- 無新增交代事項；本階段開發者的決策點均已在 brainstorming 與最終確認時記錄（見對話紀錄）。
+
+**本機測試用 server：** 本階段 controller 層級本身未額外啟動任何 server；各任務 subagent 於各自 worktree 內啟動的 `npm run preview`／CDP 除錯用無頭 Edge 皆已個別確認關閉；收工前 `netstat` 確認 4321／9333 埠無 LISTENING 項目。

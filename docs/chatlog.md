@@ -1307,3 +1307,106 @@ Agent 停下來，不自行繼續試錯，用 git 比對確認 git HEAD 上原�
 全站驗證：`npm run test`（47/47 通過）、`npm run astro -- check`（0 錯誤/0 警告，既有 `z` deprecated hints 為既有雜訊非本次引入）、`npm run build`（9 頁成功）。啟動 preview 伺服器 + 無頭 Edge CDP 驅動點擊「互動操作」分頁與次數 1／4 按鈕，確認 `PolynomialRegressionFit.tsx` 的曲線取樣範圍動態推導後仍正確涵蓋職等 1-10 全範圍，且次數 1（R²=0.6690, RMSE=163388.74）與次數 4（R²=0.9974, RMSE=14503.23）數值與資訊圖表案例分析卡片一致。驗證完成後關閉 preview 伺服器（PID 19504）與 CDP 用無頭 Edge（PID 2748），確認 4321／9333 埠皆無殘留 LISTENING。偵測到系統上 4 個與本次 session 無關的背景 node.exe 行程（未監聽任何連接埠），與第 19、20 階段已記錄、開發者已確認無關的殘留行程數量一致，不重複詢問。
 
 收工前檢查殘留伺服器：確認無任何 LISTENING 於 4321-4323 埠的行程；偵測到系統上 4 個背景 node.exe 行程但皆未監聽任何連接埠，判斷非本次 session 啟動的伺服器，維持不動未處理。
+
+## 2026-08-04（第 22 個工作階段）
+
+### 段落一：開工確認方向
+
+Agent 閱讀第 21 階段交接文件（`docs/handover.md`），告知開發者本次 session 使用模型為 Claude Sonnet 5，並核對交接文件記載的「尚未 commit/push」與實際 `git log`/`git status` 不一致——第 21 階段變更其實已在 commit `e808899` 完成並推送，屬交接文件敘述落後於實際執行結果，非待辦事項。
+
+Agent 詢問開發者本階段方向：是否接續階段三規劃 Ridge Regression。
+
+開發者：「開始規劃 Ridge Regression」。
+
+### 段落二：Brainstorming 設計確認
+
+Agent 呼叫 `brainstorming` 技能，先閱讀 Polynomial Regression 章節設計文件、`regression.ts`、`polynomialFit.ts`、`datasets.ts`、`chapter_template_guide.md` 作為背景。
+
+**問題 1：教學切入點**。Agent 提出三選項：多項式係數爆炸（推薦）／多重共線性（50 Startups）／新建合成資料。
+開發者選擇：「多項式係數爆炸（推薦）」。
+
+**問題 2：資料集**。Agent 提出：重用 Overfitting 章節合成 sin 曲線資料（推薦）／重用 Polynomial Regression 的職等-薪資資料／新建合成資料集。
+開發者選擇：「重用 Overfitting 章節的合成 sin 曲線資料（推薦）」。
+
+**問題 3：是否需標準化**。Agent 說明 Ridge 懲罰力道對特徵尺度敏感，提出：需要先標準化（推薦）／不標準化只專注 λ 概念本身。
+開發者選擇：「需要先標準化（推薦）」。
+
+**問題 4：互動元件展示方式**。Agent 提出：雙區塊（曲線圖＋係數條形圖，推薦）／單一曲線圖不加條形圖／單一曲線圖但疊加 OLS vs Ridge 對比。
+開發者選擇：「雙區塊：曲線圖 + 係數条形圖（推薦）」。
+
+**問題 5：relatedTo 跨章節關聯**（複選）。Agent 提出 Polynomial Regression／過擬合-欠擬合／特徵工程與標準化 三個候選。
+開發者選擇：三者全選。
+
+**問題 6：訓練/測試切分**。Agent 提出：沿用雙集顯示 train/test RMSE（推薦）／只用全部資料單一評估。
+開發者選擇：「沿用雙集（推薦）」。
+
+**問題 7：固定次數**。Agent 提出：次數 9（推薦，理由是 Overfitting 章節已驗證會過擬合）／次數 15。
+開發者選擇：「次數9（推薦）」。
+
+### 段落三：設計驗證抓到問題並修正（次數 9→15、線性軸→對數軸）
+
+Agent 在準備實作計畫、需要把設計轉為具體數值時，寫 Node 腳本重現 `dataSplit.ts`＋`polynomialFit.ts`＋`regression.ts`＋`scaling.ts` 的邏輯，實測次數 9 加入 λ 後的表現，發現 λ=0 時 test RMSE 已是白名單中最低點，λ 增加只會單調變差——與段落二問題 7 的推薦理由（「Overfitting 章節已驗證次數 9 會過擬合」）不符，次數 9 其實沒有嚴重過擬合。Agent 停下，不逕自調整，向開發者說明發現並附上次數 15 的對照數據（λ=0 時 test RMSE=0.8024、最大係數絕對值 1450；λ=0.01 時降到 0.3204／5.76）。
+
+Agent 提問：是否改用次數 15（真正嚴重過擬合案例，推薦）／保留次數 9 但改變教學論述描述。
+開發者選擇：「改用次敥15（推薦）」。
+
+換用次數 15 後，Agent 接著發現另一個連帶問題：λ=0 時最大係數絕對值（1450）與其餘 λ（個位數）相差 200 倍以上，先前設計的「係數條形圖固定線性 Y 軸」會讓除 λ=0 外的所有長條看起來貼齊 0。Agent 提問：改用對數座標顯示係數絕對值（推薦）／保留線性軸但改為自動縮放（放棄鎖定比較能力）。
+開發者選擇：「改用對數座標（log scale）顯示係數絕對值（推薦）」。
+
+### 段落四：設計文件與實作計畫
+
+Agent 將以上決策彙整成完整設計方案，包含背景與問題、範圍界定、九大區塊章節內文、互動元件規劃、資訊圖表規劃、技術規劃表、驗證方式、風險與注意事項，呈現給開發者確認。
+
+開發者：「內文ＯＫ，請實作」。
+
+Agent 寫入並 commit 設計文件（`docs/superpowers/specs/2026-08-03-ridge-regression-chapter-design.md`，commit `0080fdf`）。開發者接著要求：「請進行實作計畫」。
+
+Agent 呼叫 `writing-plans` 技能，深入閱讀既有程式碼（`chapters.ts`、`curriculum.ts`、`[slug].astro`、`PolynomialRegressionFit.tsx`、`OverfittingUnderfittingComparison.tsx`、`content.config.ts`、既有 render script／HTML 資產範本等）取得精確介面與慣例，並再次用 Node 腳本實測次數 15 在確定 λ 白名單（0, 0.01, 0.1, 1, 10）下的完整係數、RMSE 數值，把這些實測數字直接寫入設計文件（修正 commit `f57953b`）與實作計畫（5 個任務），確保計畫零佔位符、數值皆可追溯至驗證腳本。實作計畫 commit 為 `ffab101`。
+
+### 段落五：執行方式選擇
+
+Agent 呈現實作計畫摘要，詢問執行方式：Subagent-Driven（推薦）／Inline Execution。
+
+開發者：「１」（Subagent-Driven）。
+
+Agent 依專案慣例先確認本機 main 已推送 origin（發現落後 3 個 commit，先 push），再用 `EnterWorktree` 建立獨立 worktree（`worktree-ridge-regression-chapter`），呼叫 `subagent-driven-development` 技能開始執行。
+
+### 段落六：Task 1-2 執行（無異常）
+
+Task 1（`fitRidgeRegression`＋`applyZScore`，TDD，haiku 模型）：implementer 一次到位，53/53 測試通過。審查者（sonnet）獨立手算驗證 λ=1／λ=10 的係數解正確，Approved。
+
+Task 2（`RidgeRegressionFit.tsx`，haiku 模型）：一次到位，`astro check` 0/0。審查者確認標準化管線無資料洩漏、對數座標與動態上限計算正確，額外指出元件的 `X_MIN`/`X_MAX` 動態推導比既有 `OverfittingUnderfittingComparison.tsx` 的寫死常數更好，Approved，2 項 Minor（曲線圖未鎖 Y 軸範圍、`MIN_BAR_VALUE` 為固定值）記錄為延後事項。
+
+### 段落七：Task 3 抓到計畫本身的 bug
+
+Task 3 implementer（sonnet 模型）回報 BLOCKED：`npm run build` 因 `ImageNotFound` 失敗——計畫原訂章節 frontmatter 要寫入 `summary.image` 指向 Task 5 才會產生的 PNG，Astro 的 `image()` schema 驗證器會在檔案不存在時讓 build 失敗。implementer 查證 git 歷史，發現 Polynomial Regression 章節的對應 commit 模式是「內文 commit 不含 `summary:` 區塊、資訊圖表 commit 才把整個 `summary:` 區塊與 PNG 一起加入」，正確地停下回報而非自行修改。
+
+Agent 核實此發現後，判斷修正方向唯一明確（直接比照既有精確可查證的先例，非架構決策），依規則不詢問開發者，直接修正計畫文件（Task 3 移除 `summary:` 區塊、Task 5 新增 Step 0 補回），commit `133f366`，用 `SendMessage` 恢復同一個 implementer 完成剩餘工作。審查通過，Approved。
+
+### 段落八：Task 4（無異常）
+
+Task 4（三處跨章節關聯段落＋測試/文件更新，haiku 模型）：一次到位，53/53 測試通過。審查者逐段落核對插入位置與文字皆與 brief 逐字相符，Approved。
+
+### 段落九：Task 5 資訊圖表與渲染腳本不穩定訊號
+
+Task 5 implementer（sonnet 模型）回報 `DONE_WITH_CONCERNS`：渲染腳本 `render-ridge-regression-infographic.ps1` 的成功/失敗訊號在本次執行中不可靠——第一次執行回報「失敗」但其實已寫入一張部分損壞的圖（案例分析黑板背景未上色）；重跑一次回報「成功」但其實只是偵測到前一次殘留的舊檔案（mtime 未變）；刪除檔案後第三次執行立刻回報「沒有產生檔案」，但約一分鐘後（implementer 未再採取任何動作的情況下）一張完全正確的 PNG 才非同步出現在正確路徑。implementer 未修改腳本、未自行加延遲，只用唯讀診斷指令（`Get-Process`、一次性手動 Edge 呼叫、`stat` 時間戳比對）釐清狀況，並親自用 Read 工具開圖逐卡片檢視確認最終交付正確。
+
+Agent 依規則將此列為「觀察／流程可靠性問題」而非「正確性問題」（implementer 已親自驗證交付物正確），繼續派發審查而非要求重跑。審查者（無法檢視二進位圖片）明確標記為 ⚠️ 待 controller 親自確認事項，Agent 本人用 Read 工具開圖逐卡片檢視，確認：6 張卡片皆正確渲染、無任何殘留 LaTeX 語法（`β̂`、`λI′`、`⁻¹` 等皆為 Unicode 純文字）、標題底線與塗鴉無重疊、案例分析區塊 8 個數值（1450.078／5.7643／0.1865／0.2062／0.8024／0.3204／0.8118／0.9700）逐格核對無誤，Task 5 標記完成。
+
+### 段落十：最終全分支審查（一次因 session 額度中斷）
+
+Agent 用最具能力模型（opus）派發最終全分支審查，途中因 API session 額度限制中斷（訊息顯示台北時間 00:30 重置）。
+
+開發者：「請繼續執行」。
+
+Agent 確認系統時間（UTC 轉台北時間約為凌晨 06:44，已過重置時間約 6 小時，遠超安全邊界），用 `SendMessage` 恢復同一個 agent 接續完成，而非重新從頭派工。
+
+最終審查結果：獨立重跑 `npm run test`（53/53）、`astro check`（0/0）、`npm run build`（10 頁）三道關卡皆通過；另寫獨立驗證腳本重新複算所有數值，逐位確認與計畫、設計文件、資訊圖表、程式碼四方一致；確認 Task 3 的計畫修正在最終狀態下前後一致無遺漏；逐項觸診三個延後 Minor 發現（曲線圖 Y 軸範圍——實測 5 個 λ 的曲線在 61 個取樣點內 y 範圍差異極小、無視覺跳動；`MIN_BAR_VALUE` 從未真正被觸發，純粹是 log(0) 防護；渲染腳本 `Test-Path` 判定過於薄弱——比對後確認 `render-polynomial-regression-infographic.ps1` 也是同樣寫法，屬全站既有腳本模式而非本分支引入），皆判定不阻塞合併。**Ready to merge: Yes**，另有 4 項純觀察性 Minor（重複程式碼、第三份 `polynomialFeatures()` 複寫、`applyZScore` 的 `std===0` 邊界未加防禦但已實測驗證用不到、標題從設計文件的完整名稱改為簡短形式），皆判定為既有慣例或合理取捨，不需修正。
+
+### 段落十一：整合方式選擇與收尾
+
+Agent 依 `finishing-a-development-branch` 技能流程：跑測試（53/53）、偵測環境（worktree、具名分支）、詢問開發者整合方式：本機合併回 main／推送並建立 PR／先保留現狀。
+
+開發者：「本機合併回 main」。
+
+Agent 執行：`git merge`（fast-forward）→ 合併後測試（106 個，確認為已知的 worktree 殘留造成測試重複執行現象）→ `ExitWorktree` 清理 worktree 與分支（6 個 commit 已安全存在於 main，符合既有慣例的標準收尾步驟）→ 測試恢復正常（53/53）→ `git push origin main` 成功，觸發 GitHub Pages 部署。
