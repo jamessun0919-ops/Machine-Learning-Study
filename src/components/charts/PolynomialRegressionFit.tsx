@@ -21,10 +21,12 @@ function polynomialFeatures(x: number, degree: number): number[] {
 const LEVELS = positionSalaryData.map((r) => r.level);
 const SALARIES = positionSalaryData.map((r) => r.salary);
 
+const LEVEL_MIN = Math.min(...LEVELS);
+const LEVEL_MAX = Math.max(...LEVELS);
 const CURVE_SAMPLE_COUNT = 91;
 const CURVE_SAMPLE_X: number[] = Array.from(
   { length: CURVE_SAMPLE_COUNT },
-  (_, i) => 1 + (9 * i) / (CURVE_SAMPLE_COUNT - 1)
+  (_, i) => LEVEL_MIN + ((LEVEL_MAX - LEVEL_MIN) * i) / (CURVE_SAMPLE_COUNT - 1)
 );
 
 function computeForDegree(degree: Degree) {

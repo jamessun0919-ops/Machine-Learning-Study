@@ -1,6 +1,7 @@
 # Render Train/Test Split & Cross-Validation Infographic HTML to PNG
-$htmlPath = "C:/Users/User/Desktop/Machine Learning Study/docs/specs/assets-src/train-test-split-cross-validation-summary.html"
-$outputPath = "C:/Users/User/Desktop/Machine Learning Study/src/assets/chapters/train-test-split-cross-validation-summary.png"
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$htmlPath = Join-Path $repoRoot "docs/specs/assets-src/train-test-split-cross-validation-summary.html"
+$outputPath = Join-Path $repoRoot "src/assets/chapters/train-test-split-cross-validation-summary.png"
 
 # Detect Edge Path
 $edgePaths = @(

@@ -1,6 +1,7 @@
 # Render Multiple Linear Regression Infographic HTML to PNG
-$htmlPath = "C:/Users/User/Desktop/Machine Learning Study/docs/specs/assets-src/multiple-linear-regression-summary.html"
-$outputPath = "C:/Users/User/Desktop/Machine Learning Study/src/assets/chapters/multiple-linear-regression-summary.png"
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$htmlPath = Join-Path $repoRoot "docs/specs/assets-src/multiple-linear-regression-summary.html"
+$outputPath = Join-Path $repoRoot "src/assets/chapters/multiple-linear-regression-summary.png"
 
 # Detect Edge Path
 $edgePaths = @(

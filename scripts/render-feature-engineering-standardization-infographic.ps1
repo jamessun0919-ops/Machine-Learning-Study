@@ -1,6 +1,7 @@
 # Render Feature Engineering & Standardization Infographic HTML to PNG
-$htmlPath = "C:/Users/User/Desktop/Machine Learning Study/docs/specs/assets-src/feature-engineering-standardization-summary.html"
-$outputPath = "C:/Users/User/Desktop/Machine Learning Study/src/assets/chapters/feature-engineering-standardization-summary.png"
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$htmlPath = Join-Path $repoRoot "docs/specs/assets-src/feature-engineering-standardization-summary.html"
+$outputPath = Join-Path $repoRoot "src/assets/chapters/feature-engineering-standardization-summary.png"
 
 # Detect Edge Path
 $edgePaths = @(

@@ -1,6 +1,7 @@
 # Render Polynomial Regression Infographic HTML to PNG
-$htmlPath = "C:/Users/User/Desktop/Machine Learning Study/docs/specs/assets-src/polynomial-regression-summary.html"
-$outputPath = "C:/Users/User/Desktop/Machine Learning Study/src/assets/chapters/polynomial-regression-summary.png"
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$htmlPath = Join-Path $repoRoot "docs/specs/assets-src/polynomial-regression-summary.html"
+$outputPath = Join-Path $repoRoot "src/assets/chapters/polynomial-regression-summary.png"
 
 # Detect Edge Path
 $edgePaths = @(

@@ -1,6 +1,7 @@
 # Render CRISP-DM Infographic HTML to PNG
-$htmlPath = "C:/Users/User/Desktop/Machine Learning Study/docs/specs/assets-src/crisp-dm-summary.html"
-$outputPath = "C:/Users/User/Desktop/Machine Learning Study/src/assets/chapters/crisp-dm-summary.png"
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$htmlPath = Join-Path $repoRoot "docs/specs/assets-src/crisp-dm-summary.html"
+$outputPath = Join-Path $repoRoot "src/assets/chapters/crisp-dm-summary.png"
 
 # Detect Edge Path
 $edgePaths = @(

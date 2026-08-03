@@ -1,12 +1,12 @@
 import { fitLinearRegression, predict, rmse } from './regression';
-import { trainTestSplit } from './dataSplit';
+import { SHUFFLED_INDICES, trainTestSplit } from './dataSplit';
 
 export interface DataPoint {
   x: number;
   y: number;
 }
 
-const POINT_COUNT = 50;
+const POINT_COUNT = SHUFFLED_INDICES.length;
 const TRUE_X_MIN = -3;
 const TRUE_X_MAX = 3;
 const NOISE_AMPLITUDE = 0.4;

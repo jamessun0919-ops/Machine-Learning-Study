@@ -1,6 +1,7 @@
 # Render Overfitting/Underfitting & Bias-Variance Tradeoff Infographic HTML to PNG
-$htmlPath = "C:/Users/User/Desktop/Machine Learning Study/docs/specs/assets-src/overfitting-underfitting-bias-variance-summary.html"
-$outputPath = "C:/Users/User/Desktop/Machine Learning Study/src/assets/chapters/overfitting-underfitting-bias-variance-summary.png"
+$repoRoot = Split-Path -Parent $PSScriptRoot
+$htmlPath = Join-Path $repoRoot "docs/specs/assets-src/overfitting-underfitting-bias-variance-summary.html"
+$outputPath = Join-Path $repoRoot "src/assets/chapters/overfitting-underfitting-bias-variance-summary.png"
 
 # Detect Edge Path
 $edgePaths = @(

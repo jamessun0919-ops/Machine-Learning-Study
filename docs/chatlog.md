@@ -1262,4 +1262,48 @@ Agent 評估 Important 項目屬全站既有模式、審查者本身建議不卡
 
 開發者：「本機合併回 main（推薦）」（AskUserQuestion 選項：本機合併 vs 推送建 PR vs 先保留現狀）。Agent `git merge`（fast-forward）回 main、合併後測試複驗（一度顯示 94/16，為已知 worktree 殘留重複計算問題）、用 `ExitWorktree` 清理 worktree 與分支（工具因偵測到 7 個未同步確認的 commit 而要求 `discard_changes: true` 二次確認，Agent 核實這些 commit 皆已 fast-forward 併入 main 後放行）後測試恢復 47/8 正常，`git push origin main` 成功，觸發 GitHub Pages 部署，「Polynomial Regression（多項式回歸）」章節正式上線。
 
+## 2026-08-03（第 21 個工作階段）
+
+### 段落一：開工與方向確認
+
+Agent 告知模型身分（Sonnet 5），依規則呼叫 `using-superpowers` 技能，閱讀交接文件 `docs/handover.md` 全文，並用日期／階段標題搜尋定位工作日誌範圍（第 1 階段完整計畫 + 最近兩階段 19、20），未讀取全文或 chatlog。摘要目前狀態給開發者：階段三已完成 3/5（Simple/Multiple/Polynomial Linear Regression），第 20 階段剛完成 Polynomial Regression 並已上線，無阻塞。
+
+Agent 用 AskUserQuestion 詢問本階段方向：「接續階段三：Ridge Regression」vs「處理延後事項」vs「其他」。
+
+開發者：「處理延後事項」。
+
+Agent 再次用 AskUserQuestion 列出交接文件記錄的延後事項供複選：6 支渲染腳本路徑寫死（Important）、βᵈ 上標誤用、曲線取樣範圍寫死常數、第 18/19 階段 Minor 事項。
+
+開發者：全部四項都要處理。
+
+### 段落二：逐項查證與方案確認
+
+Agent 未直接動手，先逐項查證程式碼確認實際範圍與修法：
+- 渲染腳本：`Glob` 找到 7 支（非交接文件字面寫的「6 支」——6 支既有 + 第 20 階段新增的 Polynomial Regression 腳本同樣有此問題），全部結構一致，確認可用 `$repoRoot = Split-Path -Parent $PSScriptRoot` 動態推導修正。
+- βᵈ 問題：定位到 `polynomial-regression-summary.html` 第 384 行，比對同檔第 381 行既有寫法「βdxᵈ」（純文字 d，非上標），確認修法是把第 384 行的上標 `ᵈ`（U+1D48）改成純文字 `d`。
+- CURVE_SAMPLE_X：讀 `PolynomialRegressionFit.tsx`，確認可從既有 `LEVELS` 陣列用 `Math.min`/`Math.max` 動態推導，取代寫死常數 1/9。
+- 第 18/19 階段 Minor 逐項查證後發現範圍比交接文件字面描述更精確：
+  - `kFoldSplit` 邊界檢查：查證唯一呼叫端 `TrainTestSplitComparison.tsx` 的 `currentFold` 本來就被 UI 按鈕限制在 0-4，且原計畫明文排除範圍外，依 CLAUDE.md「不對不可能發生的情境加防禦」規則，Agent 建議跳過不修。
+  - CSS 變數問題：查證後發現 html/body 的寫死色值其實是全站 7 個資訊圖表 HTML 共用的既有慣例（非本檔獨有），不建議動；真正檔案內部不一致的只有 `.two-col.scope-cols h3.good` 一處（同層級 `.neutral` 已用 var，`.good` 沒有），建議新增 `--good` 變數修正這一處即可。
+  - 隱性耦合：確認 `polynomialFit.ts` 的 `POINT_COUNT = 50` 與 `dataSplit.ts` 的 `SHUFFLED_INDICES.length`（同為 50）是兩處重複寫死來源，修法是讓前者從後者動態讀取。
+  - Excalidraw DOM 量測法捲軸臨界值問題：判定這是驗證手法本身的環境限制、非程式碼缺陷，建議不需動作。
+
+Agent 把以上逐項方案（含不修的 2 項及理由）完整呈現給開發者確認。
+
+開發者：「請進行」。
+
+### 段落三：實作與渲染驗證
+
+Agent 依序完成 5 類程式碼變更：7 支渲染腳本改用 `$PSScriptRoot`；`polynomial-regression-summary.html` 修正 βᵈ；`PolynomialRegressionFit.tsx` 的 `CURVE_SAMPLE_X` 改為動態推導；`train-test-split-cross-validation-summary.html` 新增 `--good` CSS 變數並套用；`polynomialFit.ts` 的 `POINT_COUNT` 改為從 `SHUFFLED_INDICES.length` 推導。
+
+重新渲染受影響的 2 張 PNG（Polynomial Regression、Train-Test-Split）並親自開圖確認正確（βᵈ 已修正為純文字 d、`.good` 綠色標題色正確）。為驗證路徑修正腳本本身，Agent 額外重新渲染了另外 5 支腳本（內容未變更），其中 Multiple Linear Regression 連續 3 次渲染都出現位元級別相同的排版錯位（案例分析黑板區塊表格消失、標題底線裝飾消失）。
+
+Agent 停下來，不自行繼續試錯，用 git 比對確認 git HEAD 上原本的 PNG 完全正常，判斷這不是隨機競態（隨機競態通常每次表現不同或重試就會好），列出可能原因（環境負載造成的系統性截圖過早擷取 / 需要加固定延遲 / 環境巧合）向開發者提問下一步。
+
+開發者：「再試一次未修改的重新渲染（確認是否真的是隨機競態）」。
+
+第三次重試結果與前兩次仍完全相同。Agent 意識到這 5 個內容未變更的檔案其實不需要保留重新渲染結果（腳本已用 `Write-Host`／`Test-Path` 自我驗證路徑正確，無需靠 PNG 輸出佐證），改用 `git checkout` 把 5 張未變更內容的 PNG（含 MLR）還原成 git 上原本正確的版本，只保留 2 張真正有內容變更的新渲染 PNG，避免不必要的二進位差異與風險。
+
+全站驗證：`npm run test`（47/47 通過）、`npm run astro -- check`（0 錯誤/0 警告，既有 `z` deprecated hints 為既有雜訊非本次引入）、`npm run build`（9 頁成功）。啟動 preview 伺服器 + 無頭 Edge CDP 驅動點擊「互動操作」分頁與次數 1／4 按鈕，確認 `PolynomialRegressionFit.tsx` 的曲線取樣範圍動態推導後仍正確涵蓋職等 1-10 全範圍，且次數 1（R²=0.6690, RMSE=163388.74）與次數 4（R²=0.9974, RMSE=14503.23）數值與資訊圖表案例分析卡片一致。驗證完成後關閉 preview 伺服器（PID 19504）與 CDP 用無頭 Edge（PID 2748），確認 4321／9333 埠皆無殘留 LISTENING。偵測到系統上 4 個與本次 session 無關的背景 node.exe 行程（未監聽任何連接埠），與第 19、20 階段已記錄、開發者已確認無關的殘留行程數量一致，不重複詢問。
+
 收工前檢查殘留伺服器：確認無任何 LISTENING 於 4321-4323 埠的行程；偵測到系統上 4 個背景 node.exe 行程但皆未監聽任何連接埠，判斷非本次 session 啟動的伺服器，維持不動未處理。
