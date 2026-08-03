@@ -16,6 +16,8 @@ summary:
 
 **與 Polynomial Regression 的關係**：多項式次數的選擇是 bias-variance 權衡最直觀的具體案例——次數太低欠擬合（配不出資料的彎曲程度），次數太高過擬合（曲線在資料點間劇烈擺動、無法類推到新資料）。
 
+**與 Ridge Regression 的關係**：本章節提到的「加入正則化」正是 Ridge Regression 的核心手段——用 λ 這個超參數把 bias-variance 權衡變成一個可連續調整的旋鈕，λ 越大偏差越高、變異數越低。
+
 ## 診斷與應對
 
 - **判斷依據**：欠擬合＝train 誤差與 test 誤差都偏高、且兩者接近；過擬合＝train 誤差低、test 誤差高，兩者差距明顯。
