@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fitLinearRegression, predict, rSquared, rmse } from './regression';
+import { fitLinearRegression, fitRidgeRegression, predict, rSquared, rmse } from './regression';
 
 describe('fitLinearRegression', () => {
   it('recovers exact coefficients for a noiseless linear relationship', () => {
@@ -58,5 +58,52 @@ describe('rmse', () => {
   it('computes root mean squared error correctly', () => {
     // errors = 3, 4 -> squared = 9, 16 -> mean = 12.5 -> sqrt = 3.5355339
     expect(rmse([0, 0], [3, 4])).toBeCloseTo(3.5355339, 5);
+  });
+});
+
+describe('fitRidgeRegression', () => {
+  const features = [
+    [0, 0],
+    [1, 0],
+    [0, 1],
+    [1, 1],
+    [2, 1],
+    [1, 2],
+  ];
+  const target = [1, 3, 4, 6, 8, 9];
+
+  it('reduces to fitLinearRegression when lambda is 0', () => {
+    const ridge = fitRidgeRegression(features, target, 0);
+    const ols = fitLinearRegression(features, target);
+
+    expect(ridge.coefficients[0]).toBeCloseTo(ols.coefficients[0], 8);
+    expect(ridge.coefficients[1]).toBeCloseTo(ols.coefficients[1], 8);
+    expect(ridge.coefficients[2]).toBeCloseTo(ols.coefficients[2], 8);
+  });
+
+  it('shrinks non-intercept coefficients toward zero as lambda increases, without penalizing the intercept', () => {
+    const lambda1 = fitRidgeRegression(features, target, 1);
+    expect(lambda1.coefficients[0]).toBeCloseTo(1.892857, 5);
+    expect(lambda1.coefficients[1]).toBeCloseTo(1.630952, 5);
+    expect(lambda1.coefficients[2]).toBeCloseTo(2.297619, 5);
+
+    const lambda10 = fitRidgeRegression(features, target, 10);
+    expect(lambda10.coefficients[0]).toBeCloseTo(4.048780, 5);
+    expect(lambda10.coefficients[1]).toBeCloseTo(0.587398, 5);
+    expect(lambda10.coefficients[2]).toBeCloseTo(0.754065, 5);
+
+    const magnitudeAtLambda1 =
+      Math.abs(lambda1.coefficients[1]) + Math.abs(lambda1.coefficients[2]);
+    const magnitudeAtLambda10 =
+      Math.abs(lambda10.coefficients[1]) + Math.abs(lambda10.coefficients[2]);
+    expect(magnitudeAtLambda10).toBeLessThan(magnitudeAtLambda1);
+  });
+
+  it('throws when features and target lengths mismatch', () => {
+    expect(() => fitRidgeRegression([[1, 2]], [1, 2], 1)).toThrow();
+  });
+
+  it('throws on empty input', () => {
+    expect(() => fitRidgeRegression([], [], 1)).toThrow();
   });
 });

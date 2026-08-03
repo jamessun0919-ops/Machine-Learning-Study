@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeStats, zScoreScale, minMaxScale } from './scaling';
+import { computeStats, zScoreScale, minMaxScale, applyZScore } from './scaling';
 
 describe('computeStats', () => {
   it('computes mean, population standard deviation, min, and max', () => {
@@ -42,5 +42,19 @@ describe('minMaxScale', () => {
     const { min, max } = computeStats(minMaxScale(values));
     expect(min).toBeCloseTo(0, 10);
     expect(max).toBeCloseTo(1, 10);
+  });
+});
+
+describe('applyZScore', () => {
+  it('applies previously-computed stats to a value from the original array, matching zScoreScale', () => {
+    const values = [2, 4, 4, 4, 5, 5, 7, 9];
+    const stats = computeStats(values); // mean=5, std=2
+    expect(applyZScore(9, stats)).toBeCloseTo(2, 10);
+  });
+
+  it('applies previously-computed stats to a new value not in the original array', () => {
+    const stats = computeStats([2, 4, 4, 4, 5, 5, 7, 9]); // mean=5, std=2
+    expect(applyZScore(11, stats)).toBeCloseTo(3, 10);
+    expect(applyZScore(1, stats)).toBeCloseTo(-2, 10);
   });
 });

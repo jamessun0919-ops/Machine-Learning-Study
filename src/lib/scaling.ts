@@ -18,6 +18,10 @@ export function computeStats(values: number[]): ScalingStats {
   };
 }
 
+export function applyZScore(value: number, stats: ScalingStats): number {
+  return (value - stats.mean) / stats.std;
+}
+
 export function zScoreScale(values: number[]): number[] {
   const { mean, std } = computeStats(values);
   return values.map((v) => (v - mean) / std);

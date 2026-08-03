@@ -75,6 +75,31 @@ export function fitLinearRegression(
   return { coefficients };
 }
 
+export function fitRidgeRegression(
+  features: number[][],
+  target: number[],
+  lambda: number
+): RegressionResult {
+  if (features.length !== target.length) {
+    throw new Error('features and target must have the same number of rows');
+  }
+  if (features.length === 0) {
+    throw new Error('features must contain at least one row');
+  }
+
+  const X = features.map((row) => [1, ...row]); // 補上截距欄位
+  const Xt = transpose(X);
+  const XtX = multiply(Xt, X);
+  // 懲罰項只加在非截距的對角線上（index 0 是截距，不正則化）
+  for (let i = 1; i < XtX.length; i++) {
+    XtX[i][i] += lambda;
+  }
+  const XtY = multiplyVector(Xt, target);
+  const coefficients = solveLinearSystem(XtX, XtY);
+
+  return { coefficients };
+}
+
 export function predict(coefficients: number[], features: number[]): number {
   return (
     coefficients[0] +
