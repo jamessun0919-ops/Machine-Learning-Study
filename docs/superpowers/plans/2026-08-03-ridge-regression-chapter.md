@@ -514,7 +514,7 @@ EOF
 
 - [ ] **Step 1: Create the chapter content file**
 
-Create `src/content/chapters/ridge-regression.md`:
+Create `src/content/chapters/ridge-regression.md`. **Do not include a `summary:` field yet** — the `image:` path inside it would point at a PNG that doesn't exist until Task 5, and Astro's `image()` schema helper validates the referenced file exists at build time, so a premature `summary.image` reference fails `npm run build` with `ImageNotFound`. This matches the established precedent in this exact codebase: `polynomial-regression.md`'s equivalent commit (`639d91e`) shipped with no `summary:` block at all; the whole `summary:` block (formulas + keyStats + image together) was added in one shot in the infographic commit (`d05bc5f`), alongside the PNG. Task 5 of this plan adds `summary:` to this file the same way — see Task 5 Step 0 below.
 
 ```md
 ---
@@ -524,18 +524,6 @@ category:
   - 監督式學習
   - 迴歸
 interactiveComponent: ridge-regression-fit
-summary:
-  formulas:
-    - "J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat y_i)^2 + \\lambda \\sum_{j=1}^{p}\\beta_j^2"
-    - "\\hat{\\beta} = (X^\\top X + \\lambda I')^{-1} X^\\top y"
-  keyStats:
-    - label: 適用資料型態
-      value: 多特徵、疑似過擬合或共線性
-    - label: 常用評估指標
-      value: R², RMSE
-    - label: 訓練方式
-      value: 標準化特徵＋L2 正則化常態方程式
-  image: ../../assets/chapters/ridge-regression-summary.png
 ---
 
 ## 簡介
@@ -817,11 +805,31 @@ EOF
 ### Task 5: Excalidraw-style summary infographic
 
 **Files:**
+- Modify: `src/content/chapters/ridge-regression.md` (add the `summary:` frontmatter field — deferred here from Task 3; see Task 3 Step 1's note)
 - Create: `docs/specs/assets-src/ridge-regression-summary.html`
 - Create: `scripts/render-ridge-regression-infographic.ps1`
 - Create (rendered output, via Step 3 below): `src/assets/chapters/ridge-regression-summary.png`
 
-**Interfaces:** None — this is a standalone static HTML asset rendered to PNG by a headless-Edge screenshot script, matching the existing pattern used by every other chapter's infographic (`docs/specs/assets-src/polynomial-regression-summary.html` is the reference). It is consumed only via the `image:` path already set in Task 3's `ridge-regression.md` frontmatter (`../../assets/chapters/ridge-regression-summary.png`), which `ChapterSummaryCard.astro` reads generically — no code changes needed there.
+**Interfaces:** None — this is a standalone static HTML asset rendered to PNG by a headless-Edge screenshot script, matching the existing pattern used by every other chapter's infographic (`docs/specs/assets-src/polynomial-regression-summary.html` is the reference). It is consumed via the `image:` path added to `ridge-regression.md` in Step 0 below (`../../assets/chapters/ridge-regression-summary.png`), which `ChapterSummaryCard.astro` reads generically — no code changes needed there.
+
+- [ ] **Step 0: Add the `summary:` frontmatter field to `ridge-regression.md`**
+
+Task 3 deliberately shipped `ridge-regression.md` without a `summary:` field (a premature `image:` reference would have failed `npm run build` before this PNG existed — see Task 3 Step 1's note, and the identical precedent in `polynomial-regression.md`'s history: no `summary:` in its content commit, `639d91e`; the whole block added alongside the PNG in `d05bc5f`). Add this block to the frontmatter, right after the existing `interactiveComponent: ridge-regression-fit` line (before the closing `---`):
+
+```yaml
+summary:
+  formulas:
+    - "J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat y_i)^2 + \\lambda \\sum_{j=1}^{p}\\beta_j^2"
+    - "\\hat{\\beta} = (X^\\top X + \\lambda I')^{-1} X^\\top y"
+  keyStats:
+    - label: 適用資料型態
+      value: 多特徵、疑似過擬合或共線性
+    - label: 常用評估指標
+      value: R², RMSE
+    - label: 訓練方式
+      value: 標準化特徵＋L2 正則化常態方程式
+  image: ../../assets/chapters/ridge-regression-summary.png
+```
 
 - [ ] **Step 1: Create the infographic HTML source**
 
@@ -1067,7 +1075,7 @@ Run: `npm run build`, then `npm run preview` (background), then either fetch the
 - [ ] **Step 6: Commit**
 
 ```bash
-git add docs/specs/assets-src/ridge-regression-summary.html scripts/render-ridge-regression-infographic.ps1 src/assets/chapters/ridge-regression-summary.png
+git add src/content/chapters/ridge-regression.md docs/specs/assets-src/ridge-regression-summary.html scripts/render-ridge-regression-infographic.ps1 src/assets/chapters/ridge-regression-summary.png
 git commit -m "$(cat <<'EOF'
 Add Ridge Regression summary infographic
 
