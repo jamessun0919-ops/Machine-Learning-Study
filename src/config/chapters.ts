@@ -51,5 +51,11 @@ export const chapterOrder: ChapterMeta[] = [
     slug: 'polynomial-regression',
     stage: '監督式學習－迴歸',
     prerequisiteSlug: 'multiple-linear-regression',
+    nextSlug: 'ridge-regression',
+  },
+  {
+    slug: 'ridge-regression',
+    stage: '監督式學習－迴歸',
+    prerequisiteSlug: 'polynomial-regression',
   },
 ];
