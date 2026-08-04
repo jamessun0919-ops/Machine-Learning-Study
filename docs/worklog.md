@@ -647,3 +647,39 @@
 - 無新增交代事項；本階段開發者的決策點（λ 白名單效能取捨、`relatedTo` 範圍）均已在 brainstorming 與最終確認時記錄（見對話紀錄）。
 
 **本機測試用 server：** 本階段 controller 層級本身未額外啟動任何 server；各任務 subagent 於各自 worktree 內啟動的 `npm run preview`／CDP 除錯用無頭 Edge 皆已個別確認關閉；收工前 `netstat` 確認 4321／9333 埠無 LISTENING 項目。
+
+## 2026-08-04（第 24 個工作階段）：Logistic Regression 章節
+
+**當日工作內容：**
+- 開工閱讀第 23 階段交接文件，與開發者確認本階段方向：接續建置階段三最後一個主題——Logistic Regression（邏輯斯迴歸），跨入分類任務。
+- 用 `brainstorming` 技能逐項確認設計，多次先寫 Node 驗證腳本拿到真實數字才與開發者確認方向，未套用 Linear Regression 家族既有內容：
+  - 案例資料集：開發者原選「經典公開分類資料集」，Agent 指出 Iris 等資料集單一特徵近乎完美線性可分、會讓梯度下降永遠無法收斂的風險後，開發者重新選擇「全新真實感合成資料」，確定為「貸款違約預測（Loan Default）」情境，程式生成而非落地成 JSON 檔（寫計畫階段進一步發現應比照 `polynomialFit.ts` 既有合成資料慣例，改為模組載入時直接生成，主動告知開發者此簡化）。
+  - 互動元件範圍：只做 2D 決策邊界圖（不做 Sigmoid 曲線、不做門檻滑桿），純靜態展示、無控制項——是 Ridge/Lasso/Multiple LR 之外本站第一個完全無互動控制項的章節元件。
+  - 特徵固定為「負債佔收入比＋信用分數」；求解方法為批次梯度下降（Cross-Entropy Loss 無閉式解）；標準化為必要前置作業；評估指標定案「混淆矩陣＋Accuracy/Precision/Recall/F1」（不含 ROC-AUC）；資料集刻意設計為不平衡（違約約 25%），呼應 Accuracy 陷阱教學重點。
+  - 資料筆數 200 筆（75/25 切分＝150/50）——因既有 `dataSplit.ts` 的 `SHUFFLED_INDICES` 寫死 50 筆長度、不適用更大樣本，`loanDefault.ts` 另外提供一組獨立的 200 筆固定仿射排列。
+  - 首次生成驗證數字時模型太弱（test recall 僅 16.7%，近乎無用），調整真實關係係數強度後重跑，得到 test accuracy 0.88／recall 0.6667——同時滿足「模型可用」與「Accuracy 陷阱有具體數字可談」兩個教學需求。
+- 設計文件、實作計畫皆已 commit（`230d3bc`、`5b44c4d`）。
+- 用 `subagent-driven-development` 技能於獨立 worktree（`worktree-logistic-regression-chapter`）執行 5 個任務，全部一次到位（無 fix loop）：
+  1. `loanDefault.ts` 合成貸款違約資料集（TDD，haiku 模型，65/65 測試）
+  2. `classification.ts` 求解器與分類指標（haiku 模型，74/74 測試）
+  3. `LogisticRegressionFit.tsx` 互動元件（sonnet 模型，無自動化測試，用暫時性 Vitest 腳本手算驗證數字與設計文件吻合）
+  4. 章節內文＋路由/設定串接（sonnet 模型，12 頁建置成功、確認 `multiple-linear-regression.md` 未被誤觸）
+  5. Excalidraw 資訊圖表（sonnet 模型）——implementer 誠實標記 case study 版面有既有 CSS 造成的文字換行瑕疵，Agent 本人依規則親自用 Read 工具開圖檢視＋核對 HTML 原始碼，確認為視覺換行、非內容重複錯誤。
+  - 每個任務皆經過獨立審查，5 個任務審查皆為 Approved／Spec compliant，3 個任務有 Minor 延後事項（皆非阻塞性缺陷）。
+- 最終全分支審查（opus model，獨立重新執行完整 pipeline 驗證全部發布數字一致，74/74 測試、`astro check` 0/0）：抓到 2 項 Important（三處手動維護的數字沒有測試釘住、「不收斂」測試證明力不足只證明提前中斷非真發散）與 1 項需開發者裁決的 plan-mandated 設計問題（決策邊界圖畫全部 200 點但下方指標只描述測試集 50 點，視覺與數字不對應）。詢問開發者後裁定保持現狀不修改（計畫本身明確規定的做法，非實作偏離）。依規則派一次修復 subagent 處理 2 項 Important（新增 pipeline 釘樁整合測試＋強化不收斂測試證明真發散），範圍限定複審確認全數 ADDRESSED、無新增破壞。其餘 4 項 Minor 記入帳本延後，不阻塞合併。
+- 已本機 `merge`（fast-forward）回 `main`；合併後測試顯示 156 個（已知的 worktree 殘留造成測試重複執行現象）；用 `ExitWorktree` 清理 worktree 與已合併分支（`git branch --contains` 確認 6 個 commit 已安全存在於 main）後測試恢復正常 78/78；`git push origin main` 成功，觸發 GitHub Pages 部署，「Logistic Regression」章節正式上線。
+
+**完成項目：**
+- Logistic Regression 章節完整上線，接續在 Lasso Regression 之後（`chapterOrder` 新的鏈尾）。**階段三（監督式學習－迴歸）全數完成**，本站第一個分類任務章節正式上線，可進入階段四（監督式學習－分類）。
+- 全站驗證：測試 78/78、`astro check` 0 錯誤/0 警告、`build` 12 頁成功。
+- Multiple Linear Regression↔Logistic Regression 雙向關聯（該側早已預埋，本次補上另一側）；`chapter_template_guide.md` 1.1 節對照表狀態更新為「兩側已補」。
+- 新增 `src/lib/loanDefault.classification.integration.test.ts`：完整 pipeline 釘樁測試，鎖定訓練/測試混淆矩陣與四項指標的真實產出數字，未來任何資料/超參數變動若導致數字偏移，測試會立即失敗（不再只靠章節內文與資訊圖表人工比對）。
+
+**遇到的瓶頸：**
+- Brainstorming 前期一度給錯選項導致開發者要求重新選擇（案例資料集題目第一輪誤觸「經典公開資料集」風險未先講清楚），第二輪重新呈現同一組選項後順利釐清方向。
+- 最終審查抓到的「決策邊界圖畫 200 點但指標只描述 50 點」是計畫本身明確規定的設計，屬於需要開發者裁決的 plan-mandated 發現，不能由 Agent 逕自修改，已依規則詢問並取得裁決（保持現狀）。
+
+**開發者交代備忘事項：**
+- 無新增交代事項；本階段開發者的決策點（資料集類型、互動元件範圍、特徵選擇、資料筆數、決策邊界圖是否修改）均已在 brainstorming 與最終審查時記錄（見對話紀錄）。
+
+**本機測試用 server：** 本階段 controller 層級本身未額外啟動任何 server；Task 3/5 subagent 於各自 worktree 內使用的暫時性驗證腳本／`npm run preview`／CDP 無頭 Edge 皆已個別確認關閉；收工前 `netstat` 確認 4321／9333／3000 埠無 LISTENING 項目。

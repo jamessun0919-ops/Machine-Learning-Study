@@ -1490,3 +1490,141 @@ Agent 依 `finishing-a-development-branch` 技能流程：跑測試（61/61）�
 開發者：「1」（本機合併回 main）。
 
 Agent 執行：`git merge`（fast-forward）→ 合併後測試（122 個，確認為已知的 worktree 殘留造成測試重複執行現象）→ `ExitWorktree` 清理 worktree 與分支（6 個 commit 已安全存在於 main）→ 測試恢復正常（61/61）→ `astro check` 0/0。
+
+## 2026-08-04（第 24 個工作階段）：Logistic Regression 章節
+
+### 段落一：開工與方向確認
+
+Agent 自報模型（Sonnet 5），閱讀交接文件確認第 23 階段結束狀態（Lasso Regression 已上線，階段三 Linear Regression 子分類 5 主題全數完成）。向開發者摘要現況與待辦分岔點後詢問本階段目標。
+
+開發者：「接續建置 Logistic Regression 章節」。
+
+Agent 呼叫 `brainstorming` 技能開始需求確認，依交接文件規則強調「Logistic Regression 雖仍是演算法類章節，但屬於分類任務而非迴歸，不可預設套用 Linear Regression 家族既有內容」。
+
+### 段落二：案例資料集決策
+
+Agent 先探索既有資料集慣例（`datasets.ts`／`50-startups.json` 真實資料 vs 之後發現的 `polynomialFit.ts` 合成資料模式），提出三個選項：全新真實感資料集、合成資料（沿用 Ridge/Lasso 手法）、經典公開分類資料集（如鳶尾花/乳癌診斷）。
+
+開發者第一次選擇「經典公開分類資料集」，Agent 隨即指出技術風險——Iris 某些品種組合單一特徵近乎完美線性可分，會讓 Logistic Regression 的梯度下降永遠無法收斂（與 Lasso 章節 λ=0 不收斂同一類陷阱）。
+
+開發者要求重新給選項，Agent 重新呈現同一組三選項。
+
+開發者第二次選擇：「全新真實感資料集（如貸款違約/客戶流失）」。
+
+具體業務情境選項（貸款違約預測／客戶流失預測／其他）：
+
+開發者：「貸款違約預測（Loan Default）」。
+
+資料來源方式（程式產生真實感合成資料 vs 尋找現成公開資料集）：
+
+開發者：「程式產生『真實感』合成資料（推薦）」——避免授權/來源標註問題，且可完全控制收斂行為。
+
+### 段落三：互動元件與特徵設計
+
+互動元件核心展示重點（可多選）：2D 決策邊界圖／Sigmoid 機率曲線／門檻滑桿+混淆矩陣聯動。
+
+開發者：「2D 決策邊界圖（主視覺，推薦）」——單選，未加選其餘兩項，呼應 YAGNI 範圍決定。
+
+特徵組合設計（3 特徵+可切換 2D 投影 vs 固定 2 個特徵）：
+
+開發者：「固定 2 個特徵（推薦）」。
+
+固定的兩個特徵（年收入+信用分數 vs 負債佔收入比+信用分數）：
+
+開發者：「負債佔收入比 + 信用分數」。
+
+### 段落四：數學方法與資料細節
+
+求解方法（批次梯度下降 vs Newton's Method/IRLS）：
+
+開發者：「批次梯度下降（推薦）」——概念直觀、與 Lasso 的 converged 回傳模式一致。
+
+是否標準化特徵：
+
+開發者：「是，先標準化再訓練（推薦）」——兩特徵原始尺度差異極大（負債比 0~1、信用分數 300~850），標準化避免收斂過慢。
+
+評估指標區塊內容（混淆矩陣+四指標 vs 再加 ROC-AUC）：
+
+開發者：「混淆矩陣 + Accuracy/Precision/Recall/F1（推薦）」——不含 ROC-AUC，避免一章塞入過多新概念。
+
+類別分布（平衡 vs 不平衡）：
+
+開發者：「不平衡（違約約 20~30%，推薦）」——為評估指標區塊的 Accuracy 陷阱敘事提供具體案例。
+
+資料筆數與切分（50 筆沿用既有 `dataSplit.ts` vs 更大樣本數）：Agent 指出 `dataSplit.ts` 的 `SHUFFLED_INDICES` 寫死 50 筆長度的技術限制。
+
+開發者：「更大樣本數（如 150~200 筆）」，具體筆數與比例：「200 筆，75/25 切分（150/50，推薦）」。
+
+relatedTo 範圍（只連 Multiple Linear Regression vs 再加特徵工程與標準化）：
+
+開發者：「只連 Multiple Linear Regression（推薦）」——標準化只是本章訓練前置作業、非教學重點，不特別拉關聯。
+
+### 段落五：設計文件撰寫與確認
+
+Agent 先用 Node 腳本實際生成資料、跑梯度下降拿到真實數字（初版係數強度太弱，test recall 僅 16.7%，模型幾乎無效，調整真實關係係數後重跑，得到 test accuracy 0.88／recall 0.6667，兼顧模型可用性與 Accuracy 陷阱敘事），才把數字寫進設計文件。設計文件寫入 `docs/superpowers/specs/2026-08-04-logistic-regression-chapter-design.md` 並提交（`230d3bc`）。
+
+開發者對前兩段設計內容皆回覆「可以，請實作」。Agent 說明依專案規則（CLAUDE.md「與開發者確認方案架構與機制完整再進行程式碼的編寫」＋ brainstorming 技能的 hard-gate）需先走完全部設計段落才能進實作，繼續逐段確認（互動元件細節、內文大綱、資訊圖表、relatedTo 串接、測試計畫）。
+
+段落過半後 Agent 主動詢問開發者步調偏好（繼續逐段確認 vs 一次看完整文件）：
+
+開發者：「繼續逐段確認（推薦）」。
+
+互動元件是否保留控制項：
+
+開發者：「純靜態展示，無控制項（推薦）」。
+
+全部段落確認完後，開發者：「可以，請實作」。Agent 將設計文件正式存檔提交（`docs/superpowers/specs/2026-08-04-logistic-regression-chapter-design.md`，commit `230d3bc`）。
+
+### 段落六：實作計畫撰寫
+
+Agent 用 `writing-plans` 技能，先探索既有元件（`RegressionScatter2D.tsx`／`LassoRegressionFit.tsx`／`ridge-regression-summary.html`）與資料檔案模式，寫計畫時發現一項偏離原設計文件的簡化：原設計規劃資料集用「JSON 檔＋一次性生成腳本」，但查看 `polynomialFit.ts`（本站既有合成資料章節的真正範例）才發現其慣例是直接在 TypeScript 模組載入時用決定性亂數函式生成，不落地成 JSON、不另寫腳本。計畫改採此更貼近既有慣例的做法，已在計畫 Global Constraints 段落記錄原因並主動告知開發者。
+
+計畫撰寫過程中，Agent 用 Node 腳本驗證了完整 pipeline（資料生成、批次梯度下降收斂行為、單元測試案例的手算數值），確保計畫裡的每個具體數字都經過驗證，非憑空杜撰。計畫存檔並提交（`docs/superpowers/plans/2026-08-04-logistic-regression-chapter.md`，commit `5b44c4d`）。
+
+執行方式選項（Subagent-Driven vs Inline Execution）：
+
+開發者：「１」（Subagent-Driven，推薦選項）。
+
+### 段落七：SDD 執行——5 個任務全數一次到位
+
+依專案慣例先確認本機 main 已推送 origin，用原生 `EnterWorktree` 建立獨立 worktree（`worktree-logistic-regression-chapter`），啟動 `subagent-driven-development` 技能。Pre-flight 掃描計畫內容無矛盾，直接開始執行。
+
+- Task 1（`loanDefault.ts` 合成貸款違約資料集，haiku）：65/65 測試通過，審查逐項核對 RNG 呼叫順序（最容易出錯之處）、排列公式、無新增 JSON/腳本檔，Approved。
+- Task 2（`classification.ts` 求解器與分類指標，haiku）：74/74 測試通過，審查獨立比對 `fitLassoRegression` 既有 `converged` 慣例確認一致，Approved。
+- Task 3（`LogisticRegressionFit.tsx` 互動元件，sonnet）：無自動化測試，implementer 用暫時性 Vitest 腳本手算驗證數字（因元件尚未掛載到頁面、`react-plotly.js` 無法在 Node 獨立解析），數字與設計文件完全吻合（測試 Accuracy 0.88／Recall 0.6667 等）。審查獨立複算決策邊界代數、標準化無資訊洩漏，Approved。
+- Task 4（章節內容＋路由/設定串接，sonnet）：`astro check` 0/0、12 頁建置成功、74/74 測試通過。審查確認 `multiple-linear-regression.md` 確實未被觸碰（該側關聯段落已存在）、內文確實是分類任務原生內容而非迴歸章節改寫，零 Issue。
+- Task 5（Excalidraw 資訊圖表，sonnet）：implementer 回報 `DONE_WITH_CONCERNS`——標記 case study metabar 某些較長中文字串因既有 5 欄窄格線 CSS（沿用自 Ridge 範本、未修改）而換行，屬於美觀瑕疵非內容錯誤。Agent 依規則親自用 Read 工具開圖檢視，並直接核對 HTML 原始碼確認「求解方式」欄位文字（標準化＋批次梯度下降）並無重複，只是視覺換行，確認圖表無誤。審查零 Issue。
+
+全部 5 個任務皆一次審查通過，無 fix loop。
+
+### 段落八：最終全分支審查（opus）——需要開發者決策的設計層級發現
+
+Agent 派最具能力模型（opus）做全分支審查，獨立重新執行完整 pipeline（實際 import `.ts` 模組跑一次）驗證每個發布數字，`npm run test` 74/74 通過、`astro check` 0 錯誤。抓到：
+
+- **Important #1**：三處手動維護同一組數字（章節內文、資訊圖表 HTML、程式註解），卻沒有任何測試釘住這些數字，未來若改動 RNG 種子/真實模型係數/超參數預設值，74 個既有測試仍會全綠，但章節文字與已渲染的 PNG 會悄悄失真。
+- **Important #2**：「不收斂」測試只證明 `maxIter` 太小時 `converged` 回傳 false，沒有真正證明「完美可分資料會發散」——同樣的資料若換成收斂良好的資料、`maxIter` 一樣設太小，斷言也會通過，測試證明力不足。
+- **需開發者決策**：決策邊界圖目前畫全部 200 點（訓練+測試皆有，依實際類別上色），下方 Precision/Recall/F1/混淆矩陣卻只描述測試集 50 點——這是計畫本身明確規定的做法（Task 3 逐字碼），非實作偏離。審查指出讀者若在圖上數「落在邊界錯誤一側的點」會數到 26 個，但表格暗示的是 6 個，視覺與數字對不上。
+
+Agent 依規則（plan-mandated 發現需交由人類裁決）向開發者提出三選項：保持現狀不修改／改成四組 trace（訓練/測試×違約/未違約）／只畫測試集 50 點。
+
+開發者：「保持現狀，不修改（推薦）」。Agent 將此發現記入帳本裁決為「已確認為刻意設計，非缺陷」，不修改程式碼。
+
+其餘 4 項 Minor（LaTeX $n$/$p$ 符號局部衝突、缺少「完美可分發散」常見誤區、`DTI_MIN`/`DTI_MAX` 涵蓋全部 200 筆的註解缺失、`regression-chart` CSS class 名稱沿用到非迴歸章節）記入帳本延後、不阻塞合併。
+
+### 段落九：修復波次與複審
+
+Agent 依規則派「一次」修復 subagent（不逐項分開修）處理兩項 Important 發現：新增 pipeline 釘樁整合測試（`loanDefault.classification.integration.test.ts`，直接斷言真實 pipeline 算出的訓練/測試混淆矩陣與四指標）、強化不收斂測試（比較兩種疊代預算下係數量級成長，證明真正發散而非單純提前中斷）。
+
+implementer 回報 Finding 1 的數字第一次跑就完全吻合（未發現任何隱藏 bug）；Finding 2 原本給的示範參數（500/5000 疊代、2 倍門檻）實測不成立（實際約 1.5 倍），implementer 主動用探測腳本驗證後改用 50/5000（約 2.67 倍），誠實回報這個调整而非默默套用原始數字。74→78 測試通過。
+
+範圍限定複審：兩項發現皆 ADDRESSED，複審者親自重跑 `classification.test.ts` 確認新測試數字為真、非報告杜撰，複審者也逐項核對複審 diff 本身無新增破壞。
+
+Ready to merge 條件達成：2 項修復＋複審乾淨、1 項 plan-mandated 發現經開發者裁決為刻意設計、4 項 Minor 記入帳本延後。
+
+### 段落十：整合方式選擇與收尾
+
+Agent 依 `finishing-a-development-branch` 技能流程：跑測試（78/78）、偵測環境（worktree、具名分支 `worktree-logistic-regression-chapter`），詢問開發者整合方式。
+
+開發者：「合併回 main（本機，推薦）」。
+
+Agent 執行：`git merge`（fast-forward）→ 合併後測試（156 個，確認為已知的 worktree 殘留造成測試重複執行現象）→ `ExitWorktree` 清理 worktree 與分支（`git branch --contains` 確認 6 個 commit 已安全存在於 main）→ 測試恢復正常（78/78）→ `git push origin main` 成功。
