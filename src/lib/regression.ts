@@ -100,6 +100,77 @@ export function fitRidgeRegression(
   return { coefficients };
 }
 
+function softThreshold(z: number, gamma: number): number {
+  if (z > gamma) return z - gamma;
+  if (z < -gamma) return z + gamma;
+  return 0;
+}
+
+// Lasso 沒有閉式解（L1 懲罰項在 0 處不可微分），改用 coordinate descent + soft-thresholding。
+// 對每一欄先做置中處理（column-centering），讓截距可以在迴圈外用一次代數運算求出、不需要
+// 加入懲罰項；這是業界標準做法（glmnet／scikit-learn 皆採此法），也讓這個函式對任意（不一定
+// 事先標準化過的）特徵矩陣都能正確運作，不只是本站已標準化過的多項式特徵這個特例。
+export function fitLassoRegression(
+  features: number[][],
+  target: number[],
+  lambda: number,
+  maxIter = 200000,
+  tol = 1e-12
+): RegressionResult {
+  if (features.length !== target.length) {
+    throw new Error('features and target must have the same number of rows');
+  }
+  if (features.length === 0) {
+    throw new Error('features must contain at least one row');
+  }
+
+  const n = features.length;
+  const p = features[0].length;
+
+  const featureMeans = new Array(p).fill(0);
+  for (let j = 0; j < p; j++) {
+    let sum = 0;
+    for (let i = 0; i < n; i++) sum += features[i][j];
+    featureMeans[j] = sum / n;
+  }
+  const centeredFeatures = features.map((row) => row.map((v, j) => v - featureMeans[j]));
+
+  const yMean = target.reduce((sum, v) => sum + v, 0) / n;
+  const centeredTarget = target.map((v) => v - yMean);
+
+  const colSqSum = new Array(p).fill(0);
+  for (let j = 0; j < p; j++) {
+    let sum = 0;
+    for (let i = 0; i < n; i++) sum += centeredFeatures[i][j] ** 2;
+    colSqSum[j] = sum;
+  }
+
+  const beta = new Array(p).fill(0);
+  const residual = centeredTarget.slice();
+
+  for (let iter = 0; iter < maxIter; iter++) {
+    let maxChange = 0;
+    for (let j = 0; j < p; j++) {
+      if (colSqSum[j] === 0) continue;
+      let rho = 0;
+      for (let i = 0; i < n; i++) {
+        rho += centeredFeatures[i][j] * (residual[i] + centeredFeatures[i][j] * beta[j]);
+      }
+      const newBetaJ = softThreshold(rho, lambda / 2) / colSqSum[j];
+      const delta = newBetaJ - beta[j];
+      if (delta !== 0) {
+        for (let i = 0; i < n; i++) residual[i] -= centeredFeatures[i][j] * delta;
+      }
+      beta[j] = newBetaJ;
+      if (Math.abs(delta) > maxChange) maxChange = Math.abs(delta);
+    }
+    if (maxChange < tol) break;
+  }
+
+  const intercept = yMean - featureMeans.reduce((sum, m, j) => sum + m * beta[j], 0);
+  return { coefficients: [intercept, ...beta] };
+}
+
 export function predict(coefficients: number[], features: number[]): number {
   return (
     coefficients[0] +
