@@ -662,6 +662,37 @@ a:hover {
   color: var(--color-text);
 }
 
+.regression-chart__confusion-matrix {
+  border-collapse: collapse;
+  margin-block: var(--space-md) 0;
+  font-size: var(--step--1);
+}
+
+.regression-chart__confusion-matrix caption {
+  text-align: left;
+  margin-block-end: var(--space-xs);
+  color: var(--color-text-muted);
+}
+
+.regression-chart__confusion-matrix th,
+.regression-chart__confusion-matrix td {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.regression-chart__confusion-matrix th {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  background: var(--color-bg-elevated);
+}
+
+.regression-chart__confusion-matrix td {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
 /* ---------------------------------------------------------------------------
    Home
 --------------------------------------------------------------------------- */
