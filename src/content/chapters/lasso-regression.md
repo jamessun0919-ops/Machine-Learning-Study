@@ -5,6 +5,18 @@ category:
   - 監督式學習
   - 迴歸
 interactiveComponent: lasso-regression-fit
+summary:
+  formulas:
+    - "J(\\beta) = \\sum_{i=1}^{n}(y_i - \\hat y_i)^2 + \\lambda \\sum_{j=1}^{p}|\\beta_j|"
+    - "\\beta_j \\leftarrow S(\\rho_j,\\ \\lambda/2) / \\sum_i x_{ij}^2"
+  keyStats:
+    - label: 適用資料型態
+      value: 想做特徵選擇、疑似有冗餘特徵
+    - label: 常用評估指標
+      value: R², RMSE，歸零係數數量
+    - label: 訓練方式
+      value: 標準化特徵＋coordinate descent（無閉式解）
+  image: ../../assets/chapters/lasso-regression-summary.png
 ---
 
 ## 簡介
