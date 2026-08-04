@@ -5,6 +5,18 @@ category:
   - 監督式學習
   - 分類
 interactiveComponent: logistic-regression-fit
+summary:
+  formulas:
+    - "\\sigma(z) = 1 / (1+e^{-z})"
+    - "J(\\beta) = -\\frac{1}{n}\\sum_{i=1}^n[y_i\\log\\hat p_i + (1-y_i)\\log(1-\\hat p_i)]"
+  keyStats:
+    - label: 適用資料型態
+      value: 二元類別目標變數
+    - label: 常用評估指標
+      value: Accuracy, Precision, Recall, F1
+    - label: 訓練方式
+      value: 標準化特徵＋批次梯度下降（無閉式解）
+  image: ../../assets/chapters/logistic-regression-summary.png
 ---
 
 ## 簡介
