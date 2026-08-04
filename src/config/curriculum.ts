@@ -52,9 +52,14 @@ export const curriculum: CurriculumStage[] = [
           'Polynomial Regression（多項式回歸）',
           '過擬合/欠擬合與偏差-變異數權衡',
           '特徵工程與標準化',
+          'Lasso Regression（Lasso 迴歸，正則化）',
         ],
       },
-      { name: 'Lasso Regression（Lasso 迴歸，正則化）' },
+      {
+        name: 'Lasso Regression（Lasso 迴歸，正則化）',
+        slug: 'lasso-regression',
+        relatedTo: ['Ridge Regression（Ridge 迴歸，正則化）'],
+      },
       {
         name: 'Logistic Regression（邏輯斯迴歸）',
         relatedTo: ['Multiple Linear Regression（多元線性回歸）'],
