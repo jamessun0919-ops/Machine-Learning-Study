@@ -1,5 +1,8 @@
 export interface RegressionResult {
   coefficients: number[];
+  // 只有 fitLassoRegression（迭代法）會填這個欄位；fitLinearRegression／fitRidgeRegression
+  // 是閉式解，永遠精確收斂，不需要也不會回傳這個欄位。
+  converged?: boolean;
 }
 
 function transpose(matrix: number[][]): number[][] {
@@ -114,6 +117,10 @@ export function fitLassoRegression(
   features: number[][],
   target: number[],
   lambda: number,
+  // maxIter 是實際的收斂保障：本站次數 15 多項式特徵高度共線，在白名單最小的 λ=0.01 時
+  // 需要約 56,000+ 次迭代才能真正收斂；隨意調低 maxIter 會讓迴圈提前跳出、回傳看似合理
+  // 但其實錯誤的係數（converged 會回傳 false）。tol 在合理範圍內對收斂與否影響不大，
+  // 不要誤以為調緊 tol 能彌補調低 maxIter 的風險。
   maxIter = 200000,
   tol = 1e-12
 ): RegressionResult {
@@ -148,6 +155,7 @@ export function fitLassoRegression(
   const beta = new Array(p).fill(0);
   const residual = centeredTarget.slice();
 
+  let converged = false;
   for (let iter = 0; iter < maxIter; iter++) {
     let maxChange = 0;
     for (let j = 0; j < p; j++) {
@@ -164,11 +172,14 @@ export function fitLassoRegression(
       beta[j] = newBetaJ;
       if (Math.abs(delta) > maxChange) maxChange = Math.abs(delta);
     }
-    if (maxChange < tol) break;
+    if (maxChange < tol) {
+      converged = true;
+      break;
+    }
   }
 
   const intercept = yMean - featureMeans.reduce((sum, m, j) => sum + m * beta[j], 0);
-  return { coefficients: [intercept, ...beta] };
+  return { coefficients: [intercept, ...beta], converged };
 }
 
 export function predict(coefficients: number[], features: number[]): number {

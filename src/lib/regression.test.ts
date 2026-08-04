@@ -109,6 +109,8 @@ describe('fitRidgeRegression', () => {
 });
 
 describe('fitLassoRegression', () => {
+  // 此等價關係僅適用於良態（well-conditioned）輸入；在高度共線的特徵（例如本站 Lasso 章節使用的次數
+  // 15 多項式特徵）上，coordinate descent 在 λ=0 時可能完全不收斂，見 fitLassoRegression 的 converged 回傳值。
   it('recovers the exact OLS slope on a single perfectly-linear feature when lambda is 0', () => {
     // y = 2x, x mean-centered (-2..2), so the intercept is exactly 0 and the
     // slope is hand-verifiable: rho = sum(x*y) = 20, colSqSum = sum(x^2) = 10,
@@ -146,6 +148,8 @@ describe('fitLassoRegression', () => {
     expect(lasso.coefficients[1]).toBe(0);
   });
 
+  // 此等價關係僅適用於良態（well-conditioned）輸入；在高度共線的特徵（例如本站 Lasso 章節使用的次數
+  // 15 多項式特徵）上，coordinate descent 在 λ=0 時可能完全不收斂，見 fitLassoRegression 的 converged 回傳值。
   it('matches OLS on a multi-feature dataset when lambda is 0, and zeroes both coefficients at a large lambda', () => {
     const features = [
       [0, 0],
@@ -185,5 +189,33 @@ describe('fitLassoRegression', () => {
 
   it('throws on empty input', () => {
     expect(() => fitLassoRegression([], [], 1)).toThrow();
+  });
+
+  it('reports converged: false when maxIter cuts the loop off before it reaches tol on an ill-conditioned input', () => {
+    // 未經標準化的多項式特徵 (x, x^2, x^3)（類似 Vandermonde 矩陣）在只有 6 個樣本點時高度共線，
+    // λ=0（無正則化）時 coordinate descent 需要約 25,000 次迭代才能真正收斂到 tol=1e-12。
+    // 這裡刻意給一個很小的 maxIter，證明迴圈提前跳出時 converged 正確回報 false（而不是
+    // 靜默回傳一個看似合理但其實錯誤的解）。
+    const xs = [1, 2, 3, 4, 5, 6];
+    const features = xs.map((x) => [x, x ** 2, x ** 3]);
+    const target = xs.map((x) => 5 + 2 * x - 0.5 * x ** 2 + 0.1 * x ** 3);
+
+    const lasso = fitLassoRegression(features, target, 0, 1000, 1e-12);
+    expect(lasso.converged).toBe(false);
+  });
+
+  it('reports converged: true on a normal, well-conditioned input', () => {
+    const features = [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [2, 1],
+      [1, 2],
+    ];
+    const target = [1, 3, 4, 6, 8, 9];
+
+    const lasso = fitLassoRegression(features, target, 0);
+    expect(lasso.converged).toBe(true);
   });
 });
