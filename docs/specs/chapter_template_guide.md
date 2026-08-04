@@ -13,7 +13,7 @@
 
    **1.1 跨章節關聯段落**：若該主題在 `src/config/curriculum.ts` 中設有 `relatedTo`，或被其他主題的 `relatedTo` 指向（關聯可能只單側標註，例如 Logistic Regression → Multiple Linear Regression），「簡介」段落須在既有說明後，針對每個關聯主題各補一段獨立段落，格式比照：「**與 {主題} 的關係**：{一句核心比喻}。{1-2 句延伸說明}。」若對應頁面尚未建置，暫不需處理（等該主題本身被建置時再一併確認關聯段落）。
 
-   目前 9 組核心關聯對照表（依 `src/config/curriculum.ts` 的 `relatedTo` 定義整理；原概念關聯圖片另有「監督式↔非監督式學習」一組，但那是課程學習典範分類、非 `relatedTo` 邊，已由「機器學習介紹」章節涵蓋，不列入此表、不適用此規則）：
+   目前 10 組核心關聯對照表（依 `src/config/curriculum.ts` 的 `relatedTo` 定義整理；原概念關聯圖片另有「監督式↔非監督式學習」一組，但那是課程學習典範分類、非 `relatedTo` 邊，已由「機器學習介紹」章節涵蓋，不列入此表、不適用此規則）：
 
    | 主題 A | 主題 B | 核心關聯 | 狀態 |
    |---|---|---|---|
@@ -22,6 +22,7 @@
    | Ridge Regression | Polynomial Regression | 抑制多項式高次項係數爆炸的正則化工具 | 兩側已補 |
    | Ridge Regression | 過擬合/欠擬合與偏差-變異數權衡 | λ 是可連續調整的 bias-variance 旋鈕 | 兩側已補 |
    | Ridge Regression | 特徵工程與標準化 | 正則化前必須先標準化，否則懲罰力道不公平 | 兩側已補 |
+   | Ridge Regression | Lasso Regression | L2 平滑收縮 vs L1 特徵選擇的直接對比 | 兩側已補 |
    | Decision Tree | Random Forest（Bagging） | Bagging：多顆 Decision Tree 組成 | 待兩側建置 |
    | Decision Tree | Boosting（AdaBoost/GB） | 弱學習器逐步疊加組成 | 待兩側建置 |
    | PCA | K-Means | 常作為分群前的前處理 | 待兩側建置 |

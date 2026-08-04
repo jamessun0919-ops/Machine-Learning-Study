@@ -23,7 +23,7 @@ describe('curriculum', () => {
     });
   });
 
-  it('marks exactly the nine currently-built chapters as having a slug', () => {
+  it('marks exactly the ten currently-built chapters as having a slug', () => {
     const builtNames = allTopics.filter((t) => t.slug).map((t) => t.name);
     expect(builtNames).toEqual([
       '機器學習介紹（含全課程知識地圖）',
@@ -35,6 +35,7 @@ describe('curriculum', () => {
       'Multiple Linear Regression（多元線性回歸）',
       'Polynomial Regression（多項式回歸）',
       'Ridge Regression（Ridge 迴歸，正則化）',
+      'Lasso Regression（Lasso 迴歸，正則化）',
     ]);
   });
 
