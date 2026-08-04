@@ -51,6 +51,27 @@ describe('fitLogisticRegression', () => {
     expect(result.converged).toBe(false);
   });
 
+  it('coefficients keep growing without settling on perfectly separable data (true divergence, not just a cutoff)', () => {
+    // Same separable data as above. A too-small maxIter merely proves the loop reports
+    // false when cut off early — it doesn't prove the data actually diverges. Here we
+    // fit at two different iteration budgets and confirm the coefficient magnitude keeps
+    // growing rather than settling, which is the real, documented pathology: MLE is
+    // unbounded under perfect separation, so gradient descent never converges no matter
+    // how many iterations it's given. (fitLogisticRegression is fully deterministic on
+    // fixed inputs, so these exact magnitudes are reproducible, not flaky: at maxIter=50
+    // |beta1| ~= 2.52, at maxIter=5000 it has grown to ~= 6.74 — well over double, and
+    // still climbing rather than plateauing.)
+    const features = [[-3], [-2], [-1], [1], [2], [3]];
+    const target = [0, 0, 0, 1, 1, 1];
+
+    const shortRun = fitLogisticRegression(features, target, 0.5, 50, 1e-6);
+    const longRun = fitLogisticRegression(features, target, 0.5, 5000, 1e-6);
+
+    expect(shortRun.converged).toBe(false);
+    expect(longRun.converged).toBe(false);
+    expect(Math.abs(longRun.coefficients[1])).toBeGreaterThan(2 * Math.abs(shortRun.coefficients[1]));
+  });
+
   it('throws when features and target lengths mismatch', () => {
     expect(() => fitLogisticRegression([[1, 2]], [1, 2])).toThrow();
   });
