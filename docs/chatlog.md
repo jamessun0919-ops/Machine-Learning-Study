@@ -1410,3 +1410,83 @@ Agent 依 `finishing-a-development-branch` 技能流程：跑測試（53/53）�
 開發者：「本機合併回 main」。
 
 Agent 執行：`git merge`（fast-forward）→ 合併後測試（106 個，確認為已知的 worktree 殘留造成測試重複執行現象）→ `ExitWorktree` 清理 worktree 與分支（6 個 commit 已安全存在於 main，符合既有慣例的標準收尾步驟）→ 測試恢復正常（53/53）→ `git push origin main` 成功，觸發 GitHub Pages 部署。
+
+## 2026-08-04（第 23 個工作階段）：Lasso Regression 章節
+
+### 段落一：開工與方向確認
+
+Agent 自報模型（Sonnet 5），依規則讀交接文件（第 22 階段），確認階段三尚缺 Lasso Regression、Logistic Regression 兩個主題。詢問開發者本階段方向。
+
+開發者選擇：「Lasso Regression」（而非跳去 Logistic Regression）。
+
+### 段落二：brainstorming——教學切入點確認
+
+Agent 讀 Ridge 章節設計文件、`curriculum.ts`、`regression.ts` 現況後，指出 Lasso 跟 Ridge 不是同一套機制的參數變體，而是質的不同（無閉式解、需要迭代演算法），先問教學切入點是否延續 Ridge 用過的次數 15 案例。
+
+開發者選擇：「延續同一案例（推薦）」。
+
+### 段落三：λ=0 收斂性驗證——抓到與 Ridge 完全不同的病態行為
+
+Agent 寫 Node 腳本驗證這組資料在合理 λ 下是否真的會出現「係數恰好歸零」效果，發現這組次數 15 多項式特徵即使各自標準化過仍高度相關，導致 coordinate descent 在 λ=0（無正則化）時完全無法收斂（上百萬次疊代仍在飄移，因為此時 OLS 解不唯一）。進一步測試發現收斂所需疊代次數在小 λ 區間**不可預期地劇烈波動**（λ=0.02 需 36 萬次、λ=0.002 需 470 萬次逾 4 秒），且用 pathwise warm-start（大 λ 往小 λ 依序求解）也無法解決，因為 coordinate descent 的收斂速率取決於問題本身的條件數、不是取決於起始點距離。
+
+Agent 向開發者報告三點驗證發現與建議方向（λ=0 不納入白名單、改引用 Ridge 章節已發布的 OLS 基準線、同 λ 值對比作為案例分析核心）。
+
+開發者：「同意（推薦）」。
+
+### 段落四：λ 白名單效能問題——開發者的「不湊合」原則
+
+Agent 提出候選白名單 `0.001, 0.01, 0.1, 1, 10`（對應 6/7/8/11/12 個係數歸零），開發者先同意採用。但 Agent 接著測出單一 λ=0.001 需要約 100 萬次疊代（約 2 秒），λ=0.002 更需要 470 萬次疊代（逾 4 秒），若放進互動白名單會讓元件掛載時有機率性的長時間凍結，正要說明這個效能風險時被開發者打斷。
+
+開發者：「如果無法兼顧，本章節不提供操作的欄位」——即效能與正確性無法兼顧時，寧可拿掉功能也不要湊合，這是本階段記錄下來的一個新原則。
+
+Agent 找到不需妥協的解法：問題只出在白名單裡的 0.001 這一個值落在病態區間，換成 `0.01, 0.05, 0.1, 1, 10` 即可，全部驗證在 5.6 萬次疊代內收斂（不需要 warm start，冷啟動合計僅 227ms），維持完整互動功能，不用移除任何操作欄位。
+
+開發者：「接受，用安全區間五個值（推薦）」。
+
+### 段落五：係數尺度與 relatedTo 範圍決策
+
+Agent 驗證 Lasso 白名單內最大係數量級（2.46～7.68，同一量級）跟 Ridge 的 200 倍跨距完全不同，建議改用線性座標（而非沿用 Ridge 的 log 軸），並新增歸零係數變色＋「N/15 已歸零」文字統計。開發者確認此設計方向。
+
+`relatedTo` 範圍：Agent 詢問 Lasso 章節是否只連 Ridge Regression 一個，或比照 Ridge 章節同時連四個（Ridge/Polynomial/過擬合欠擬合/特徵工程）。
+
+開發者：「只連 Ridge Regression（推薦）」——因為其餘三組關聯已由 Ridge 章節完整覆蓋，重複寫三段會與 Ridge 內容大幅重疊。
+
+### 段落六：設計文件與實作計畫核准
+
+設計文件寫入並提交（`b2a7b02`）後，開發者複核確認 OK，Agent 呼叫 `writing-plans` 技能產出實作計畫（`8ddd2d5`），提供 Subagent-Driven／Inline 兩種執行方式。
+
+開發者：「1」（Subagent-Driven，推薦選項）。
+
+### 段落七：SDD 執行——5 個任務全數一次到位
+
+依專案慣例先確認本機 main 已推送 origin，再用原生 `EnterWorktree` 建立獨立 worktree（`worktree-lasso-regression-chapter`），啟動 `subagent-driven-development` 技能。Pre-flight 掃描計畫內容無矛盾，直接開始執行。
+
+- Task 1（`fitLassoRegression`，haiku）：7/7→實際 6 個測試通過（審查抓到計畫本身「7 個新測試」的筆誤，記為 deferred minor，非程式碼缺陷），審查 Approved。
+- Task 2（`LassoRegressionFit.tsx`，haiku）：`astro check` 0/0，審查逐項對照 Ridge 元件確認 λ 白名單、線性軸、歸零變色、零計數統計皆正確落實，Approved。
+- Task 3（章節內文＋路由/設定串接，sonnet）：11 頁面成功建置，審查確認 `chapters.ts`／`curriculum.ts` 雙向鏈結無誤，Approved。
+- Task 4（Ridge 章節回補關聯段落＋測試/文件更新，haiku）：59/59 測試通過，審查零 Issue。
+- Task 5（Excalidraw 資訊圖表，sonnet）：implementer 回報 `DONE_WITH_CONCERNS`——完成度沒問題，只是誠實標記出「λ 白名單按鈕的 CDP 互動驗證」屬於計畫裡「全部任務完成後」的 Final Verification 範疇、不是 Task 5 本身要求，本次 session 沒有瀏覽器自動化工具可用，正確地標記而非略過。Agent 依規則親自用 Read 工具開圖確認 6 張卡片皆正確渲染、無 LaTeX 洩漏、案例分析數字（0.3204/0.2764/5.7643/7.6830/0/7）與設計文件一致，審查零 Issue。
+
+全部 5 個任務皆一次審查通過，無 fix loop。
+
+### 段落八：Final Verification 補做——親自螢幕截圖驗證互動元件
+
+Agent 本人接手 Task 5 implementer 標記的殘留驗證項目：重啟 preview server、用 `curl` 核對頂部導覽列順序（`polynomial-regression → ridge-regression → lasso-regression`，`aria-current` 正確），再用無頭 Edge 截圖確認互動元件實際渲染狀態——預設顯示 λ=0.01，訓練 RMSE 0.1985、測試 RMSE 0.2764、已歸零係數 7/15，與設計文件表格完全吻合；係數長條圖可見多數長條偏短/灰色，符合預期。按鈕點擊邏輯與已上線的 Ridge 元件同構（單純 state 切換＋物件查找），已由 Task 2 審查確認接線正確，視為足夠驗證，未進一步做 CDP 點擊自動化。驗證完關閉 preview server。
+
+### 段落九：最終全分支審查（opus）——兩項面向未來的 Important 發現
+
+Agent 派最具能力模型（opus）做全分支審查。獨立複算全部數值皆一致，確認 λ=0.01 的 Ridge/Lasso 對比即使換成「各自最佳 λ」框架依然成立（非 cherry-pick）。抓到：
+
+- **Important #1**：`fitLassoRegression` 疊代法沒有回報是否真的收斂——`maxIter` 用盡時跟收斂成功回傳同樣的資料形狀，實測在 λ=0 時燒完 20 萬次疊代仍未收斂、回傳的最大係數（7.99）跟 Ridge 閉式解的真實 OLS 答案（1450）相差 200 倍，卻沒有任何錯誤或警告。
+- **Important #2**：既有測試讓人誤以為 Lasso 在 λ=0 永遠等價於 OLS（在小型良態資料上確實成立、測試通過），但這個等價關係在本章實際使用的資料集上會完全失敗，這個陷阱只寫在設計文件裡，程式碼與測試完全沒有提示，未來讀測試的人很可能誤判 λ=0 可安全加入白名單。
+- Minor（但納入本次修復）：設計文件與計畫都把先前除錯歸咎於「`tol` 設太寬」，reviewer 獨立重新掃描 tol/maxIter 參數空間後證實這個歸因是錯的——真正的收斂保障是 `maxIter`，`tol` 在合理範圍內幾乎不影響結果；文件誤導未來維護者可能會「安全地」調低 `maxIter` 而重蹈覆轍。
+
+Ready to merge: Yes。依規則派一次修復 subagent（不逐項分開修）處理以上三項：新增 `converged` 回傳欄位（`RegressionResult` 選填，不影響既有 Ridge/OLS 求解器）、既有 λ=0 測試加上情境註解、新增 2 個測試釘住收斂/未收斂兩種情況、修正兩份文件與新增程式碼註解。範圍限定複審確認三項全部 ADDRESSED、無新增破壞。其餘 4 項 Minor（殘差未定期重算、無 λ<0 驗證、歸零單調性未在真實資料上釘住、197ms 掛載成本）記錄為刻意延後，不阻塞合併。
+
+### 段落十：整合方式選擇與收尾
+
+Agent 依 `finishing-a-development-branch` 技能流程：跑測試（61/61）、偵測環境（worktree、具名分支 `worktree-lasso-regression-chapter`），詢問開發者整合方式。
+
+開發者：「1」（本機合併回 main）。
+
+Agent 執行：`git merge`（fast-forward）→ 合併後測試（122 個，確認為已知的 worktree 殘留造成測試重複執行現象）→ `ExitWorktree` 清理 worktree 與分支（6 個 commit 已安全存在於 main）→ 測試恢復正常（61/61）→ `astro check` 0/0。

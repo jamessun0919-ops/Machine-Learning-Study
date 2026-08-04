@@ -612,4 +612,38 @@
 **開發者交代備忘事項：**
 - 無新增交代事項；本階段開發者的決策點均已在 brainstorming 與最終確認時記錄（見對話紀錄）。
 
+## 2026-08-04（第 23 個工作階段）
+
+**當日工作內容：**
+- 開工閱讀第 22 階段交接文件，與開發者確認本階段方向：接續階段三最後一個迴歸主題，規劃並建置 Lasso Regression（Lasso 迴歸，正則化）章節。
+- 用 `brainstorming` 技能逐項確認設計，過程中多次先寫 Node 驗證腳本、拿到真實數字後才與開發者討論，未憑直覺套用 Ridge 章節既有結論：
+  - 教學切入點：延續 Ridge 章節同一組次數 15 多項式資料，做「Ridge vs Lasso 係數收縮方式對比」。
+  - **抓到 Lasso 與 Ridge 的關鍵技術差異**：Lasso 沒有閉式解，需用 coordinate descent + soft-thresholding；且此資料集的多項式特徵即使標準化過仍高度相關，導致 λ=0 完全無法收斂（上百萬次疊代仍在飄移），λ<0.01 的收斂成本不可預期地劇烈波動（λ=0.002 需 470 萬次疊代、逾 4 秒）。開發者原則：「效能與正確性無法兼顧時，寧可拿掉功能也不要湊合」——但這次找到不需妥協的解法，只需把白名單從含 0.001 改為 `0.01, 0.05, 0.1, 1, 10`，全部驗證在 5.6 萬次疊代內收斂（合計 227ms），不犧牲任何互動功能。
+  - 也測試過 pathwise warm-start，證實無法解決小 λ 收斂緩慢問題（收斂速率取決於條件數、非起始點距離），故不採用。
+  - 係數條形圖尺度：驗證後發現 Lasso 白名單內係數量級跟 Ridge 差很多（同一量級 2.46～7.68，非 Ridge 的 200 倍跨距），改用線性座標而非沿用 Ridge 的 log 軸，並新增歸零係數變色＋「N/15 已歸零」文字統計。
+  - `relatedTo` 範圍：開發者確認只連 Ridge Regression 一個（Polynomial/過擬合欠擬合/特徵工程的關聯已由 Ridge 章節完整覆蓋，重複寫會大幅重疊）。
+- 設計文件、實作計畫皆已 commit（`b2a7b02`、`8ddd2d5`）。
+- 用 `subagent-driven-development` 技能於獨立 worktree（`worktree-lasso-regression-chapter`）執行 5 個任務，全部一次到位（無 fix loop）：
+  1. `fitLassoRegression`（TDD，haiku 模型，含手算驗證過的測試數值）
+  2. `LassoRegressionFit.tsx` 互動元件（haiku 模型）
+  3. 章節內文＋路由/設定串接（sonnet 模型）
+  4. Ridge 章節回補關聯段落＋測試/文件更新（haiku 模型）
+  5. Excalidraw 資訊圖表（sonnet 模型）——Agent 本人依規則親自用 Read 工具開圖檢視，確認 6 張卡片皆正確渲染、無 LaTeX 洩漏、案例分析數字（0.3204/0.2764/5.7643/7.6830/0/7）與設計文件一致。
+  - 每個任務皆經過獨立審查，5 個任務審查皆為 Approved／Spec compliant，3 個任務有 Minor 延後事項（皆為文件筆誤或既有慣例，非程式碼缺陷）。
+- 最終全分支審查（opus model，**Ready to merge: Yes**）：獨立重新複算全部數值確認一致；抓到 2 項 Important 發現——(1) `fitLassoRegression` 疊代法在 `maxIter` 用盡時會靜默回傳錯誤答案，沒有任何信號告知呼叫者未收斂；(2) 既有測試讓人誤以為 Lasso 在 λ=0 永遠等價於 OLS，但在本章實際使用的資料集上會收斂失敗，此陷阱只記錄在設計文件、程式碼裡完全沒有提示。另抓到一項文件錯誤：設計文件把先前某次除錯歸咎於 `tol` 設太寬，複驗後證實真正的收斂保障其實是 `maxIter`、`tol`在合理範圍內幾乎不影響結果。依規則派一次修復 subagent（不逐項分開修）處理這三項，新增 `converged` 回傳欄位＋2 個新測試＋修正兩份文件與程式碼註解，範圍限定複審確認三項全部解決、無新增破壞。其餘 4 項 Minor（殘差未定期重算的浮點漂移風險、無 λ<0 驗證、歸零單調性未在真實資料上釘住、197ms 掛載成本）皆記錄為刻意延後，不阻塞合併。
+- 已本機 `merge`（fast-forward）回 `main`；合併後測試顯示 122 個（worktree 殘留造成的已知現象）；用 `ExitWorktree` 清理 worktree 與已合併分支（6 個 commit 已安全存在於 main）後測試恢復正常 61/61；`git push origin main` 成功，觸發 GitHub Pages 部署，「Lasso Regression」章節正式上線。
+
+**完成項目：**
+- Lasso Regression 章節完整上線，接續在 Ridge Regression 之後（`chapterOrder` 新的鏈尾）。階段三（監督式學習－迴歸，Linear Regression 子分類）5 個主題全數完成：Simple/Multiple/Polynomial/Ridge/Lasso。
+- 全站驗證：測試 61/61、`astro check` 0 錯誤/0 警告、`build` 11 頁成功。
+- Ridge↔Lasso 雙向關聯段落已補齊；`chapter_template_guide.md` 1.1 節對照表新增第 10 組。
+- `fitLassoRegression` 新增 `converged` 回傳欄位，讓未來任何呼叫者都能得知這個迭代求解器是否真的收斂，不再是靜默錯誤。
+
+**遇到的瓶頸：**
+- 設計驗證階段連續抓到多個「原始假設與實測數據不符」的問題（λ=0 完全不收斂、小 λ 收斂成本不可預期、係數尺度跟 Ridge 不同），皆先停下用腳本驗證、與開發者確認方向後才調整設計，未憑直覺或 Ridge 章節的類比假設成立。
+- 最終審查抓到的兩項 Important 發現都屬於「這次不會出事，但下一個迭代求解器可能會踩到同一個坑」的未來維護風險類型，已納入單次修復波次處理，非阻塞本次合併的功能性問題。
+
+**開發者交代備忘事項：**
+- 無新增交代事項；本階段開發者的決策點（λ 白名單效能取捨、`relatedTo` 範圍）均已在 brainstorming 與最終確認時記錄（見對話紀錄）。
+
 **本機測試用 server：** 本階段 controller 層級本身未額外啟動任何 server；各任務 subagent 於各自 worktree 內啟動的 `npm run preview`／CDP 除錯用無頭 Edge 皆已個別確認關閉；收工前 `netstat` 確認 4321／9333 埠無 LISTENING 項目。
