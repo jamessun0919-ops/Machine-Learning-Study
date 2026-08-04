@@ -36,7 +36,11 @@ const { Content } = await render(chapter);
       <h1>{chapter.data.title}</h1>
       <nav class="chapter__jump-nav" aria-label="章節內快速跳轉">
         {chapter.data.summary && <a href="#summary">資訊圖表</a>}
-        {chapter.data.interactiveComponent && <a href="#interactive">互動操作</a>}
+        {chapter.data.interactiveComponent && (
+          <a href="#interactive">
+            {chapter.data.interactiveComponent === 'course-knowledge-map' ? '學習地圖' : '互動操作'}
+          </a>
+        )}
       </nav>
     </div>
     <Content />

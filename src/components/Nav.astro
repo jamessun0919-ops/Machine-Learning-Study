@@ -6,23 +6,99 @@ const chapters = await getCollection('chapters');
 const chapterById = new Map(chapters.map((c) => [c.id, c]));
 const currentPath = Astro.url.pathname;
 const base = import.meta.env.BASE_URL;
+
+interface NavGroup {
+  stage: string;
+  items: { href: string; title: string; isCurrent: boolean }[];
+}
+
+// Group chapters by their chapters.ts `stage` field, preserving chapterOrder's
+// sequence — courses grow over time, and a flat single-line link rail stopped
+// fitting once the chapter count passed ~10.
+const navGroups: NavGroup[] = [];
+for (const meta of chapterOrder) {
+  const chapter = chapterById.get(meta.slug);
+  if (!chapter) continue;
+  const href = `${base}chapters/${meta.slug}/`;
+  const item = { href, title: chapter.data.title, isCurrent: currentPath === href };
+  let group = navGroups.find((g) => g.stage === meta.stage);
+  if (!group) {
+    group = { stage: meta.stage, items: [] };
+    navGroups.push(group);
+  }
+  group.items.push(item);
+}
 ---
 <nav class="site-nav">
   <div class="site-nav__inner">
     <a class="site-nav__brand" href={base}>機器學習互動學習網站</a>
-    <ul>
-      {chapterOrder.map((meta) => {
-        const chapter = chapterById.get(meta.slug);
-        if (!chapter) return null;
-        const href = `${base}chapters/${meta.slug}/`;
-        return (
-          <li>
-            <a href={href} aria-current={currentPath === href ? 'page' : undefined}>
-              {chapter.data.title}
-            </a>
-          </li>
-        );
-      })}
-    </ul>
+    <div class="site-nav__dropdown">
+      <button
+        type="button"
+        class="site-nav__dropdown-toggle"
+        id="site-nav-toggle"
+        aria-expanded="false"
+        aria-controls="site-nav-panel"
+      >
+        章節目錄
+        <span class="site-nav__dropdown-caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="site-nav__dropdown-panel" id="site-nav-panel" hidden>
+        {navGroups.map((group) => (
+          <div class="site-nav__group">
+            <p class="site-nav__group-title">{group.stage}</p>
+            <ul>
+              {group.items.map((item) => (
+                <li>
+                  <a href={item.href} aria-current={item.isCurrent ? 'page' : undefined}>
+                    {item.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
   </div>
 </nav>
+<script is:inline>
+  (function () {
+    var toggle = document.getElementById('site-nav-toggle');
+    var panel = document.getElementById('site-nav-panel');
+    if (!toggle || !panel) return;
+
+    function closePanel() {
+      panel.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+    function openPanel() {
+      panel.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      var current = panel.querySelector('[aria-current="page"]');
+      if (current) current.scrollIntoView({ block: 'center' });
+    }
+
+    toggle.addEventListener('click', function (event) {
+      event.stopPropagation();
+      if (panel.hidden) {
+        openPanel();
+      } else {
+        closePanel();
+      }
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!panel.hidden && !panel.contains(event.target) && event.target !== toggle) {
+        closePanel();
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && !panel.hidden) {
+        closePanel();
+        toggle.focus();
+      }
+    });
+  })();
+</script>

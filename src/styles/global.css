@@ -134,7 +134,9 @@ a:hover {
 }
 
 /* ---------------------------------------------------------------------------
-   Navigation - single line, 60px tall, horizontally scrollable link rail
+   Navigation - 60px tall bar; chapter list lives in a click-to-open dropdown
+   panel rather than an inline link rail (an inline row stopped fitting once
+   the chapter count passed ~10 - see docs/handover.md phase notes).
 --------------------------------------------------------------------------- */
 .site-nav {
   position: sticky;
@@ -155,6 +157,7 @@ a:hover {
 .site-nav__inner {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-lg);
   min-block-size: var(--nav-height);
   max-inline-size: var(--content-width);
@@ -176,26 +179,90 @@ a:hover {
   color: var(--color-accent);
 }
 
-.site-nav ul {
-  display: flex;
+.site-nav__dropdown {
+  position: relative;
+  flex: none;
+}
+
+.site-nav__dropdown-toggle {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: var(--space-2xs);
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: var(--step--1);
+  color: var(--color-text-muted);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: color var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    background-color var(--dur) var(--ease);
+}
+
+.site-nav__dropdown-toggle:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.site-nav__dropdown-toggle[aria-expanded='true'] {
+  color: var(--color-accent);
+  border-color: rgb(var(--accent-rgb) / 0.55);
+  background: rgb(var(--accent-rgb) / 0.12);
+}
+
+.site-nav__dropdown-caret {
+  font-size: 0.8em;
+  line-height: 1;
+  transition: transform var(--dur) var(--ease);
+}
+
+.site-nav__dropdown-toggle[aria-expanded='true'] .site-nav__dropdown-caret {
+  transform: rotate(180deg);
+}
+
+.site-nav__dropdown-panel {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-xs));
+  inset-inline-end: 0;
+  min-inline-size: 16rem;
+  max-inline-size: min(22rem, calc(100vw - 2 * var(--space-lg)));
+  max-block-size: min(70vh, 32rem);
+  overflow-y: auto;
+  padding: var(--space-sm);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.4);
+}
+
+.site-nav__group + .site-nav__group {
+  margin-block-start: var(--space-sm);
+  padding-block-start: var(--space-sm);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.site-nav__group-title {
+  margin: 0 0 var(--space-2xs);
+  padding-inline: var(--space-xs);
+  font-size: var(--step--1);
+  font-weight: 650;
+  color: var(--color-text-muted);
+}
+
+.site-nav__group ul {
+  display: flex;
+  flex-direction: column;
   list-style: none;
   margin: 0;
   padding: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
 
-.site-nav ul::-webkit-scrollbar {
-  display: none;
-}
-
-.site-nav ul a {
+.site-nav__group a {
   display: block;
-  white-space: nowrap;
-  padding: 0.35rem 0.7rem;
-  border-radius: var(--radius-pill);
+  padding: 0.4rem var(--space-xs);
+  border-radius: var(--radius-sm);
   font-size: var(--step--1);
   color: var(--color-text-muted);
   text-decoration: none;
@@ -203,12 +270,12 @@ a:hover {
     background-color var(--dur) var(--ease);
 }
 
-.site-nav ul a:hover {
+.site-nav__group a:hover {
   color: var(--color-text);
   background: rgb(255 255 255 / 0.05);
 }
 
-.site-nav ul a[aria-current='page'] {
+.site-nav__group a[aria-current='page'] {
   color: var(--color-accent);
   background: rgb(var(--accent-rgb) / 0.12);
 }
@@ -870,6 +937,7 @@ a:hover {
   color: var(--color-text-muted);
 }
 
-.knowledge-map__related a {
-  color: var(--color-accent);
+.knowledge-map__related a,
+.knowledge-map__topic.is-built .knowledge-map__related a {
+  color: var(--color-accent-secondary);
 }
