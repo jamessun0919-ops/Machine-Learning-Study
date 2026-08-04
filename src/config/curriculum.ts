@@ -62,6 +62,7 @@ export const curriculum: CurriculumStage[] = [
       },
       {
         name: 'Logistic Regression（邏輯斯迴歸）',
+        slug: 'logistic-regression',
         relatedTo: ['Multiple Linear Regression（多元線性回歸）'],
       },
     ],

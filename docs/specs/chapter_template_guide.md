@@ -17,7 +17,7 @@
 
    | 主題 A | 主題 B | 核心關聯 | 狀態 |
    |---|---|---|---|
-   | Multiple Linear Regression | Logistic Regression | 迴歸走向分類的橋樑 | A 側已補充；B 側建置時補上 |
+   | Multiple Linear Regression | Logistic Regression | 迴歸走向分類的橋樑 | 兩側已補 |
    | Polynomial Regression | 過擬合/欠擬合與偏差-變異數權衡 | 次數選擇即 bias-variance 權衡 | 兩側已補 |
    | Ridge Regression | Polynomial Regression | 抑制多項式高次項係數爆炸的正則化工具 | 兩側已補 |
    | Ridge Regression | 過擬合/欠擬合與偏差-變異數權衡 | λ 是可連續調整的 bias-variance 旋鈕 | 兩側已補 |
